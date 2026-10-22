@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    // Type-check only. tsx runs the code locally and Vercel compiles it on deploy.
+    "noEmit": true,
+    "target": "es2023",
+    "lib": ["es2023"],
+    // Files are CommonJS (package.json has no "type": "module"), so relative
+    // imports don't need file extensions.
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "strict": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src", "vitest.config.mts"]
+}

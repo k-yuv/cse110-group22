@@ -1,0 +1,19 @@
+{
+  "name": "cse110-group22",
+  "private": true,
+  "scripts": {
+    "setup": "npm --prefix frontend ci && npm --prefix backend ci",
+    "dev": "docker compose up --build --watch",
+    "stop": "docker compose down",
+    "db:seed": "docker compose exec db psql -U app_user -d app_db -f /seeds/development.sql",
+    "db:reset": "docker compose down --volumes",
+    "lint": "npm --prefix frontend run lint",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "npm --prefix frontend test",
+    "test:backend": "docker compose run --rm --build backend-test",
+    "test:coverage": "npm run test:coverage:frontend && npm run test:coverage:backend",
+    "test:coverage:frontend": "npm --prefix frontend run test:coverage",
+    "test:coverage:backend": "docker compose run --rm --build backend-test sh -c \"npm run migrate && npm run test:coverage\""
+
+  }
+}
