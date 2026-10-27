@@ -1,0 +1,108 @@
+# Local development environment.
+#
+#   npm run dev            start everything (frontend, backend, database)
+#   npm run test:backend   run backend tests against the app_test database
+#
+# All credentials below are for local development only.
+
+# Fixed project name so containers/volumes are named the same on every machine,
+# regardless of what the cloned folder is called.
+name: cse110-group22
+
+services:
+  frontend:
+    build: ./frontend
+    init: true
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    develop:
+      watch:
+        # Copy source edits into the container so Vite hot-reloads.
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules/
+            - dist/
+        # Dependencies changed: rebuild the image so `npm ci` runs again.
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/package-lock.json
+
+  backend:
+    build:
+      context: ./backend
+      # Lets backend/Dockerfile copy files from database/ (the migrations).
+      additional_contexts:
+        database: ./database
+    init: true
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://app_user:dev_password@db:5432/app_db
+      DB_POOL_MAX: 10
+      FRONTEND_URL: http://localhost:5173
+    depends_on:
+      db:
+        condition: service_healthy
+    # Apply any new migrations, then start the API with tsx watch.
+    command: sh -c "npm run migrate && exec npm run dev"
+    develop:
+      watch:
+        # Copy source edits into the container so tsx watch restarts the server.
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - node_modules/
+        # New migration added: copy it in and restart so it gets applied.
+        - action: sync+restart
+          path: ./database/migrations
+          target: /database/migrations
+        - action: rebuild
+          path: ./backend/package.json
+        - action: rebuild
+          path: ./backend/package-lock.json
+
+  # Same as `backend`, but pointed at the app_test database and runs the tests
+  # once instead of starting the server. The "test" profile keeps it out of
+  # `docker compose up`; it only runs via `npm run test:backend`.
+  backend-test:
+    extends: backend
+    profiles: [test]
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://app_user:dev_password@db:5432/app_test
+    command: sh -c "npm run migrate && npm test"
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: app_db
+    ports:
+      # Only reachable from this computer, not from others on the network.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # SQL files here run once, the first time the database volume is created.
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+      - ./database/seeds:/seeds:ro
+    healthcheck:
+      # -h 127.0.0.1 forces a TCP check. Without it, the check can pass during
+      # first-time setup (before the init scripts finish) and the backend
+      # connects to a database that is about to restart.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U app_user -d app_db"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+      start_period: 10s
+
+volumes:
+  postgres_data:
