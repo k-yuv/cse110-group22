@@ -79,6 +79,8 @@ jobs:
     steps:
       - name: Skip if the production database is not configured yet
         if: env.DATABASE_URL == ''
+        # backend/ doesn't exist until checkout, so run from the workspace root.
+        working-directory: .
         run: echo "::notice::PRODUCTION_DATABASE_URL secret is not set; skipping migrations."
       - uses: actions/checkout@v5
         if: env.DATABASE_URL != ''
