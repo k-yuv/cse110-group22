@@ -91,6 +91,14 @@ const pageNavStyle: CSSProperties = {
   fontSize: 14,
 };
 
+// Question number and stepping back to an earlier question, above the laptop.
+const questionNavStyle: CSSProperties = {
+  ...pageNavStyle,
+  left: SCREEN.x,
+  top: 110,
+  width: SCREEN.width,
+};
+
 const errorStyle: CSSProperties = {
   position: 'absolute',
   zIndex: 1,
@@ -177,15 +185,20 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
     hasNextPage,
     onPreviousPage,
     onNextPage,
+    questionNumber,
+    questionCount,
+    hasPreviousQuestion,
+    isLastQuestion,
+    onPreviousQuestion,
     selectedEvidence,
     prompt,
     selectedCount,
     requiredCount,
+    answeredCount,
     error,
     loading,
     canSubmit,
     isSelected,
-    canSelectMore,
     onToggleEvidence,
     onSubmit,
   } = useArticleWritingModel({
@@ -202,7 +215,7 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
 
       <p style={progressStyle} aria-live="polite">
         <span>Progress</span>
-        <span>{selectedCount}/{requiredCount}</span>
+        <span>{answeredCount}/{questionCount}</span>
       </p>
 
       {error && <p role="alert" style={errorStyle}>{error}</p>}
@@ -213,7 +226,6 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
             <button
               type="button"
               aria-pressed={isSelected(item.id)}
-              disabled={!isSelected(item.id) && !canSelectMore}
               onClick={() => onToggleEvidence(item.id)}
             >
               {item.title}
@@ -230,6 +242,13 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
         <button type="button" disabled={!hasNextPage} onClick={onNextPage}>
           Next ›
         </button>
+      </nav>
+
+      <nav style={questionNavStyle} aria-label="Article questions">
+        <button type="button" disabled={!hasPreviousQuestion} onClick={onPreviousQuestion}>
+          ‹ Previous question
+        </button>
+        <span>Question {questionNumber} of {questionCount}</span>
       </nav>
 
       <Stage width={WIDTH} height={HEIGHT}>
@@ -254,13 +273,23 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
             fontStyle="bold"
             fontSize={20}
             fill={COLORS.text}
+            ellipsis
+            wrap="none"
+          />
+          <Text
+            x={SCREEN.x + 24}
+            y={SCREEN.y + 46}
+            text={`Evidence ${selectedCount}/${requiredCount}`}
+            fontFamily={FONT}
+            fontSize={12}
+            fill={COLORS.mutedText}
           />
           {selectedEvidence.length === 0 && (
             <Text
               x={SCREEN.x + 24}
               y={SCREEN.y + 80}
               width={SCREEN.width - 48}
-              text="Pick evidence from your journal to build the article."
+              text={`Submit ${requiredCount} pieces of evidence.`}
               fontFamily={FONT}
               fontSize={14}
               fill={COLORS.mutedText}
@@ -303,7 +332,7 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
       </Stage>
 
       <button type="button" style={submitStyle} disabled={!canSubmit} onClick={onSubmit}>
-        Submit article
+        {isLastQuestion ? 'Submit article' : 'Submit answer'}
       </button>
     </section>
   );

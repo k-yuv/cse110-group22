@@ -23,11 +23,13 @@ vi.mock('../../../services/notes', () => ({
   createNote: vi.fn(),
 }));
 
+// One evidence title per question, in question order.
 async function writeArticle(titles: string[]) {
   const user = userEvent.setup();
   render(<App />);
 
-  for (const title of titles) {
+  for (const [index, title] of titles.entries()) {
+    if (index > 0) await user.click(screen.getByRole('button', { name: 'Submit answer' }));
     await user.click(await screen.findByRole('button', { name: title }));
   }
   await user.click(screen.getByRole('button', { name: 'Submit article' }));
@@ -40,13 +42,7 @@ describe('Article writing flow', () => {
   });
 
   it('picks the good ending with strong evidence', async () => {
-    await writeArticle([
-      'Fire marshal report',
-      'Security camera footage',
-      'Inspection records',
-      'Foreman interview',
-      'Anonymous forum post',
-    ]);
+    await writeArticle(['Fire marshal report', 'Security camera footage', 'Inspection records']);
 
     await waitFor(() => {
       expect(console.log).toHaveBeenCalledWith('Article submitted: good ending');
@@ -54,13 +50,7 @@ describe('Article writing flow', () => {
   });
 
   it('picks the bad ending with weak evidence', async () => {
-    await writeArticle([
-      'Fire marshal report',
-      'Anonymous forum post',
-      "Neighbor's rumor",
-      'Weather report',
-      'Insurance claim',
-    ]);
+    await writeArticle(['Anonymous forum post', "Neighbor's rumor", 'Weather report']);
 
     await waitFor(() => {
       expect(console.log).toHaveBeenCalledWith('Article submitted: bad ending');
