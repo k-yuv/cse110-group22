@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Stage, Layer, Image } from 'react-konva';
+import { Stage, Layer } from 'react-konva';
 import TitleButton from './titleButton';
 import ginghamBackground from '../../assets/gingham_bg.png';
+import titleImage from '../../assets/title_img.png';
+import title from '../../assets/title.png'
+import { URLImage } from '../URLImage/URLImage';
 
 export default function TitleScreen() {
     const [dimensions, setDimensions] = useState({
@@ -45,7 +48,7 @@ export default function TitleScreen() {
                 <Layer>
                     <TitleButton
                         text="START"
-                        x={130 * layoutScale}
+                        x={200 * layoutScale}
                         y={400 * layoutScale}
                         width={buttonWidth}
                         height={buttonHeight}
@@ -53,7 +56,7 @@ export default function TitleScreen() {
                     />
                     <TitleButton
                         text="OPTIONS"
-                        x={130 * layoutScale}
+                        x={200 * layoutScale}
                         y={530 * layoutScale}
                         width={buttonWidth}
                         height={buttonHeight}
@@ -62,10 +65,26 @@ export default function TitleScreen() {
                     <TitleButton
                         text="Teacher Dashboard"
                         x={35 * layoutScale}
-                        y={693 * layoutScale}
+                        y={700 * layoutScale}
                         width={buttonWidth}
                         height={buttonHeight}
                         fontSize={32 * fontScale}
+                    />
+                    {/** cat image */}
+                    <URLImage
+                        src={titleImage}
+                        x={375 * layoutScale}
+                        y={100 * layoutScale}
+                        width={1200 * layoutScale}
+                        height={810 * layoutScale}
+                    />
+                    {/** title image */}
+                    <URLImage
+                        src={title}
+                        x={dimensions.width/4}
+                        y={-50 * layoutScale}
+                        width={741 * layoutScale}
+                        height={515 * layoutScale}
                     />
                 </Layer>
             </Stage>

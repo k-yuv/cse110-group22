@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
 import { Group, Rect, Text } from 'react-konva';
+import type Konva from 'konva';
 
 interface TitleButtonProps {
     text: string;
@@ -17,8 +19,33 @@ export default function TitleButton({
     height,
     fontSize = 40,
 }: TitleButtonProps) {
+    const [isHovered, setIsHovered] = useState(false);
+    const groupRef = useRef<Konva.Group>(null);
+
+    useEffect(() => {
+        groupRef.current?.to({
+            scaleX: isHovered ? 1.05 : 1,
+            scaleY: isHovered ? 1.05 : 1,
+            duration: 0.15,
+        });
+    }, [isHovered]);
+
     return (
-        <Group x={x} y={y}>
+        <Group
+            ref={groupRef}
+            x={x + width / 2}
+            y={y + height / 2}
+            offsetX={width / 2}
+            offsetY={height / 2}
+            onMouseEnter={(event) => {
+                setIsHovered(true);
+                event.target.getStage()?.container().style.setProperty('cursor', 'pointer');
+            }}
+            onMouseLeave={(event) => {
+                setIsHovered(false);
+                event.target.getStage()?.container().style.removeProperty('cursor');
+            }}
+        >
             <Rect
                 width={width}
                 height={height}
