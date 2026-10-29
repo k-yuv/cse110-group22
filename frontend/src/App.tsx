@@ -1,10 +1,8 @@
-import Notes from './components/Notes/notesView';
-import KonvaTest from './components/Konva-Test/konvaView';
+import TitleScreen from './components/TitleScreen/titleScreenView';
 
 function App() {
   return <>
-    <Notes />;
-    <KonvaTest />
+    <TitleScreen />
   </> 
 }
 
