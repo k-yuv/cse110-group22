@@ -20,7 +20,7 @@ export default function Folder({ label, placement, note, done, locked, onClick }
   const noteProps = { x: note.x * w, y: note.y * w, rotation: note.rotation, size: w * 0.44 };
 
   return (
-    <DeskItem name={label} placement={placement} height={h} onClick={onClick}>
+    <DeskItem name={label} placement={placement} height={h} cornerRadius={w * 0.024} locked={locked} onClick={onClick}>
       <Rect x={w * 0.92} y={w * 0.24} width={w * 0.18} height={w * 0.6} cornerRadius={w * 0.024} fill={COLORS.folder} />
       <Rect
         width={w}

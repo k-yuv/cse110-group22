@@ -24,6 +24,7 @@ export const COLORS = {
   minigameBadge: '#f25757',
   createArticle: '#ffffff',
   pen: '#2b2b2b',
+  hoverGlow: '#fff2a8',
   text: '#000000',
 };
 

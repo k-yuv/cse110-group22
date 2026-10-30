@@ -17,6 +17,8 @@ export default function CreateArticleButton({ placement, locked, onClick }: Crea
       name={CREATE_ARTICLE_LABEL}
       placement={placement}
       height={w * 0.51}
+      cornerRadius={w * 0.056}
+      locked={locked}
       onClick={onClick}
     >
       {/* Create article box */}
