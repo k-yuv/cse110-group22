@@ -1,7 +1,18 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { getProgress, type ActivityId } from '../../services/progress';
+import { ROUTES } from '../../routes';
 import { getDeskState } from './deskRules';
-import { ACTIVITY_LABELS, CREATE_ARTICLE_LABEL, type PixelPlacement, type Placement } from './deskContent';
+import type { PixelPlacement, Placement } from './deskContent';
+
+// Where clicking each activity goes.
+const ACTIVITY_ROUTES: Record<ActivityId, string> = {
+  articles: ROUTES.onlineArticle,
+  social: ROUTES.socialMedia,
+  interviews: ROUTES.interview,
+  aiMinigame: ROUTES.aiImage,
+  deskMinigame: ROUTES.cleanDesk,
+};
 
 // Item sizes follow the desk's width, but on a short, wide window they follow
 // its height instead so everything still fits on screen.
@@ -13,6 +24,7 @@ function getWindowSize() {
 
 // Owns the player's progress and decides what's open on the desk from it.
 export function useDeskModel() {
+  const navigate = useNavigate();
   const [completed, setCompleted] = useState<ActivityId[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -38,13 +50,12 @@ export function useDeskModel() {
     return { x: x * size.width, y: y * size.height, width: width * sizeUnit, rotation };
   }
 
-  // TODO: open each activity's screen once it's built.
   function handleOpenActivity(id: ActivityId) {
-    if (!activities[id].locked) console.log(`${ACTIVITY_LABELS[id]} is not implemented yet`);
+    if (!activities[id].locked) navigate(ACTIVITY_ROUTES[id]);
   }
 
   function handleCreateArticle() {
-    if (!createArticleLocked) console.log(`${CREATE_ARTICLE_LABEL} is not implemented yet`);
+    if (!createArticleLocked) navigate(ROUTES.createArticle);
   }
 
   return {
