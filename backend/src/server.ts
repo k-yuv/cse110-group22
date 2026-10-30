@@ -1,7 +1,11 @@
 import app from './app';
+import { seedData } from './utils/seed';
 
 const PORT = 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+// Fill in any missing data files before accepting requests.
+seedData().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
 });
