@@ -33,3 +33,8 @@ export async function completeActivity(id: ActivityId): Promise<ActivityId[]> {
 
   return completed;
 }
+
+export async function resetProgress(): Promise<ActivityId[]> {
+  localStorage.removeItem(STORAGE_KEY);
+  return [];
+}

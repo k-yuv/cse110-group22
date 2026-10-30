@@ -20,6 +20,9 @@ export default function Desk() {
     place,
     onOpenActivity,
     onCreateArticle,
+    hasNextLevel,
+    onCompleteNextLevel,
+    onResetProgress,
   } = useDeskModel();
 
   if (loading) return <p>Loading...</p>;
@@ -67,6 +70,18 @@ export default function Desk() {
         </Layer>
       </Stage>
 
+      {/* TEMPORARY: dev-only buttons for testing level progression. Never
+          shown in production builds. Remove with the handlers in deskModel. */}
+      {import.meta.env.DEV && (
+        <div style={{ position: 'absolute', left: 16, bottom: 16, display: 'flex', gap: 8 }}>
+          <button type="button" onClick={onCompleteNextLevel} disabled={!hasNextLevel}>
+            Dev: complete next level
+          </button>
+          <button type="button" onClick={onResetProgress}>
+            Dev: reset progress
+          </button>
+        </div>
+      )}
     </main>
   );
 }
