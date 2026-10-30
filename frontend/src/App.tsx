@@ -1,11 +1,7 @@
-import Notes from './components/Notes/notesView';
-import KonvaTest from './components/Konva-Test/konvaView';
+import Desk from './components/Desk/deskView';
 
 function App() {
-  return <>
-    <Notes />;
-    <KonvaTest />
-  </> 
+  return <Desk />;
 }
 
 export default App;
