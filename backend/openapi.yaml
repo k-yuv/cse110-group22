@@ -1,0 +1,102 @@
+# Describes every route the backend serves. app.ts uses this file to validate
+# every request before it reaches a controller, and every response before it
+# is sent. A route that isn't listed here responds 404.
+openapi: 3.0.3
+info:
+  title: cse110-group22 API
+  version: 0.0.0
+
+paths:
+  /api/health:
+    get:
+      summary: Check that the API is running
+      responses:
+        '200':
+          description: The API is running
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                additionalProperties: false
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+
+  /api/notes:
+    get:
+      summary: List every note, oldest first
+      responses:
+        '200':
+          description: All notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+        default:
+          $ref: '#/components/responses/Error'
+
+    post:
+      summary: Create a note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewNote'
+      responses:
+        '201':
+          description: The created note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        default:
+          $ref: '#/components/responses/Error'
+
+components:
+  schemas:
+    Note:
+      type: object
+      required: [id, title, created_at]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        created_at:
+          type: string
+          format: date-time
+
+    NewNote:
+      type: object
+      required: [title]
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          # Must contain at least one non-whitespace character.
+          pattern: '\S'
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+  responses:
+    Error:
+      description: Something went wrong; `error` says what
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
