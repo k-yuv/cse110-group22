@@ -57,8 +57,49 @@ paths:
         default:
           $ref: '#/components/responses/Error'
 
+  /api/chapters/{chapter}/questions/{number}:
+    get:
+      summary: Get one question by chapter and question number
+      parameters:
+        - name: chapter
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: The question
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        default:
+          $ref: '#/components/responses/Error'
+
 components:
   schemas:
+    Question:
+      type: object
+      required: [chapter, number, content]
+      additionalProperties: false
+      properties:
+        chapter:
+          type: integer
+          minimum: 1
+        number:
+          type: integer
+          minimum: 1
+        content:
+          type: string
+          maxLength: 500
+
     Note:
       type: object
       required: [id, title, created_at]

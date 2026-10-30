@@ -2,6 +2,7 @@ import path from 'node:path';
 import express from 'express';
 import * as OpenApiValidator from 'express-openapi-validator';
 import notesRouter from './features/notes/notes.router';
+import questionsRouter from './features/questions/questions.router';
 import { errorHandler } from './middleware/errorHandler';
 
 // ---------------------------------------------------------------
@@ -14,6 +15,13 @@ export interface Note {
   id: string;
   title: string;
   created_at: string;
+}
+
+// Matches the Question schema in backend/openapi.yaml.
+export interface Question {
+  chapter: number;
+  number: number;
+  content: string;
 }
 
 const app = express();
@@ -36,6 +44,7 @@ app.get('/api/health', (req, res) => {
 
 // Feature routers. Each one handles every URL under its prefix.
 app.use('/api/notes', notesRouter);
+app.use('/api/chapters/:chapter/questions', questionsRouter);
 
 // Must stay last: it only runs when something above passed along an error.
 app.use(errorHandler);
