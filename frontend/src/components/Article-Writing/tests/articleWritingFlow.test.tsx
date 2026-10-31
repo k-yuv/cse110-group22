@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../../App';
-import * as notesApi from '../../../services/notes';
+import { ROUTES } from '../../../routes';
 
 // Integration: runs the real (mock) journal evidence and article service, seeded with
 // their built-in data, from entering the screen to landing on an ending page.
@@ -16,15 +16,10 @@ vi.mock('react-konva', () => ({
   Group: () => null,
 }));
 
-// App also renders Notes, which would otherwise call the backend.
-vi.mock('../../../services/notes', () => ({
-  getNotes: vi.fn(),
-  createNote: vi.fn(),
-}));
-
 // The evidence titles for each question, in question order.
 async function writeArticle(answers: string[][]) {
   const user = userEvent.setup();
+  window.history.pushState({}, '', ROUTES.createArticle);
   render(<App />);
 
   for (const [index, titles] of answers.entries()) {
@@ -37,10 +32,6 @@ async function writeArticle(answers: string[][]) {
 }
 
 describe('Article writing flow', () => {
-  beforeEach(() => {
-    vi.mocked(notesApi.getNotes).mockResolvedValue([]);
-  });
-
   it('picks the good ending with strong evidence', async () => {
     await writeArticle([
       ['Fire marshal report'],

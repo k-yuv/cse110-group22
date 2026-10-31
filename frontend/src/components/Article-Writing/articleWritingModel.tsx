@@ -16,6 +16,10 @@ interface ArticleWritingModelOptions {
   onFinish: (ending: ArticleEnding) => void;
 }
 
+function getWindowSize() {
+  return { width: window.innerWidth, height: window.innerHeight };
+}
+
 // Owns all state and service calls for the Article Writing screen. Which
 // ending the player gets is decided by submitArticle, not here.
 export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: ArticleWritingModelOptions) {
@@ -30,6 +34,7 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [size, setSize] = useState(getWindowSize);
 
   useEffect(() => {
     getArticleSubjects(levelId)
@@ -37,6 +42,12 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
       .catch(() => setError('Could not load questions'))
       .finally(() => setLoading(false));
   }, [levelId]);
+
+  useEffect(() => {
+    const handleResize = () => setSize(getWindowSize());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const isAnswered = (subject: ArticleSubject) =>
     (answers[subject.id]?.length ?? 0) >= subject.requiredCount;
@@ -95,6 +106,8 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
   }
 
   return {
+    windowWidth: size.width,
+    windowHeight: size.height,
     pageEvidence: evidence.slice(page * evidencePerPage, (page + 1) * evidencePerPage),
     page: page + 1,
     pageCount,
