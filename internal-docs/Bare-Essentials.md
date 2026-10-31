@@ -174,6 +174,10 @@ These are generated automatically. Changes are overwritten and should never be c
 | Notes data is in a weird state | Stop the backend, delete `backend/data/notes.json`, and start it again. |
 | Still stuck | Ask in the group chat. Paste the full error message from the terminal. |
 
+## Feature docs
+
+- [Desk-View.md](Desk-View.md): the hub desk (level selector): what it does, where its code is, how it's tested, and how to hook an activity screen up to it.
+
 ## Other docs
 
 - [File-Structure-Guide.md](File-Structure-Guide.md): what goes in each file of a frontend component and a backend feature, with examples.
