@@ -68,6 +68,11 @@ const MOCK_SUBJECTS: ArticleSubject[] = [
     prompt: 'Did the owner ignore warnings?',
     requiredCount: 1,
   },
+  {
+    id: 'subject-cause',
+    prompt: 'What caused the fire?',
+    requiredCount: 2,
+  },
 ];
 
 const MOCK_RATINGS: SubjectRatings = {
@@ -108,6 +113,17 @@ const MOCK_RATINGS: SubjectRatings = {
     'ev-employee': 'strong',
     'ev-tweet': 'weak',
     'ev-cousin': 'weak',
+  },
+  'subject-cause': {
+    'ev-marshal': 'strong',
+    'ev-foreman': 'strong',
+    'ev-911': 'strong',
+    'ev-photos': 'strong',
+    'ev-lab': 'strong',
+    'ev-forum': 'weak',
+    'ev-neighbor': 'weak',
+    'ev-tweet': 'weak',
+    'ev-tabloid': 'weak',
   },
 };
 

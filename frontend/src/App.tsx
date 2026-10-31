@@ -1,21 +1,25 @@
+import { useState } from 'react';
 import Notes from './components/Notes/notesView';
 import KonvaTest from './components/Konva-Test/konvaView';
 import ArticleWriting from './components/Article-Writing/articleWritingView';
+import GoodEnding from './components/Endings/goodEndingView';
+import BadEnding from './components/Endings/badEndingView';
 import { seedMockEvidence } from './components/Journal/mockEvidence';
 import type { ArticleEnding } from './services/article';
 
 seedMockEvidence();
 
-// TODO: route to the Good/Bad Ending screens once #32 and #33 exist.
-function handleArticleFinish(ending: ArticleEnding) {
-  console.log(`Article submitted: ${ending} ending`);
-}
-
 function App() {
+  // Set once the article is submitted; switches to that ending's page.
+  const [ending, setEnding] = useState<ArticleEnding | null>(null);
+
+  if (ending === 'good') return <GoodEnding />;
+  if (ending === 'bad') return <BadEnding />;
+
   return <>
     <Notes />;
     <KonvaTest />
-    <ArticleWriting onFinish={handleArticleFinish} />
+    <ArticleWriting onFinish={setEnding} />
   </>
 }
 
