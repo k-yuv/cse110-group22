@@ -24,7 +24,10 @@ export const COLORS = {
   card: '#ffffff',
   cardSelected: '#f3d9a4',
   mutedText: '#555555',
-  progressPanel: '#d9d9d9',
+  progressBar: '#df831a',
+  progressBorder: '#4c2100',
+  progressDone: '#ffb404',
+  progressTodo: '#fff7dd',
   error: '#b00020',
 };
 

@@ -5,6 +5,7 @@ import type { ArticleEnding } from '../../services/article';
 import type { EvidenceModel } from '../Journal/EvidenceModel';
 import { COLORS, FONT } from '../../theme';
 import { useArticleWritingModel } from './articleWritingModel';
+import ProgressBar from '../Progress-Bar/ProgressBar';
 
 // Layout follows the "Creating Article" Figma frame (1280 × 832), scaled to
 // fit the window.
@@ -36,21 +37,12 @@ const visuallyHidden: CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
+// The bar's label sits above it, so the bar itself starts at y = 51.
 const progressStyle: CSSProperties = {
   position: 'absolute',
   zIndex: 1,
-  left: 202,
-  top: 36,
-  width: 198,
-  height: 98,
-  margin: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: COLORS.progressPanel,
-  fontFamily: FONT,
-  fontSize: 22,
+  left: 161,
+  top: 16,
 };
 
 const submitStyle: CSSProperties = {
@@ -227,10 +219,7 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
       >
         <h1 style={visuallyHidden}>Write your article</h1>
 
-        <p style={progressStyle} aria-live="polite">
-          <span>Progress</span>
-          <span>{answeredCount}/{questionCount}</span>
-        </p>
+        <ProgressBar completed={answeredCount} total={questionCount} style={progressStyle} />
 
         {error && <p role="alert" style={errorStyle}>{error}</p>}
 
