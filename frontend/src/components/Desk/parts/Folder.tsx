@@ -1,7 +1,8 @@
 import { Rect, Text } from 'react-konva';
 import DeskItem from './DeskItem';
 import StickyNote from './StickyNote';
-import { COLORS, DONE_TEXT, LOCKED_TEXT, type NotePlacement, type PixelPlacement } from '../deskContent';
+import { COLORS } from '../../../theme';
+import { DONE_TEXT, LOCKED_TEXT, type NotePlacement, type PixelPlacement } from '../deskContent';
 
 interface FolderProps {
   label: string;

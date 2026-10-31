@@ -2,7 +2,7 @@ import { useRef, type ReactNode } from 'react';
 import { Group, Rect } from 'react-konva';
 import type Konva from 'konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
-import { COLORS } from '../deskContent';
+import { COLORS } from '../../../theme';
 
 const HOVER_SCALE = 1.06;
 const HOVER_SECONDS = 0.15;

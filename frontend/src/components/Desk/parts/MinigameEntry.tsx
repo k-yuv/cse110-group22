@@ -1,7 +1,8 @@
 import { Circle, Group, Rect, Text } from 'react-konva';
 import DeskItem from './DeskItem';
 import StickyNote from './StickyNote';
-import { COLORS, DONE_TEXT, type PixelPlacement } from '../deskContent';
+import { COLORS } from '../../../theme';
+import { DONE_TEXT, type PixelPlacement } from '../deskContent';
 
 interface MinigameEntryProps {
   // 'photo' is the AI Images picture, 'todo' is the clean desk sticky note.
