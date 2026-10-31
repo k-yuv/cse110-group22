@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ArticleWriting from '../articleWritingView';
-import * as evidenceApi from '../../../services/evidence';
+import { EvidenceModel } from '../../Journal/EvidenceModel';
+import { JournalController } from '../../Journal/JournalController';
 import * as articleApi from '../../../services/article';
 
 // jsdom has no <canvas>; see internal-docs/Konva-Testing.md.
@@ -15,20 +16,22 @@ vi.mock('react-konva', () => ({
   Group: () => null,
 }));
 
-vi.mock('../../../services/evidence', () => ({
-  getCollectedEvidence: vi.fn(),
-}));
-
 vi.mock('../../../services/article', () => ({
   getArticleSubjects: vi.fn(),
   submitArticle: vi.fn(),
 }));
 
 const EVIDENCE = [
-  { id: 'a', title: 'Evidence A', description: '' },
-  { id: 'b', title: 'Evidence B', description: '' },
-  { id: 'c', title: 'Evidence C', description: '' },
+  new EvidenceModel('a', 'Evidence A', '', ''),
+  new EvidenceModel('b', 'Evidence B', '', ''),
+  new EvidenceModel('c', 'Evidence C', '', ''),
 ];
+
+function setJournal(evidence: EvidenceModel[]) {
+  const journal = JournalController.getInstance();
+  journal.clear();
+  evidence.forEach((item) => journal.add(item));
+}
 
 const SUBJECTS = [
   { id: 'subject-1', prompt: 'What happened?', requiredCount: 2 },
@@ -38,14 +41,14 @@ const SUBJECTS = [
 describe('ArticleWriting component', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(evidenceApi.getCollectedEvidence).mockResolvedValue(EVIDENCE);
+    setJournal(EVIDENCE);
     vi.mocked(articleApi.getArticleSubjects).mockResolvedValue(SUBJECTS);
   });
 
-  it('shows a loading message until evidence arrives', async () => {
+  it('shows a loading message until questions arrive', async () => {
     render(<ArticleWriting onFinish={vi.fn()} />);
 
-    expect(screen.getByText('Loading evidence...')).toBeInTheDocument();
+    expect(screen.getByText('Loading questions...')).toBeInTheDocument();
     expect(await screen.findByText('0/2')).toBeInTheDocument();
     expect(screen.getByText('Question 1 of 2')).toBeInTheDocument();
   });
@@ -110,10 +113,7 @@ describe('ArticleWriting component', () => {
   });
 
   it('replaces evidence in place, cycling through slots, once a question is full', async () => {
-    vi.mocked(evidenceApi.getCollectedEvidence).mockResolvedValue([
-      ...EVIDENCE,
-      { id: 'd', title: 'Evidence D', description: '' },
-    ]);
+    setJournal([...EVIDENCE, new EvidenceModel('d', 'Evidence D', '', '')]);
     vi.mocked(articleApi.submitArticle).mockResolvedValue({ ending: 'good' });
     const user = userEvent.setup();
     render(<ArticleWriting onFinish={vi.fn()} />);
@@ -161,12 +161,7 @@ describe('ArticleWriting component', () => {
     expect(onFinish).toHaveBeenCalledWith('bad');
   });
   it('splits long evidence lists across journal pages', async () => {
-    const many = Array.from({ length: 10 }, (_, i) => ({
-      id: `e${i + 1}`,
-      title: `Evidence ${i + 1}`,
-      description: '',
-    }));
-    vi.mocked(evidenceApi.getCollectedEvidence).mockResolvedValue(many);
+    setJournal(Array.from({ length: 10 }, (_, i) => new EvidenceModel(`e${i + 1}`, `Evidence ${i + 1}`, '', '')));
     const user = userEvent.setup();
     render(<ArticleWriting onFinish={vi.fn()} />);
 
@@ -191,12 +186,12 @@ describe('ArticleWriting component', () => {
     expect(screen.getByRole('button', { name: 'Evidence 1' })).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('shows an error when evidence fails to load', async () => {
-    vi.mocked(evidenceApi.getCollectedEvidence).mockRejectedValue(new Error('down'));
+  it('shows an error when questions fail to load', async () => {
+    vi.mocked(articleApi.getArticleSubjects).mockRejectedValue(new Error('down'));
 
     render(<ArticleWriting onFinish={vi.fn()} />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Could not load evidence');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not load questions');
   });
 
   it('shows an error when submitting fails', async () => {

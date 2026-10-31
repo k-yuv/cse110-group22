@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { Stage, Layer, Rect, Text, Line, Group } from 'react-konva';
 import type { ArticleEnding } from '../../services/article';
-import type { Evidence } from '../../services/evidence';
+import type { EvidenceModel } from '../Journal/EvidenceModel';
 import { useArticleWritingModel } from './articleWritingModel';
 
 // Layout follows the "Creating Article" Figma frame (1280 × 832).
@@ -115,7 +115,7 @@ function setCursor(event: KonvaEventObject<MouseEvent>, cursor: string) {
 }
 
 interface EvidenceCardProps {
-  item: Evidence;
+  item: EvidenceModel;
   x: number;
   y: number;
   width: number;
@@ -147,7 +147,7 @@ function EvidenceCard({ item, x, y, width, selected, compact = false, onToggle }
         x={10}
         y={compact ? 13 : 8}
         width={width - 20}
-        text={(selected ? '✓ ' : '') + item.title}
+        text={(selected ? '✓ ' : '') + item.toolName}
         fontFamily={FONT}
         fontStyle="bold"
         fontSize={14}
@@ -159,7 +159,7 @@ function EvidenceCard({ item, x, y, width, selected, compact = false, onToggle }
         x={10}
         y={28}
         width={width - 20}
-        text={item.description}
+        text={item.toolDescription}
         fontFamily={FONT}
         fontSize={11}
         fill={COLORS.mutedText}
@@ -207,7 +207,7 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
     onFinish,
   });
 
-  if (loading) return <p>Loading evidence...</p>;
+  if (loading) return <p>Loading questions...</p>;
 
   return (
     <section style={{ position: 'relative', width: WIDTH, height: HEIGHT }}>
@@ -228,7 +228,7 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
               aria-pressed={isSelected(item.id)}
               onClick={() => onToggleEvidence(item.id)}
             >
-              {item.title}
+              {item.toolName}
             </button>
           </li>
         ))}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getCollectedEvidence, type Evidence } from '../../services/evidence';
+import type { EvidenceModel } from '../Journal/EvidenceModel';
+import { JournalController } from '../Journal/JournalController';
 import {
   getArticleSubjects,
   submitArticle,
@@ -18,7 +19,8 @@ interface ArticleWritingModelOptions {
 // Owns all state and service calls for the Article Writing screen. Which
 // ending the player gets is decided by submitArticle, not here.
 export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: ArticleWritingModelOptions) {
-  const [evidence, setEvidence] = useState<Evidence[]>([]);
+  // Evidence can't change while the player is writing, so read it once.
+  const evidence = JournalController.getInstance().read();
   const [subjects, setSubjects] = useState<ArticleSubject[]>([]);
   const [answers, setAnswers] = useState<ArticleAnswers>({});
   // Subject id → how many times a full answer has had evidence replaced.
@@ -30,12 +32,9 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    Promise.all([getCollectedEvidence(), getArticleSubjects(levelId)])
-      .then(([collected, articleSubjects]) => {
-        setEvidence(collected);
-        setSubjects(articleSubjects);
-      })
-      .catch(() => setError('Could not load evidence'))
+    getArticleSubjects(levelId)
+      .then(setSubjects)
+      .catch(() => setError('Could not load questions'))
       .finally(() => setLoading(false));
   }, [levelId]);
 
@@ -110,7 +109,7 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
     onPreviousQuestion: () => setSubjectIndex((current) => Math.max(0, current - 1)),
     selectedEvidence: selectedIds
       .map((id) => evidence.find((item) => item.id === id))
-      .filter((item): item is Evidence => item !== undefined),
+      .filter((item): item is EvidenceModel => item !== undefined),
     prompt: subject?.prompt ?? '',
     selectedCount: selectedIds.length,
     requiredCount,

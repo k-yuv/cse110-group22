@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import App from '../../../App';
 import * as notesApi from '../../../services/notes';
 
-// Integration: runs the real (mock) evidence and article services, seeded with
+// Integration: runs the real (mock) journal evidence and article service, seeded with
 // their built-in data, from entering the screen to picking an ending. The
 // ending screens don't exist yet (#32, #33), so App only logs which one.
 
