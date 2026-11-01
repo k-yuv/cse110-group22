@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    // Type-check only. tsx runs the code locally and Vercel compiles it on deploy.
+    // Type-check only. tsx runs the code, so nothing is compiled to disk.
     "noEmit": true,
     "target": "es2023",
     "lib": ["es2023"],

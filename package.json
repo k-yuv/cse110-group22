@@ -2,18 +2,15 @@
   "name": "cse110-group22",
   "private": true,
   "scripts": {
-    "setup": "npm --prefix frontend ci && npm --prefix backend ci",
-    "dev": "docker compose up --build --watch",
-    "stop": "docker compose down",
-    "db:seed": "docker compose exec db psql -U app_user -d app_db -f /seeds/development.sql",
-    "db:reset": "docker compose down --volumes",
-    "lint": "npm --prefix frontend run lint",
-    "test": "npm run test:frontend && npm run test:backend",
-    "test:frontend": "npm --prefix frontend test",
-    "test:backend": "docker compose run --rm --build backend-test",
-    "test:coverage": "npm run test:coverage:frontend && npm run test:coverage:backend",
-    "test:coverage:frontend": "npm --prefix frontend run test:coverage",
-    "test:coverage:backend": "docker compose run --rm --build backend-test sh -c \"npm run migrate && npm run test:coverage\""
-
+    "setup": "npm install && npm --prefix frontend install && npm --prefix backend install",
+    "dev": "concurrently --kill-others --names backend,frontend --prefix-colors blue,green \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "wait-on http-get://localhost:3000/api/health && npm --prefix frontend run dev -- --open",
+    "test": "npm --prefix frontend test && npm --prefix backend test",
+    "coverage": "npm --prefix frontend test -- --coverage && npm --prefix backend test -- --coverage"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6",
+    "wait-on": "^9.5.1"
   }
 }
