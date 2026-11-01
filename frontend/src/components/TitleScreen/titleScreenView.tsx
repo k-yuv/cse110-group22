@@ -40,8 +40,11 @@ export default function TitleScreen() {
         // adds gingham background
         <section
             style={{
-                width: dimensions.width,
-                height: dimensions.height,
+                position: 'fixed',
+                inset: 0,
+                width: '100vw',
+                height: '100vh',
+                overflow: 'hidden',
                 backgroundImage: `url(${ginghamBackground})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
