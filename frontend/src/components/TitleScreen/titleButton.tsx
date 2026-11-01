@@ -9,6 +9,7 @@ interface TitleButtonProps {
     width: number;
     height: number;
     fontSize?: number;
+    onClick?: () => void;
 }
 
 export default function TitleButton({
@@ -18,6 +19,7 @@ export default function TitleButton({
     width,
     height,
     fontSize = 40,
+    onClick,
 }: TitleButtonProps) {
     const [isHovered, setIsHovered] = useState(false);
     const groupRef = useRef<Konva.Group>(null);
@@ -37,6 +39,7 @@ export default function TitleButton({
             y={y + height / 2}
             offsetX={width / 2}
             offsetY={height / 2}
+            onClick={onClick}
             onMouseEnter={(event) => {
                 setIsHovered(true);
                 event.target.getStage()?.container().style.setProperty('cursor', 'pointer');

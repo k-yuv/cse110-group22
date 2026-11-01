@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Stage, Layer } from 'react-konva';
+import { useNavigate } from 'react-router';
 import TitleButton from './titleButton';
 import ginghamBackground from '../../assets/gingham_bg.png';
 import titleImage from '../../assets/title_img.png';
 import title from '../../assets/title.png'
 import { URLImage } from '../URLImage/URLImage';
+import { ROUTES } from '../../routes';
 
 export default function TitleScreen() {
+    const navigate = useNavigate();
     const [dimensions, setDimensions] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -53,6 +56,7 @@ export default function TitleScreen() {
                         width={buttonWidth}
                         height={buttonHeight}
                         fontSize={40 * fontScale}
+                        onClick={() => navigate(ROUTES.desk)}
                     />
                     <TitleButton
                         text="OPTIONS"
@@ -61,6 +65,7 @@ export default function TitleScreen() {
                         width={buttonWidth}
                         height={buttonHeight}
                         fontSize={40 * fontScale}
+                        onClick={() => navigate(ROUTES.options)}
                     />
                     <TitleButton
                         text="Teacher Dashboard"
@@ -69,6 +74,7 @@ export default function TitleScreen() {
                         width={buttonWidth}
                         height={buttonHeight}
                         fontSize={32 * fontScale}
+                        onClick={() => navigate(ROUTES.teacherDashboard)}
                     />
                     {/** cat image */}
                     <URLImage
