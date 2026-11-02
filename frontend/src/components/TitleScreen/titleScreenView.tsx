@@ -10,7 +10,9 @@ import { ROUTES } from '../../routes';
 
 export default function TitleScreen() {
     const navigate = useNavigate();
-    const [fontReady, setFontReady] = useState(false);
+    const [fontReady, setFontReady] = useState(
+        () => typeof document === 'undefined' || !document.fonts,
+    );
     const [dimensions, setDimensions] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -19,16 +21,17 @@ export default function TitleScreen() {
     // waits for font to load before rendering page, fixing button alignment issue on startup.
     useEffect(() => {
         const fonts = document.fonts;
-        if (!fonts) {
-            setFontReady(true);
-            return;
-        }
+        if (!fonts) return;
 
         let cancelled = false;
-        void Promise.all([
-            fonts.load('32px Coiny'),
-            fonts.load('40px Coiny'),
-        ]).then(() => fonts.ready).then(() => {
+        const fontReadyPromise = fonts
+            ? Promise.all([
+                fonts.load('32px Coiny'),
+                fonts.load('40px Coiny'),
+            ]).then(() => fonts.ready)
+            : Promise.resolve();
+
+        void fontReadyPromise.then(() => {
             if (!cancelled) setFontReady(true);
         });
 
