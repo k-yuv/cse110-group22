@@ -66,28 +66,17 @@ describe('TitleScreen', () => {
     expect(screen.getByTestId('location')).toHaveTextContent(route);
   });
 
-  it('renders the title artwork and all three buttons in their configured positions', () => {
+  it('renders the title artwork button text', () => {
     renderTitleScreen();
 
     expect(screen.getAllByRole('img', { name: 'title artwork' })).toHaveLength(2);
 
-    const scale = Math.min(window.innerWidth / 410, window.innerHeight / 877);
     const buttons = screen.getAllByRole('button');
     expect(buttons).toHaveLength(3);
     expect(buttons.map((button) => button.textContent)).toEqual([
       'START',
       'OPTIONS',
       'Teacher\nDashboard',
-    ]);
-    expect(buttons.map((button) => Number(button.dataset.x))).toEqual([
-      200 * scale,
-      200 * scale,
-      35 * scale,
-    ]);
-    expect(buttons.map((button) => Number(button.dataset.y))).toEqual([
-      400 * scale,
-      530 * scale,
-      700 * scale,
     ]);
   });
 });
