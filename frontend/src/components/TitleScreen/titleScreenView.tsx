@@ -10,10 +10,32 @@ import { ROUTES } from '../../routes';
 
 export default function TitleScreen() {
     const navigate = useNavigate();
+    const [fontReady, setFontReady] = useState(false);
     const [dimensions, setDimensions] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
     });
+
+    // waits for font to load before rendering page, fixing button alignment issue on startup.
+    useEffect(() => {
+        const fonts = document.fonts;
+        if (!fonts) {
+            setFontReady(true);
+            return;
+        }
+
+        let cancelled = false;
+        void Promise.all([
+            fonts.load('32px Coiny'),
+            fonts.load('40px Coiny'),
+        ]).then(() => fonts.ready).then(() => {
+            if (!cancelled) setFontReady(true);
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     useEffect(() => {
         const handleResize = () => {
@@ -50,7 +72,7 @@ export default function TitleScreen() {
                 backgroundPosition: 'center',
             }}
         >
-            <Stage width={dimensions.width} height={dimensions.height}>
+            {fontReady && <Stage width={dimensions.width} height={dimensions.height}>
                 <Layer>
                     <TitleButton
                         text="START"
@@ -96,7 +118,7 @@ export default function TitleScreen() {
                         height={515 * layoutScale}
                     />
                 </Layer>
-            </Stage>
+            </Stage>}
         </section>
     );
 }
