@@ -104,11 +104,27 @@ cd ../backend && npm run typecheck && npm test
 
 ## Where the data lives
 
-The backend saves notes to `backend/data/notes.json`. The file is created the first time you add a note, and you can open it in VS Code to see exactly what's stored.
+The backend saves each feature's data to its own JSON file in `backend/data/` (e.g. `notes.json`, `questions.json`). You can open these in VS Code to see exactly what's stored.
 
-- **Start fresh:** stop the backend and delete `backend/data/notes.json`.
 - `backend/data/` is in `.gitignore`, so everyone's local data stays on their own computer and never gets committed.
-- Tests use a separate folder, `backend/data/test/`, so running tests never touches your notes.
+- Tests use a separate folder, `backend/data/test/`, so running tests never touches your data.
+
+### Starter data (`backend/seed/`)
+
+`backend/seed/` holds starter data that **is** committed (e.g. `seed/questions.json`). Every time the backend starts, it copies each seed file into `backend/data/`, but **only if that data file is missing or is an empty list (`[]`)**. A data file that already has something in it is never overwritten, so restarting never wipes your data.
+
+To add starter data for a feature, put a JSON file in `backend/seed/` with the same name as the feature's data file.
+
+> [!IMPORTANT]
+> **When the shape of saved data changes, delete your local data file.**
+>
+> Seeding only fills in missing or empty files. If someone changes what a data file holds (for example, adds an `answer` field to every question) and updates `backend/seed/`, your existing file in `backend/data/` keeps the **old** shape. Routes that expect the new field will break, usually with a `500`.
+>
+> After pulling a change like that, stop the backend, delete the matching file in `backend/data/` (e.g. `backend/data/questions.json`), and start it again to get the new seed data.
+>
+> **If you're the one changing a data shape:** update the seed file in the same PR, and say in the PR description which `backend/data/` file everyone needs to delete.
+
+- **Start fresh:** stop the backend, delete the file in `backend/data/` (or the whole folder), and start it again. Files with seed data are refilled from `backend/seed/`; the rest start empty.
 
 ## Where your code goes
 
@@ -136,6 +152,7 @@ Every feature follows the same pattern on both sides. The **Notes** feature is t
 | `features/<name>/<name>.controller.ts` | Reads the request, calls the service, sends the response and status code |
 | `features/<name>/<name>.service.ts` | Business rules, and reading/writing the feature's JSON file (input shape is already checked by `openapi.yaml`) |
 | `features/<name>/tests/<name>.test.ts` | Tests for that feature |
+| `backend/seed/<name>.json` (one folder up from `src/`) | Starter data copied into `backend/data/` when that file is missing or empty (see [Starter data](#starter-data-backendseed)) |
 | `app.ts` | Two things only: add a shared type/interface, and register your router with `app.use('/api/<name>', <name>Router)`. Ask before changing anything else in this file. |
 
 ### Ask the group before touching
@@ -171,7 +188,8 @@ These are generated automatically. Changes are overwritten and should never be c
 | Errors after pulling the latest code | Run `npm run setup`, then restart `npm run dev`. |
 | A route you added always returns `404` or `405` | It's missing from `backend/openapi.yaml`, or the path or method is spelled differently there. |
 | A route returns `500` and the terminal says the response doesn't match | Your response doesn't match its schema in `openapi.yaml`. Fix the code or the schema. |
-| Notes data is in a weird state | Stop the backend, delete `backend/data/notes.json`, and start it again. |
+| A route that used to work returns `500` after pulling | The data shape probably changed and your local file in `backend/data/` is outdated. Stop the backend, delete that file (e.g. `backend/data/questions.json`), and start it again. See [Starter data](#starter-data-backendseed). |
+| Data is in a weird state | Stop the backend, delete the file in `backend/data/`, and start it again. |
 | Still stuck | Ask in the group chat. Paste the full error message from the terminal. |
 
 ## Feature docs

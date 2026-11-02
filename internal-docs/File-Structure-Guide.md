@@ -117,6 +117,7 @@ backend/
 ├── data/                     ← JSON files the app saves to (ignored by git)
 │   ├── notes.json
 │   └── test/                 ← the data files tests use
+├── seed/                     ← starter data copied into data/ on startup if a file is missing or empty
 └── src/
     ├── app.ts                ← shared types, Express setup, OpenAPI validator, registers routers
     ├── server.ts             ← starts the server (don't edit)
@@ -314,6 +315,8 @@ export async function createNote(title: string): Promise<Note> {
 - **Does not go here:** `req`, `res`, status codes, or type/length checks that `openapi.yaml` already does.
 - Give new items an `id` with `randomUUID()` from `node:crypto`.
 - Only use `readJson`/`writeJson`, not `fs` directly, so tests can point the app at their own data folder.
+- To give a feature starter data, add `backend/seed/<file name>.json`. `utils/seed.ts` copies it into `backend/data/` when the server starts, if the data file is missing or empty.
+- **Changing the shape of saved data** (adding, renaming, or removing a field): update the type in `app.ts` and the seed file in the same PR. Teammates' existing `backend/data/` files keep the old shape, so say in the PR description which file they need to delete. See [Starter data](Bare-Essentials.md#starter-data-backendseed).
 
 ### Middleware (`middleware/`)
 
@@ -328,6 +331,7 @@ It's shared by every feature. Check in with the group before changing it.
 Small helper functions shared across features. Currently:
 
 - `jsonStore.ts`: `readJson` and `writeJson`, which every service uses to load and save its data file.
+- `seed.ts`: `seedData`, which `server.ts` runs on startup to copy `backend/seed/` files into `backend/data/` when a data file is missing or empty.
 
 If you write a helper that only one feature uses, keep it in that feature's folder instead. Move it to `utils/` once a second feature needs it.
 
@@ -381,7 +385,7 @@ Keep `-- @preserve` in the comment, or it is stripped out when TypeScript is com
 1. **Spec:** add the new paths, request bodies, and responses to `openapi.yaml`, with schemas under `components/schemas`.
 2. **Types:** add an `export interface` for the feature's data in `app.ts`, matching its schema.
 3. **Folder:** create `features/<name>/` with `<name>.service.ts`, `<name>.controller.ts`, `<name>.router.ts`, and `tests/<name>.test.ts`.
-4. **Service:** pick a file name (e.g. `tasks.json`), then write the `readJson`/`writeJson` calls and any business rules.
+4. **Service:** pick a file name (e.g. `tasks.json`), then write the `readJson`/`writeJson` calls and any business rules. If the feature needs starter data, add `backend/seed/tasks.json`.
 5. **Controller:** one function per route that calls the service and sends the right status code.
 6. **Router:** map each method and path to its controller function.
 7. **Register:** add `app.use('/api/<name>', <name>Router)` in `app.ts`.

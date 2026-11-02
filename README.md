@@ -11,7 +11,9 @@ npm run dev     # starts the backend and frontend, and opens http://localhost:51
 
 Both reload automatically when you save a file. Press `Ctrl+C` to stop both.
 
-Data is saved to `backend/data/notes.json` (created the first time you add a note). Delete the file to start fresh.
+Data is saved to JSON files in `backend/data/`. On startup, any missing or empty data file is filled from the starter data in `backend/seed/`. Delete a file to start fresh.
+
+**If the shape of saved data changes** (e.g. after pulling a change that adds a field), delete the outdated file in `backend/data/` and restart, or routes may return `500`. See [Starter data](internal-docs/Bare-Essentials.md#starter-data-backendseed).
 
 ## Commands
 
