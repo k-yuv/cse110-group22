@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import type { AnswerResult } from '../../app';
 import * as questionsService from './questions.service';
 
 // Controllers pull data out of the request, call the service, and choose the
@@ -20,4 +21,19 @@ export async function getQuestion(req: Request, res: Response) {
   }
 
   res.status(200).json(question);
+}
+
+export async function submitAnswer(req: Request, res: Response) {
+  const chapter = Number(req.params.chapter);
+  const number = Number(req.params.number);
+
+  const correct = await questionsService.checkAnswer(chapter, number, req.body.choice);
+
+  if (correct === null) {
+    res.status(404).json({ error: 'Question not found' });
+    return;
+  }
+
+  const result: AnswerResult = { correct };
+  res.status(200).json(result);
 }

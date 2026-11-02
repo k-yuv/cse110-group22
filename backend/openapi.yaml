@@ -58,24 +58,14 @@ paths:
           $ref: '#/components/responses/Error'
 
   /api/chapters/{chapter}/questions/{number}:
+    parameters:
+      - $ref: '#/components/parameters/Chapter'
+      - $ref: '#/components/parameters/QuestionNumber'
     get:
       summary: Get one question by chapter and question number
-      parameters:
-        - name: chapter
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-        - name: number
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
       responses:
         '200':
-          description: The question
+          description: The question and its 4 choices (without the correct choice)
           content:
             application/json:
               schema:
@@ -83,11 +73,68 @@ paths:
         default:
           $ref: '#/components/responses/Error'
 
+  /api/chapters/{chapter}/questions/{number}/answers:
+    parameters:
+      - $ref: '#/components/parameters/Chapter'
+      - $ref: '#/components/parameters/QuestionNumber'
+    post:
+      summary: Submit one of a question's 4 choices and find out if it's correct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAnswer'
+      responses:
+        '200':
+          description: Whether the answer is correct
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerResult'
+        default:
+          $ref: '#/components/responses/Error'
+
 components:
+  parameters:
+    Chapter:
+      name: chapter
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    QuestionNumber:
+      name: number
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+
   schemas:
+    NewAnswer:
+      type: object
+      required: [choice]
+      additionalProperties: false
+      properties:
+        choice:
+          description: Position (0-3) in the question's `choices` of the picked answer
+          type: integer
+          minimum: 0
+          maximum: 3
+
+    AnswerResult:
+      type: object
+      required: [correct]
+      additionalProperties: false
+      properties:
+        correct:
+          type: boolean
+
     Question:
       type: object
-      required: [chapter, number, content]
+      required: [chapter, number, content, choices]
       additionalProperties: false
       properties:
         chapter:
@@ -99,6 +146,15 @@ components:
         content:
           type: string
           maxLength: 500
+        choices:
+          description: The 4 answer choices, referred to by position (0-3)
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
 
     Note:
       type: object

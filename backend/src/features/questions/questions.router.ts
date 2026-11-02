@@ -6,5 +6,6 @@ import * as questionsController from './questions.controller';
 const router = Router({ mergeParams: true });
 
 router.get('/:number', questionsController.getQuestion);
+router.post('/:number/answers', questionsController.submitAnswer);
 
 export default router;

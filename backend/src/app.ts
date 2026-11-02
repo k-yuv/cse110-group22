@@ -22,6 +22,20 @@ export interface Question {
   chapter: number;
   number: number;
   content: string;
+  // Always exactly 4 answer choices. A choice is referred to by its position (0-3).
+  choices: string[];
+}
+
+// How a question is saved in backend/data/questions.json. The correct choice
+// is never sent to the client, so it isn't part of the Question schema.
+export interface StoredQuestion extends Question {
+  // Position (0-3) in `choices` of the correct answer.
+  correctChoice: number;
+}
+
+// Matches the AnswerResult schema in backend/openapi.yaml.
+export interface AnswerResult {
+  correct: boolean;
 }
 
 const app = express();
