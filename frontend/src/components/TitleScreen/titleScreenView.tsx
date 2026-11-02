@@ -71,7 +71,7 @@ export default function TitleScreen() {
                         onClick={() => navigate(ROUTES.options)}
                     />
                     <TitleButton
-                        text="Teacher Dashboard"
+                        text={'Teacher\nDashboard'}
                         x={35 * layoutScale}
                         y={700 * layoutScale}
                         width={buttonWidth}

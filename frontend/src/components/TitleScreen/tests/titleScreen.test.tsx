@@ -56,7 +56,7 @@ describe('TitleScreen', () => {
   it.each([
     ['START', ROUTES.desk],
     ['OPTIONS', ROUTES.options],
-    ['Teacher Dashboard', ROUTES.teacherDashboard],
+    ['Teacher\nDashboard', ROUTES.teacherDashboard],
   ])('takes %s to its configured route', async (buttonName, route) => {
     const user = userEvent.setup();
     renderTitleScreen();
@@ -77,7 +77,7 @@ describe('TitleScreen', () => {
     expect(buttons.map((button) => button.textContent)).toEqual([
       'START',
       'OPTIONS',
-      'Teacher Dashboard',
+      'Teacher\nDashboard',
     ]);
     expect(buttons.map((button) => Number(button.dataset.x))).toEqual([
       200 * scale,
