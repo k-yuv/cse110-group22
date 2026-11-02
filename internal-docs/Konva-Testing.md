@@ -49,3 +49,27 @@ it('toggles the color when the button is clicked', async () => {
 Don't test anything inside the canvas: shapes, colors, positions, or dragging. The tests can't see it.
 
 **Tip:** if something matters and you want to test it, show it as text too. For example, the test component shows `Color: tomato` next to the canvas, so the test can check the color by reading that text.
+
+## When everything is on the canvas
+
+Some components draw *everything* with Konva, including their buttons and text, so there's no regular HTML left to test. [`MCQ`](../frontend/src/components/MCQ/mcqView.tsx) is like this. For these, make the fakes render simple HTML instead of nothing:
+
+```tsx
+vi.mock('react-konva', () => ({
+  Stage: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  Layer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  Group: ({ children, onClick }: { children?: ReactNode; onClick?: () => void }) => (
+    <div onClick={onClick}>{children}</div>
+  ),
+  Rect: ({ name, fill }: { name?: string; fill?: string }) => <div data-testid={name} data-fill={fill} />,
+  Text: ({ text }: { text: string }) => <span>{text}</span>,
+}));
+```
+
+- `Text` shows its `text`, so `screen.getByText(...)` finds it.
+- `Group` passes clicks through, so `user.click(screen.getByText('B. 4'))` triggers the group's `onClick`, just like clicking it on the real canvas.
+- `Rect` exposes its `fill`. Give a shape a `name` in the component (e.g. `name="choice-1"`) and the test can check its color with `screen.getByTestId('choice-1').getAttribute('data-fill')`.
+
+This tests what the component *tells* Konva to draw (which text, which color, what happens on click), not what Konva actually puts on the screen. Positions, sizes, and how it looks still need to be checked by eye in the browser.
+
+**Touch screens:** Konva uses `onTap` for touch and `onClick` for the mouse. Pass the same function to both (`onClick={choose} onTap={choose}`), so the click tests cover touch too.
