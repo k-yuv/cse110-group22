@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ROUTES } from '../../routes';
-import { getAiImages, type AiImage } from '../../services/aiImage';
+import { getAiImages, type AiImage, type AiResult } from '../../services/aiImage';
 import type { Box } from './aiMinigameContent';
 
 const MAX_WIDTH_TO_HEIGHT = 1.5;
@@ -14,6 +14,7 @@ export function useAiMinigameModel() {
   const navigate = useNavigate();
   const [size, setSize] = useState(getWindowSize);
   const [images, setImages] = useState<AiImage[]>([]);
+  const [result, setResult] = useState<AiResult | null>(null);
 
   useEffect(() => {
     getAiImages().then(setImages);
@@ -57,6 +58,10 @@ export function useAiMinigameModel() {
     navigate(ROUTES.desk);
   }
 
+  function handlePlayAgain() {
+    setResult(null);
+  }
+
   return {
     width: size.width,
     height: size.height,
@@ -64,6 +69,8 @@ export function useAiMinigameModel() {
     place,
     currentImage,
     imageElement,
+    result,
     onBackToDesk: handleBackToDesk,
+    onPlayAgain: handlePlayAgain,
   };
 }

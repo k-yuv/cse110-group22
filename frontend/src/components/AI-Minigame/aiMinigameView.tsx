@@ -13,9 +13,12 @@ import {
   JOURNAL_LAYOUT,
   NOT_AI_LABEL,
   PAGE_TITLE,
+  PLAY_AGAIN_LABEL,
   PROGRESS_LABEL,
   PROGRESS_LAYOUT,
   QUESTION_TEXT,
+  RETURN_TO_DESK_LABEL,
+  resultText,
 } from './aiMinigameContent';
 
 const FONT = 'Arial, sans-serif';
@@ -108,7 +111,19 @@ function Journal({ x, y, width }: { x: number; y: number; width: number }) {
 }
 
 export default function AiMinigame() {
-  const { width, height, sizeUnit, place, currentImage, imageElement, onBackToDesk } = useAiMinigameModel();
+  const {
+    width,
+    height,
+    sizeUnit,
+    place,
+    currentImage,
+    imageElement,
+    result,
+    onBackToDesk,
+    onPlayAgain,
+  } = useAiMinigameModel();
+
+  const bubbleText = result ? resultText(result.correct, result.total) : QUESTION_TEXT;
 
   const frame = place(FRAME_LAYOUT.frame);
   const imageArea = place(FRAME_LAYOUT.image);
@@ -165,11 +180,11 @@ export default function AiMinigame() {
   return (
     <main style={{ position: 'fixed', inset: 0, background: COLORS.desk }}>
       <h1 style={visuallyHidden}>{PAGE_TITLE}</h1>
-      <p style={visuallyHidden}>{QUESTION_TEXT}</p>
+      <p style={visuallyHidden}>{bubbleText}</p>
       <p style={visuallyHidden}>
         {PROGRESS_LABEL} {progressText}
       </p>
-      {currentImage && (
+      {!result && currentImage && (
         <p style={visuallyHidden} role="img" aria-label={currentImage.alt} />
       )}
 
@@ -198,8 +213,10 @@ export default function AiMinigame() {
             />
           </Group>
 
-          <Rect x={frame.x} y={frame.y} width={frame.width} height={frame.height} fill={COLORS.frame} />
-          {imageElement && (
+          {!result && (
+            <Rect x={frame.x} y={frame.y} width={frame.width} height={frame.height} fill={COLORS.frame} />
+          )}
+          {!result && imageElement && (
             <Image
               image={imageElement}
               x={imageArea.x + (imageArea.width - imageWidth) / 2}
@@ -219,7 +236,7 @@ export default function AiMinigame() {
               cornerRadius={BUBBLE_LAYOUT.cornerRadius * sizeUnit}
             />
             <Text
-              text={QUESTION_TEXT}
+              text={bubbleText}
               x={bubbleStroke * 2}
               width={bubble.width - bubbleStroke * 4}
               height={bubble.height}
@@ -234,13 +251,29 @@ export default function AiMinigame() {
         </Layer>
       </Stage>
 
-      {/* TODO: record the answer and move to the next image in the logic step. */}
-      <button type="button" style={answerButtonStyle(ANSWER_LAYOUT.ai, COLORS.aiButton)}>
-        {AI_LABEL}
-      </button>
-      <button type="button" style={answerButtonStyle(ANSWER_LAYOUT.notAi, COLORS.notAiButton)}>
-        {NOT_AI_LABEL}
-      </button>
+      {result ? (
+        <>
+          <button type="button" onClick={onPlayAgain} style={answerButtonStyle(ANSWER_LAYOUT.ai, COLORS.resultButton)}>
+            {PLAY_AGAIN_LABEL}
+          </button>
+          <button
+            type="button"
+            onClick={onBackToDesk}
+            style={answerButtonStyle(ANSWER_LAYOUT.notAi, COLORS.resultButton)}
+          >
+            {RETURN_TO_DESK_LABEL}
+          </button>
+        </>
+      ) : (
+        <>
+          <button type="button" style={answerButtonStyle(ANSWER_LAYOUT.ai, COLORS.aiButton)}>
+            {AI_LABEL}
+          </button>
+          <button type="button" style={answerButtonStyle(ANSWER_LAYOUT.notAi, COLORS.notAiButton)}>
+            {NOT_AI_LABEL}
+          </button>
+        </>
+      )}
 
       <button type="button" aria-label={BACK_TO_DESK_LABEL} onClick={onBackToDesk} style={backButtonStyle}>
         <svg

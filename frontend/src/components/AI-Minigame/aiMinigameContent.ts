@@ -5,6 +5,12 @@ export const PROGRESS_LABEL = 'Progress';
 export const AI_LABEL = 'AI';
 export const NOT_AI_LABEL = 'Not AI';
 export const JOURNAL_LABEL = 'Journal';
+export const PLAY_AGAIN_LABEL = 'Play again';
+export const RETURN_TO_DESK_LABEL = 'Return to desk';
+
+export function resultText(correct: number, total: number) {
+  return `You got ${correct}/${total} correct!`;
+}
 
 export const COLORS = {
   desk: '#86624f',
@@ -25,6 +31,7 @@ export const COLORS = {
   journalSpine: '#d9d9d9',
   journalNote: '#f7ddd0',
   journalNoteText: '#4c2100',
+  resultButton: '#d9d9d9',
 };
 
 export interface Box {
