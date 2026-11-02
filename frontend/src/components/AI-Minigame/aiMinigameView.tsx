@@ -118,6 +118,7 @@ export default function AiMinigame() {
     imageNumber,
     totalImages,
     result,
+    busy,
     onAnswer,
     onBackToDesk,
     onPlayAgain,
@@ -157,7 +158,11 @@ export default function AiMinigame() {
   };
   const arrowSize = back.width * 0.4;
 
-  function answerButtonStyle(layout: typeof ANSWER_LAYOUT.ai, background: string): CSSProperties {
+  function answerButtonStyle(
+    layout: typeof ANSWER_LAYOUT.ai,
+    background: string,
+    disabled = false
+  ): CSSProperties {
     const box = place(layout);
     return {
       position: 'absolute',
@@ -172,7 +177,7 @@ export default function AiMinigame() {
       fontFamily: FONT,
       fontSize: ANSWER_LAYOUT.fontSize * sizeUnit,
       fontWeight: 'bold',
-      cursor: 'pointer',
+      cursor: disabled ? 'not-allowed' : 'pointer',
       zIndex: 1,
     };
   }
@@ -184,7 +189,7 @@ export default function AiMinigame() {
       <p style={visuallyHidden}>
         {PROGRESS_LABEL} {progressText}
       </p>
-      {!result && currentImage && (
+      {!result && currentImage && imageElement && (
         <p style={visuallyHidden} role="img" aria-label={currentImage.alt} />
       )}
 
@@ -269,14 +274,16 @@ export default function AiMinigame() {
           <button
             type="button"
             onClick={() => onAnswer(true)}
-            style={answerButtonStyle(ANSWER_LAYOUT.ai, COLORS.aiButton)}
+            disabled={busy}
+            style={answerButtonStyle(ANSWER_LAYOUT.ai, COLORS.aiButton, busy)}
           >
             {AI_LABEL}
           </button>
           <button
             type="button"
             onClick={() => onAnswer(false)}
-            style={answerButtonStyle(ANSWER_LAYOUT.notAi, COLORS.notAiButton)}
+            disabled={busy}
+            style={answerButtonStyle(ANSWER_LAYOUT.notAi, COLORS.notAiButton, busy)}
           >
             {NOT_AI_LABEL}
           </button>

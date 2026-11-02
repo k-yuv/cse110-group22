@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import AiMinigame from '../aiMinigameView';
 import { ROUTES } from '../../../routes';
-import { getAiImages, type AiImage } from '../../../services/aiImage';
+import { checkAiAnswers, getAiImages, type AiImage, type AiResult } from '../../../services/aiImage';
 import { getProgress } from '../../../services/progress';
 import {
   AI_LABEL,
@@ -17,9 +17,6 @@ import {
   resultText,
 } from '../aiMinigameContent';
 
-// jsdom has no <canvas>; see internal-docs/Konva-Testing.md. The page also
-// writes its question, progress and image description as hidden HTML, which
-// is what these tests read.
 vi.mock('react-konva', () => ({
   Stage: () => null,
   Layer: () => null,
@@ -30,14 +27,37 @@ vi.mock('react-konva', () => ({
   Line: () => null,
 }));
 
-// The right answer for each default image in services/aiImage.ts, in order
-// (true = AI). The page never receives these, so the tests list them here.
+vi.mock('../../../services/aiImage', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../services/aiImage')>();
+  return { ...actual, checkAiAnswers: vi.fn(actual.checkAiAnswers) };
+});
+
+let holdImageLoads = false;
+let pendingImages: FakeImage[] = [];
+
+class FakeImage {
+  onload: (() => void) | null = null;
+  width = 400;
+  height = 400;
+
+  set src(_value: string) {
+    if (holdImageLoads) pendingImages.push(this);
+    else queueMicrotask(() => this.onload?.());
+  }
+}
+
+function loadPendingImages() {
+  act(() => {
+    pendingImages.forEach((image) => image.onload?.());
+    pendingImages = [];
+  });
+}
+
 const CORRECT_ANSWERS = [true, false, true, false, true];
 const WRONG_ANSWERS = CORRECT_ANSWERS.map((isAi) => !isAi);
 
 let IMAGES: AiImage[];
 
-// Shows the current URL so tests can check where a button went.
 function CurrentPath() {
   return <p data-testid="path">{useLocation().pathname}</p>;
 }
@@ -67,14 +87,25 @@ async function expectImage(imageNumber: number) {
 }
 
 async function answerAll(user: ReturnType<typeof userEvent.setup>, answers: boolean[]) {
-  for (const isAi of answers) {
+  for (const [index, isAi] of answers.entries()) {
+    await expectImage(index + 1);
     await user.click(screen.getByRole('button', { name: isAi ? AI_LABEL : NOT_AI_LABEL }));
   }
+}
+
+function answerButtons() {
+  return [
+    screen.getByRole('button', { name: AI_LABEL }),
+    screen.getByRole('button', { name: NOT_AI_LABEL }),
+  ];
 }
 
 describe('AI minigame', () => {
   beforeEach(async () => {
     localStorage.clear();
+    holdImageLoads = false;
+    pendingImages = [];
+    vi.stubGlobal('Image', FakeImage);
     IMAGES = await getAiImages();
   });
 
@@ -143,7 +174,6 @@ describe('AI minigame', () => {
       const user = renderGame();
       await expectImage(1);
 
-      // Images 1, 3 and 5 are AI, so answering AI to everything gets 3 right.
       await answerAll(user, [true, true, true, true, true]);
 
       expect(await screen.findByText(resultText(3, IMAGES.length))).toBeInTheDocument();
@@ -249,6 +279,71 @@ describe('AI minigame', () => {
       await user.click(screen.getByRole('button', { name: BACK_TO_DESK_LABEL }));
 
       expect(screen.getByTestId('path').textContent).toBe(ROUTES.desk);
+    });
+  });
+
+  describe('locking the answer buttons', () => {
+    it('locks AI and Not AI until the first image has loaded', async () => {
+      holdImageLoads = true;
+      const user = renderGame();
+
+      const [aiButton, notAiButton] = answerButtons();
+      expect(aiButton).toBeDisabled();
+      expect(notAiButton).toBeDisabled();
+      expect(screen.queryByRole('img')).not.toBeInTheDocument();
+
+      await user.click(aiButton);
+      await user.click(notAiButton);
+      await act(async () => {});
+      loadPendingImages();
+
+      await expectImage(1);
+      expect(aiButton).toBeEnabled();
+      expect(notAiButton).toBeEnabled();
+    });
+
+    it('locks AI and Not AI while the next image loads', async () => {
+      holdImageLoads = true;
+      const user = renderGame();
+      await act(async () => {});
+      loadPendingImages();
+      await expectImage(1);
+
+      await user.click(screen.getByRole('button', { name: AI_LABEL }));
+
+      expect(screen.getByText(progressText(2))).toBeInTheDocument();
+      expect(screen.queryByRole('img')).not.toBeInTheDocument();
+      answerButtons().forEach((button) => expect(button).toBeDisabled());
+
+      await user.click(screen.getByRole('button', { name: NOT_AI_LABEL }));
+      loadPendingImages();
+
+      // The click while loading didn't skip image 2.
+      await expectImage(2);
+      answerButtons().forEach((button) => expect(button).toBeEnabled());
+    });
+
+    it('locks AI and Not AI while the answers are scored, and only scores them once', async () => {
+      let finishScoring!: (result: AiResult) => void;
+      vi.mocked(checkAiAnswers).mockReturnValueOnce(
+        new Promise((resolve) => {
+          finishScoring = resolve;
+        })
+      );
+      const user = renderGame();
+      await answerAll(user, CORRECT_ANSWERS);
+
+      const [aiButton, notAiButton] = answerButtons();
+      expect(aiButton).toBeDisabled();
+      expect(notAiButton).toBeDisabled();
+
+      await user.click(aiButton);
+      await user.click(notAiButton);
+      expect(checkAiAnswers).toHaveBeenCalledTimes(1);
+
+      await act(async () => finishScoring({ correct: 4, total: IMAGES.length }));
+
+      expect(await screen.findByText(resultText(4, IMAGES.length))).toBeInTheDocument();
     });
   });
 });

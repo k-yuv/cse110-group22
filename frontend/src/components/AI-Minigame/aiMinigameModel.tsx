@@ -17,6 +17,7 @@ export function useAiMinigameModel() {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<AiAnswers>({});
   const [result, setResult] = useState<AiResult | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     getAiImages().then(setImages);
@@ -27,16 +28,21 @@ export function useAiMinigameModel() {
 
   // TODO: replace with the shared URLImage component once
   // feature/23-frontend-title-screen is merged.
-  const [imageElement, setImageElement] = useState<HTMLImageElement>();
+  const [loadedImage, setLoadedImage] = useState<{ src: string; element: HTMLImageElement }>();
   useEffect(() => {
     if (!currentImage) return;
     const element = new window.Image();
-    element.onload = () => setImageElement(element);
+    element.onload = () => setLoadedImage({ src: currentImage.src, element });
     element.src = currentImage.src;
     return () => {
       element.onload = null;
     };
   }, [currentImage]);
+
+  const imageReady = currentImage !== undefined && loadedImage?.src === currentImage.src;
+  const imageElement = imageReady ? loadedImage.element : undefined;
+
+  const busy = submitting || !imageReady;
 
   useEffect(() => {
     const handleResize = () => setSize(getWindowSize());
@@ -62,7 +68,7 @@ export function useAiMinigameModel() {
   }
 
   async function handleAnswer(isAi: boolean) {
-    if (!currentImage) return;
+    if (!currentImage || busy) return;
     const newAnswers = { ...answers, [currentImage.id]: isAi };
     setAnswers(newAnswers);
 
@@ -71,7 +77,12 @@ export function useAiMinigameModel() {
       return;
     }
 
-    setResult(await checkAiAnswers(newAnswers));
+    setSubmitting(true);
+    try {
+      setResult(await checkAiAnswers(newAnswers));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function handlePlayAgain() {
@@ -90,6 +101,7 @@ export function useAiMinigameModel() {
     imageNumber: index + 1,
     totalImages: images.length,
     result,
+    busy,
     onAnswer: handleAnswer,
     onBackToDesk: handleBackToDesk,
     onPlayAgain: handlePlayAgain,
