@@ -4,7 +4,7 @@ The desk is the hub screen the player returns to between activities (issue #25).
 
 ## What it does
 
-The desk is the page at `/`. It's drawn with Konva and shows six things the player can click:
+The desk is the page at `/desk`. It's drawn with Konva and shows six things the player can click:
 
 | Item on the desk | What it is | Goes to |
 | --- | --- | --- |
