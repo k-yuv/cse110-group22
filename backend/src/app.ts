@@ -1,7 +1,7 @@
+import path from 'node:path';
 import express from 'express';
-import cors from 'cors';
+import * as OpenApiValidator from 'express-openapi-validator';
 import notesRouter from './features/notes/notes.router';
-import { notFound } from './middleware/notFound';
 import { errorHandler } from './middleware/errorHandler';
 
 // ---------------------------------------------------------------
@@ -9,39 +9,26 @@ import { errorHandler } from './middleware/errorHandler';
 //   import type { Note } from '../../app';
 // ---------------------------------------------------------------
 
-// Matches the columns of the notes table (database/migrations/001_create_notes.js).
+// Matches the Note schema in backend/openapi.yaml.
 export interface Note {
   id: string;
   title: string;
-  created_at: Date;
+  created_at: string;
 }
 
 const app = express();
 
-// Claude generated this section of code that handles CORS
-// ---------------------------------------------------------------
-// FRONTEND_URL is a comma-separated list of allowed origins. An entry may use
-// * as a wildcard so Vercel preview URLs (which change every deploy) match,
-// e.g. https://cse110-group22-frontend-*.vercel.app
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
-  .split(',')
-  .map((entry) => entry.trim())
-  .filter(Boolean)
-  .map((entry) => new RegExp(
-    '^' + entry.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$'
-  ));
-
-app.use(cors({
-  origin: (origin, callback) => {
-    // Requests with no Origin header (curl, server-to-server) aren't CORS.
-    const allowed = !origin || allowedOrigins.some((pattern) => pattern.test(origin));
-    callback(null, allowed);
-  },
-}));
-
-// ---------------------------------------------------------------
-
 app.use(express.json());
+
+// Checks every request and response against backend/openapi.yaml. Bad
+// requests are rejected with a 4xx before they reach a controller, routes
+// missing from the spec respond 404, and a response that doesn't match its
+// schema becomes a 500.
+app.use(OpenApiValidator.middleware({
+  apiSpec: path.join(__dirname, '../openapi.yaml'),
+  validateRequests: true,
+  validateResponses: true,
+}));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -50,8 +37,7 @@ app.get('/api/health', (req, res) => {
 // Feature routers. Each one handles every URL under its prefix.
 app.use('/api/notes', notesRouter);
 
-// These two must stay last: they only run when nothing above handled the request.
-app.use(notFound);
+// Must stay last: it only runs when something above passed along an error.
 app.use(errorHandler);
 
 export default app;

@@ -1,8 +1,6 @@
 # Environment variables and secrets
 .env
 .env.*
-!.env.example
-!.env.development
 
 # Dependencies
 node_modules/
@@ -15,8 +13,8 @@ build/
 *.log
 npm-debug.log*
 
-# Local database data
-postgres_data/
+# Local data saved by the backend (notes.json, and test data in data/test/)
+backend/data/
 
 # Operating system and editor files
 .DS_Store
