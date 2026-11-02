@@ -23,9 +23,6 @@ import {
 
 const FONT = 'Arial, sans-serif';
 
-const CURRENT_IMAGE = 1;
-const TOTAL_IMAGES = 5;
-
 const visuallyHidden: CSSProperties = {
   position: 'absolute',
   width: 1,
@@ -118,7 +115,10 @@ export default function AiMinigame() {
     place,
     currentImage,
     imageElement,
+    imageNumber,
+    totalImages,
     result,
+    onAnswer,
     onBackToDesk,
     onPlayAgain,
   } = useAiMinigameModel();
@@ -133,7 +133,7 @@ export default function AiMinigame() {
   const imageWidth = imageElement ? imageElement.width * imageScale : 0;
   const imageHeight = imageElement ? imageElement.height * imageScale : 0;
 
-  const progressText = `${CURRENT_IMAGE}/${TOTAL_IMAGES}`;
+  const progressText = `${imageNumber}/${totalImages}`;
   const progress = place(PROGRESS_LAYOUT.box);
   const bubble = place(BUBBLE_LAYOUT.box);
   const bubbleStroke = BUBBLE_LAYOUT.strokeWidth * sizeUnit;
@@ -266,10 +266,18 @@ export default function AiMinigame() {
         </>
       ) : (
         <>
-          <button type="button" style={answerButtonStyle(ANSWER_LAYOUT.ai, COLORS.aiButton)}>
+          <button
+            type="button"
+            onClick={() => onAnswer(true)}
+            style={answerButtonStyle(ANSWER_LAYOUT.ai, COLORS.aiButton)}
+          >
             {AI_LABEL}
           </button>
-          <button type="button" style={answerButtonStyle(ANSWER_LAYOUT.notAi, COLORS.notAiButton)}>
+          <button
+            type="button"
+            onClick={() => onAnswer(false)}
+            style={answerButtonStyle(ANSWER_LAYOUT.notAi, COLORS.notAiButton)}
+          >
             {NOT_AI_LABEL}
           </button>
         </>

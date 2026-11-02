@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ROUTES } from '../../routes';
-import { getAiImages, type AiImage, type AiResult } from '../../services/aiImage';
+import { checkAiAnswers, getAiImages, type AiAnswers, type AiImage, type AiResult } from '../../services/aiImage';
 import type { Box } from './aiMinigameContent';
 
 const MAX_WIDTH_TO_HEIGHT = 1.5;
@@ -14,13 +14,16 @@ export function useAiMinigameModel() {
   const navigate = useNavigate();
   const [size, setSize] = useState(getWindowSize);
   const [images, setImages] = useState<AiImage[]>([]);
+  const [index, setIndex] = useState(0);
+  const [answers, setAnswers] = useState<AiAnswers>({});
   const [result, setResult] = useState<AiResult | null>(null);
 
   useEffect(() => {
     getAiImages().then(setImages);
   }, []);
 
-  const currentImage: AiImage | undefined = images[0];
+  const currentImage: AiImage | undefined = images[index];
+  const isLastImage = index === images.length - 1;
 
   // TODO: replace with the shared URLImage component once
   // feature/23-frontend-title-screen is merged.
@@ -58,7 +61,22 @@ export function useAiMinigameModel() {
     navigate(ROUTES.desk);
   }
 
+  async function handleAnswer(isAi: boolean) {
+    if (!currentImage) return;
+    const newAnswers = { ...answers, [currentImage.id]: isAi };
+    setAnswers(newAnswers);
+
+    if (!isLastImage) {
+      setIndex(index + 1);
+      return;
+    }
+
+    setResult(await checkAiAnswers(newAnswers));
+  }
+
   function handlePlayAgain() {
+    setIndex(0);
+    setAnswers({});
     setResult(null);
   }
 
@@ -69,7 +87,10 @@ export function useAiMinigameModel() {
     place,
     currentImage,
     imageElement,
+    imageNumber: index + 1,
+    totalImages: images.length,
     result,
+    onAnswer: handleAnswer,
     onBackToDesk: handleBackToDesk,
     onPlayAgain: handlePlayAgain,
   };
