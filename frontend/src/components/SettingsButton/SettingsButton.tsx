@@ -43,8 +43,7 @@ export default function SettingsButton({ x = 20, y = 20, size = 60 }: SettingsBu
             <Settings
                 isOpen={isOpen}
                 onClose={() => setIsOpen(false)}
-                title="Settings"
-            >
+                title="Settings" children={undefined}            >
             </Settings>
         </>
     );

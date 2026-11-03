@@ -7,6 +7,7 @@ import titleImage from '../../assets/title_img.png';
 import title from '../../assets/title.png'
 import { URLImage } from '../URLImage/URLImage';
 import { ROUTES } from '../../routes';
+import Settings from "../Settings/Settings.tsx";
 
 export default function TitleScreen() {
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function TitleScreen() {
         width: window.innerWidth,
         height: window.innerHeight,
     });
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     // waits for font to load before rendering page, fixing button alignment issue on startup.
     useEffect(() => {
@@ -61,6 +63,7 @@ export default function TitleScreen() {
     const buttonHeight = 92 * layoutScale;
     const fontScale = layoutScale;
 
+    // @ts-ignore
     return (
         // adds gingham background
         <section
@@ -93,7 +96,7 @@ export default function TitleScreen() {
                         width={buttonWidth}
                         height={buttonHeight}
                         fontSize={40 * fontScale}
-                        onClick={() => navigate(ROUTES.options)}
+                        onClick={() => setSettingsOpen(true)}
                     />
                     <TitleButton
                         text={'Teacher\nDashboard'}
@@ -122,6 +125,7 @@ export default function TitleScreen() {
                     />
                 </Layer>
             </Stage>}
+            <Settings isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} title="Settings" children={undefined} />
         </section>
     );
 }
