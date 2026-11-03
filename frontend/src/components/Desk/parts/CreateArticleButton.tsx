@@ -1,7 +1,8 @@
 import { Rect, Text } from 'react-konva';
 import StickyNote from './StickyNote';
 import DeskItem from './DeskItem';
-import { COLORS, CREATE_ARTICLE_LABEL, LOCKED_TEXT, type PixelPlacement } from '../deskContent';
+import { COLORS } from '../../../theme';
+import { CREATE_ARTICLE_LABEL, LOCKED_TEXT, type PixelPlacement } from '../deskContent';
 
 interface CreateArticleButtonProps {
   placement: PixelPlacement;

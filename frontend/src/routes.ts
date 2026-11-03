@@ -11,4 +11,6 @@ export const ROUTES = {
   aiImage: '/ai-image',
   cleanDesk: '/clean-desk',
   createArticle: '/create-article',
+  goodEnding: '/ending/good',
+  badEnding: '/ending/bad',
 } as const;
