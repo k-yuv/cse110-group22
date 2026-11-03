@@ -55,7 +55,6 @@ function renderTitleScreen() {
 describe('TitleScreen', () => {
   it.each([
     ['START', ROUTES.desk],
-    ['OPTIONS', ROUTES.options],
     ['Teacher\nDashboard', ROUTES.teacherDashboard],
   ])('takes %s to its configured route', async (buttonName, route) => {
     const user = userEvent.setup();
@@ -78,6 +77,43 @@ describe('TitleScreen', () => {
       'OPTIONS',
       'Teacher\nDashboard',
     ]);
+  });
+
+  it('opens Settings when OPTIONS is clicked without navigating', async () => {
+    const user = userEvent.setup();
+    renderTitleScreen();
+
+    // Click the OPTIONS button
+    await user.click(
+        screen.getByRole('button', { name: 'OPTIONS' })
+    );
+
+    // Settings popup should appear
+    expect(
+        screen.getByRole('dialog', { name: 'Settings' })
+    ).toBeInTheDocument();
+
+    // URL should remain on the title screen
+    expect(
+        screen.getByTestId('location')
+    ).toHaveTextContent(ROUTES.title);
+  });
+
+  it('closes Settings when the X button is clicked', async () => {
+    const user = userEvent.setup();
+    renderTitleScreen();
+
+    await user.click(
+        screen.getByRole('button', { name: 'OPTIONS' })
+    );
+
+    await user.click(
+        screen.getByRole('button', { name: 'Close popup' })
+    );
+
+    expect(
+        screen.queryByRole('dialog', { name: 'Settings' })
+    ).not.toBeInTheDocument();
   });
 });
 

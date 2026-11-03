@@ -4,6 +4,7 @@ import { ACTIVITY_LABELS, COLORS, CREATE_ARTICLE_LAYOUT, FOLDER_LAYOUT, MINIGAME
 import Folder from './parts/Folder';
 import MinigameEntry from './parts/MinigameEntry';
 import CreateArticleButton from './parts/CreateArticleButton';
+import SettingsButton from '../SettingsButton/SettingsButton';
 
 const FOLDERS = ['articles', 'social', 'interviews'] as const;
 
@@ -69,6 +70,8 @@ export default function Desk() {
           />
         </Layer>
       </Stage>
+
+      <SettingsButton />
 
       {/* TEMPORARY: dev-only buttons for testing level progression. Never
           shown in production builds. Remove with the handlers in deskModel. */}
