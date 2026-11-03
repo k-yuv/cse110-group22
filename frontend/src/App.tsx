@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes, useNavigate } from 'react-router';
+import { BrowserRouter, Route, Routes } from 'react-router';
+import AiMinigame from './components/AI-Minigame/aiMinigameView';
 import Desk from './components/Desk/deskView';
 import ArticleWriting from './components/Article-Writing/articleWritingView';
 import GoodEnding from './components/Endings/goodEndingView';
@@ -6,6 +7,7 @@ import BadEnding from './components/Endings/badEndingView';
 import NotFound from './components/Not-Found/notFoundView';
 import { seedMockEvidence } from './components/Journal/mockEvidence';
 import TitleScreen from './components/TitleScreen/titleScreenView';
+import NewsArticle from './components/NewsArticle/newsArticleView';
 import { ROUTES } from './routes';
 
 seedMockEvidence();
@@ -31,6 +33,8 @@ function App() {
         <Route path={ROUTES.createArticle} element={<ArticleWritingPage />} />
         <Route path={ROUTES.goodEnding} element={<GoodEnding />} />
         <Route path={ROUTES.badEnding} element={<BadEnding />} />
+        <Route path={ROUTES.onlineArticle} element={<NewsArticle />} />
+        <Route path={ROUTES.aiImage} element={<AiMinigame />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
