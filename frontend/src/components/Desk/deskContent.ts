@@ -13,21 +13,6 @@ export const CREATE_ARTICLE_LABEL = 'Create Article';
 export const LOCKED_TEXT = 'Must gather more evidence';
 export const DONE_TEXT = 'Done!';
 
-export const COLORS = {
-  desk: '#86624f',
-  folder: '#fff6df',
-  doneNote: '#f29b9b',
-  lockedNote: '#f6dbd1',
-  todoNote: '#cdeab5',
-  photoFrame: '#f2f2f7',
-  photo: '#e9a0c5',
-  minigameBadge: '#f25757',
-  createArticle: '#ffffff',
-  pen: '#2b2b2b',
-  hoverGlow: '#fff2a8',
-  text: '#000000',
-};
-
 // Where an item sits on the desk, relative to the desk's size so the layout
 // works at any window size:
 // - x, y: the item's center as a fraction of the desk's width and height

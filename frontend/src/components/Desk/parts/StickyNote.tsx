@@ -1,5 +1,5 @@
 import { Group, Rect, Text } from 'react-konva';
-import { COLORS } from '../deskContent';
+import { COLORS } from '../../../theme';
 
 interface StickyNoteProps {
   text: string;

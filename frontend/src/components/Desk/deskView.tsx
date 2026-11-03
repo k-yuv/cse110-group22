@@ -1,6 +1,7 @@
 import { Layer, Rect, Stage } from 'react-konva';
 import { useDeskModel } from './deskModel';
-import { ACTIVITY_LABELS, COLORS, CREATE_ARTICLE_LAYOUT, FOLDER_LAYOUT, MINIGAME_LAYOUT } from './deskContent';
+import { COLORS } from '../../theme';
+import { ACTIVITY_LABELS, CREATE_ARTICLE_LAYOUT, FOLDER_LAYOUT, MINIGAME_LAYOUT } from './deskContent';
 import Folder from './parts/Folder';
 import MinigameEntry from './parts/MinigameEntry';
 import CreateArticleButton from './parts/CreateArticleButton';
