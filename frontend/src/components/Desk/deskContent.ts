@@ -10,6 +10,8 @@ export const ACTIVITY_LABELS: Record<ActivityId, string> = {
 
 export const CREATE_ARTICLE_LABEL = 'Create Article';
 
+export const LOADING_TEXT = 'Loading...';
+
 export const LOCKED_TEXT = 'Must gather more evidence';
 export const DONE_TEXT = 'Done!';
 

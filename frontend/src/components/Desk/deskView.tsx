@@ -1,6 +1,6 @@
 import { Layer, Rect, Stage } from 'react-konva';
 import { useDeskModel } from './deskModel';
-import { ACTIVITY_LABELS, COLORS, CREATE_ARTICLE_LAYOUT, FOLDER_LAYOUT, MINIGAME_LAYOUT } from './deskContent';
+import { ACTIVITY_LABELS, COLORS, CREATE_ARTICLE_LAYOUT, FOLDER_LAYOUT, LOADING_TEXT, MINIGAME_LAYOUT } from './deskContent';
 import Folder from './parts/Folder';
 import MinigameEntry from './parts/MinigameEntry';
 import CreateArticleButton from './parts/CreateArticleButton';
@@ -26,7 +26,7 @@ export default function Desk() {
     onResetProgress,
   } = useDeskModel();
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>{LOADING_TEXT}</p>;
 
   return (
     <main style={{ position: 'fixed', inset: 0, background: COLORS.desk }}>
