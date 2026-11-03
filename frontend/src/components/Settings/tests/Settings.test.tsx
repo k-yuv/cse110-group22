@@ -103,6 +103,21 @@ describe('Settings', () => {
         expect(onClose).toHaveBeenCalledOnce();
     });
 
+    it('doesn\'t call onClose when not-Escape is pressed', async () => {
+        const user = userEvent.setup();
+        const onClose = vi.fn();
+
+        render(
+            <Popup {...defaultProps} onClose={onClose}>
+                <p>Settings</p>
+            </Popup>
+        );
+
+        await user.keyboard('{w}');
+
+        expect(onClose).not.toHaveBeenCalled();
+    });
+
     it('matches TitleScreen styling', () => {
         render(
             <Popup {...defaultProps}>
