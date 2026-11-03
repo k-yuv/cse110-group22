@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router';
+import { BrowserRouter, Route, Routes, useNavigate} from 'react-router';
 import AiMinigame from './components/AI-Minigame/aiMinigameView';
 import Desk from './components/Desk/deskView';
 import ArticleWriting from './components/Article-Writing/articleWritingView';
