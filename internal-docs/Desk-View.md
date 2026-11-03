@@ -74,7 +74,8 @@ frontend/src/
 │   └── tests/progress.test.ts
 └── components/
     ├── Not-Found/
-    │   └── notFoundView.tsx        ← the 404 page
+    │   ├── notFoundView.tsx        ← the 404 page
+    │   └── tests/notFound.test.tsx
     └── Desk/
         ├── deskView.tsx            ← draws the desk (display only)
         ├── deskModel.tsx           ← state, loading progress, what happens on click
@@ -89,7 +90,8 @@ frontend/src/
         │   └── StickyNote.tsx      ← the Done! and locked notes
         └── tests/
             ├── deskRules.test.ts
-            └── deskModel.test.tsx
+            ├── deskModel.test.tsx
+            └── deskView.test.tsx
 ```
 
 The files depend on each other in one direction, following the [File Structure Guide](File-Structure-Guide.md):
@@ -145,12 +147,16 @@ Run the tests from `frontend/` with `npm test`.
 | Test file | What it checks |
 | --- | --- |
 | `Desk/tests/deskRules.test.ts` | The unlock rules: an empty desk, each step unlocking the next, all three done, and minigames not unlocking anything |
-| `Desk/tests/deskModel.test.tsx` | The desk's behavior: Done! state for each Figma progress state, locked items not opening, each item going to the right URL, Create Article opening after Interviews, an error if progress fails to load, and starting fresh if saved progress is unreadable |
-| `services/tests/progress.test.ts` | Resetting progress clears everything |
+| `Desk/tests/deskModel.test.tsx` | The desk's behavior: Done! state for each Figma progress state, locked items not opening, each item going to the right URL, Create Article opening after Interviews, an error if progress fails to load, starting fresh if saved progress is unreadable, and resizing with the window |
+| `Desk/tests/deskView.test.tsx` | The drawn desk: the loading message, the load error, each item wired to its own URL, locked and Done! notes on the right items, the hover effect and cursor, and the dev buttons |
+| `Not-Found/tests/notFound.test.tsx` | The 404 page's heading, and its link going back to the desk |
+| `services/tests/progress.test.ts` | Completing an activity twice saves it once, bad saved progress is ignored, and resetting clears everything |
 
-### Why the tests don't render the desk
+### How the tests see the desk
 
-The desk is drawn on a canvas, and our tests can't see inside a canvas (see [Konva-Testing.md](Konva-Testing.md)). Instead, the tests run `useDeskModel()` directly with `renderHook`, because every decision the desk makes lives there:
+The desk is drawn on a canvas, and our tests can't see inside a canvas (see [Konva-Testing.md](Konva-Testing.md)). So the testing is split in two.
+
+**The model tests** run `useDeskModel()` directly with `renderHook`, because every decision the desk makes lives there:
 
 - what's done and what's locked
 - where each click goes
@@ -163,9 +169,17 @@ act(() => result.current.desk.onOpenActivity('articles'));
 expect(result.current.path).toBe(ROUTES.onlineArticle);
 ```
 
+**The view test** renders the real `<Desk />` with the fake Konva shapes from [Konva-Testing.md](Konva-Testing.md#when-everything-is-on-the-canvas), so it checks that each drawn item is wired to the right handler. On top of the usual fakes:
+
+- A `Group` with a `name` becomes a `role="group"` labelled with that name. Every desk item is a `Group` named after its label, so `screen.getByRole('group', { name: ACTIVITY_LABELS.social })` finds the Social Media folder and `within(...)` finds the notes on it. No test IDs needed.
+- `Group` passes hovers through with a fake Konva event. The fake `Stage` has no container of its own, so the cursor is set on the desk's `<main>`, and the test reads it from there.
+- Shapes given a `ref` get a fake node whose `.to(...)` calls are recorded, so the test can check that hovering grows the item and lights it up.
+
+Hover an item's label, not the item itself: like a real mouse, hovering only reaches the element and what it's inside of, and the hover effect sits inside the item.
+
 The tests also follow two rules so they don't break for no reason:
 
-- **They never type out text or URLs.** Labels and routes are imported from the code (`ROUTES`, etc.), so rewording a label or renaming a URL doesn't break a test.
+- **They never type out text or URLs.** Labels and routes are imported from the code (`ROUTES`, `ACTIVITY_LABELS`, `LOADING_TEXT`, etc.), so rewording a label or renaming a URL doesn't break a test.
 - **They only check the URL a click goes to, not the page shown there.** That way they keep passing as the real screens replace the 404 page.
 
 ### What the tests can't check
@@ -173,7 +187,6 @@ The tests also follow two rules so they don't break for no reason:
 These depend on actually drawing the desk, so we can only check them by hand with `npm run dev`:
 
 - [ ] Every item shows up in the right place, and nothing is cut off at different window sizes.
-- [ ] Each item opens its own URL. The tests check the model, not which handler each drawn item is wired to.
 - [ ] Clicking where two items overlap opens the one on top.
-- [ ] The hover effect works, and locked items show the "not allowed" cursor.
+- [ ] The hover effect looks right: the item grows from its center and the glow lines up with its edges.
 - [ ] Use the dev buttons to step through every progress state, and check the Done! and locked notes match the Figma frames.

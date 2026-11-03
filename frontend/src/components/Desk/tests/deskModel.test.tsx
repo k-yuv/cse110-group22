@@ -107,6 +107,34 @@ describe('useDeskModel', () => {
     expect(result.current.desk.error).not.toBe('');
   });
 
+  it('resizes the desk with the window', async () => {
+    const { innerWidth: width, innerHeight: height } = window;
+    const result = await renderDeskModel();
+
+    act(() => {
+      window.innerWidth = 1200;
+      window.innerHeight = 600;
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    expect(result.current.desk.width).toBe(1200);
+    expect(result.current.desk.height).toBe(600);
+
+    window.innerWidth = width;
+    window.innerHeight = height;
+  });
+
+  // TEMPORARY: remove with the dev buttons in deskView and deskModel.
+  it('does nothing when asked to complete the next level with none left', async () => {
+    const result = await renderDeskModel(['articles', 'social', 'interviews']);
+
+    expect(result.current.desk.hasNextLevel).toBe(false);
+    await act(() => result.current.desk.onCompleteNextLevel());
+
+    expect(result.current.desk.error).toBe('');
+    expect(await getProgress()).toEqual(['articles', 'social', 'interviews']);
+  });
+
   it('starts fresh if saved progress is unreadable', async () => {
     localStorage.setItem(STORAGE_KEY, '{not json');
 
