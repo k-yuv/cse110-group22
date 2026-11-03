@@ -4,8 +4,11 @@ import path from 'node:path';
 // Reads and writes the JSON files in backend/data/, which is where the app
 // stores its data instead of a database. Tests set DATA_DIR to
 // backend/data/test/ (see vitest.config.mts) so they never touch real data.
+
 function dataPath(fileName: string): string {
-  // The ?? is purely defensive code, no need for coverage on it
+  // Changes Database From Test/"Prod" Based On Environment Variables
+  // During Testing, We Have Vitest Create DATA_DIR And Assign It To
+  // Be The Test Directory.
   /* v8 ignore start -- @preserve */
   const dataDir = process.env.DATA_DIR ?? path.join(__dirname, '../../data');
   /* v8 ignore stop -- @preserve */

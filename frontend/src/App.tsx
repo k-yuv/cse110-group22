@@ -5,6 +5,7 @@ import GoodEnding from './components/Endings/goodEndingView';
 import BadEnding from './components/Endings/badEndingView';
 import NotFound from './components/Not-Found/notFoundView';
 import { seedMockEvidence } from './components/Journal/mockEvidence';
+import TitleScreen from './components/TitleScreen/titleScreenView';
 import { ROUTES } from './routes';
 
 seedMockEvidence();
@@ -25,6 +26,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path={ROUTES.title} element={<TitleScreen />} />
         <Route path={ROUTES.desk} element={<Desk />} />
         <Route path={ROUTES.createArticle} element={<ArticleWritingPage />} />
         <Route path={ROUTES.goodEnding} element={<GoodEnding />} />
