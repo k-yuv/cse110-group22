@@ -3,6 +3,7 @@ import AiMinigame from './components/AI-Minigame/aiMinigameView';
 import Desk from './components/Desk/deskView';
 import NotFound from './components/Not-Found/notFoundView';
 import TitleScreen from './components/TitleScreen/titleScreenView';
+import NewsArticle from './components/NewsArticle/newsArticleView';
 import { ROUTES } from './routes';
 
 // Add a <Route> here for each screen as it's built, using its path from
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path={ROUTES.title} element={<TitleScreen />} />
         <Route path={ROUTES.desk} element={<Desk />} />
+        <Route path={ROUTES.onlineArticle} element={<NewsArticle />} />
         <Route path={ROUTES.aiImage} element={<AiMinigame />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
