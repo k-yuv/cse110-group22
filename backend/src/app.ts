@@ -1,7 +1,8 @@
+import path from 'node:path';
 import express from 'express';
-import cors from 'cors';
+import * as OpenApiValidator from 'express-openapi-validator';
 import notesRouter from './features/notes/notes.router';
-import { notFound } from './middleware/notFound';
+import questionsRouter from './features/questions/questions.router';
 import { errorHandler } from './middleware/errorHandler';
 
 // ---------------------------------------------------------------
@@ -9,39 +10,47 @@ import { errorHandler } from './middleware/errorHandler';
 //   import type { Note } from '../../app';
 // ---------------------------------------------------------------
 
-// Matches the columns of the notes table (database/migrations/001_create_notes.js).
+// Matches the Note schema in backend/openapi.yaml.
 export interface Note {
   id: string;
   title: string;
-  created_at: Date;
+  created_at: string;
+}
+
+// Matches the Question schema in backend/openapi.yaml.
+export interface Question {
+  chapter: number;
+  number: number;
+  content: string;
+  // Always exactly 4 answer choices. A choice is referred to by its position (0-3).
+  choices: string[];
+}
+
+// How a question is saved in backend/data/questions.json. The correct choice
+// is never sent to the client, so it isn't part of the Question schema.
+export interface StoredQuestion extends Question {
+  // Position (0-3) in `choices` of the correct answer.
+  correctChoice: number;
+}
+
+// Matches the AnswerResult schema in backend/openapi.yaml.
+export interface AnswerResult {
+  correct: boolean;
 }
 
 const app = express();
 
-// Claude generated this section of code that handles CORS
-// ---------------------------------------------------------------
-// FRONTEND_URL is a comma-separated list of allowed origins. An entry may use
-// * as a wildcard so Vercel preview URLs (which change every deploy) match,
-// e.g. https://cse110-group22-frontend-*.vercel.app
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
-  .split(',')
-  .map((entry) => entry.trim())
-  .filter(Boolean)
-  .map((entry) => new RegExp(
-    '^' + entry.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$'
-  ));
-
-app.use(cors({
-  origin: (origin, callback) => {
-    // Requests with no Origin header (curl, server-to-server) aren't CORS.
-    const allowed = !origin || allowedOrigins.some((pattern) => pattern.test(origin));
-    callback(null, allowed);
-  },
-}));
-
-// ---------------------------------------------------------------
-
 app.use(express.json());
+
+// Checks every request and response against backend/openapi.yaml. Bad
+// requests are rejected with a 4xx before they reach a controller, routes
+// missing from the spec respond 404, and a response that doesn't match its
+// schema becomes a 500.
+app.use(OpenApiValidator.middleware({
+  apiSpec: path.join(__dirname, '../openapi.yaml'),
+  validateRequests: true,
+  validateResponses: true,
+}));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -49,9 +58,9 @@ app.get('/api/health', (req, res) => {
 
 // Feature routers. Each one handles every URL under its prefix.
 app.use('/api/notes', notesRouter);
+app.use('/api/chapters/:chapter/questions', questionsRouter);
 
-// These two must stay last: they only run when nothing above handled the request.
-app.use(notFound);
+// Must stay last: it only runs when something above passed along an error.
 app.use(errorHandler);
 
 export default app;

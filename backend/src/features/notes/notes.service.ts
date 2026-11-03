@@ -1,29 +1,29 @@
-import pool from '../../config/database';
+import { randomUUID } from 'node:crypto';
 import type { Note } from '../../app';
-import { ValidationError } from '../../utils/errors';
+import { readJson, writeJson } from '../../utils/jsonStore';
 
-// Services hold the business rules and talk to the database. They know nothing
-// about HTTP: they return data or throw, and the controller decides the status.
+// Services hold the business rules and read/write the data files. They know
+// nothing about HTTP: they return data or throw, and the controller decides the status.
+// Input shape (types, required fields, length limits) is checked by openapi.yaml
+// before a request gets here.
 
-const MAX_TITLE_LENGTH = 200;
+const NOTES_FILE = 'notes.json';
 
 export async function getAllNotes(): Promise<Note[]> {
-  const result = await pool.query<Note>(
-    'SELECT id, title, created_at FROM notes ORDER BY id'
-  );
-
-  return result.rows;
+  return readJson<Note[]>(NOTES_FILE, []);
 }
 
-export async function createNote(title: unknown): Promise<Note> {
-  if (typeof title !== 'string' || !title.trim() || title.length > MAX_TITLE_LENGTH) {
-    throw new ValidationError('Invalid note title');
-  }
+export async function createNote(title: string): Promise<Note> {
+  const notes = await getAllNotes();
 
-  const result = await pool.query<Note>(
-    'INSERT INTO notes (title) VALUES ($1) RETURNING id, title, created_at',
-    [title.trim()]
-  );
+  const note: Note = {
+    id: randomUUID(),
+    title: title.trim(),
+    created_at: new Date().toISOString(),
+  };
 
-  return result.rows[0];
+  notes.push(note);
+  await writeJson(NOTES_FILE, notes);
+
+  return note;
 }

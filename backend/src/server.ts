@@ -1,19 +1,11 @@
-import 'dotenv/config';
 import app from './app';
-import pool from './config/database';
+import { seedData } from './utils/seed';
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
-const server = app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
-
-function shutdown() {
-  server.close(async () => {
-    await pool.end();
-    process.exit(0);
+// Fill in any missing data files before accepting requests.
+seedData().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
   });
-}
-
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+});
