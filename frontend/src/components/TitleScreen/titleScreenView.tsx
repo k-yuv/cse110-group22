@@ -63,7 +63,7 @@ export default function TitleScreen() {
     const buttonHeight = 92 * layoutScale;
     const fontScale = layoutScale;
 
-    // @ts-ignore
+    // @ts-expect-error: ignoring for CI
     return (
         // adds gingham background
         <section
