@@ -6,6 +6,7 @@ import NewsArticle from '../newsArticleView';
 import { SUBMIT_LABEL, TODO_TEXT } from '../newsArticleContent';
 import { getResultMessage, gradeHighlights } from '../newsArticleRules';
 import { getArticleActivity } from '../../../services/articles';
+import { CLOSE_LABEL, DIALOG_LABEL, OPEN_LABEL } from '../../Journal/journalContent';
 
 // Tests can't draw the canvas (see internal-docs/Konva-Testing.md), so the
 // Konva parts render nothing here. Highlighting is tested through the model
@@ -16,6 +17,7 @@ vi.mock('react-konva', () => ({
   Group: () => null,
   Rect: () => null,
   Text: () => null,
+  Line: () => null,
   Image: () => null,
 }));
 
@@ -41,6 +43,17 @@ describe('NewsArticle', () => {
     renderNewsArticle();
 
     expect(await screen.findByRole('heading', { name: TODO_TEXT })).toBeInTheDocument();
+  });
+
+  it('has the journal in the corner, which opens and closes', async () => {
+    const user = userEvent.setup();
+    renderNewsArticle();
+
+    await user.click(await screen.findByRole('button', { name: OPEN_LABEL }));
+    expect(screen.getByRole('dialog', { name: DIALOG_LABEL })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: CLOSE_LABEL }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('shows the fail message when nothing is highlighted and the player submits', async () => {

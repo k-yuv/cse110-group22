@@ -5,12 +5,11 @@ import ArticleWriting from './components/Article-Writing/articleWritingView';
 import GoodEnding from './components/Endings/goodEndingView';
 import BadEnding from './components/Endings/badEndingView';
 import NotFound from './components/Not-Found/notFoundView';
-import { seedMockEvidence } from './components/Journal/mockEvidence';
+import { LOADING_TEXT, LOAD_ERROR_TEXT, RETRY_LABEL } from './components/Journal/journalContent';
+import { useJournalLoader } from './components/Journal/journalViewModel';
 import TitleScreen from './components/TitleScreen/titleScreenView';
 import NewsArticle from './components/NewsArticle/newsArticleView';
 import { ROUTES } from './routes';
-
-seedMockEvidence();
 
 // Submitting the article goes to that ending's page.
 function ArticleWritingPage() {
@@ -25,6 +24,19 @@ function ArticleWritingPage() {
 // Add a <Route> here for each screen as it's built, using its path from
 // routes.ts. Keep the "*" route last: it catches every other URL.
 function App() {
+  const { loading, failed, onRetry } = useJournalLoader();
+
+  // Screens read the journal as they open, so it has to be loaded first.
+  if (loading) return <p>{LOADING_TEXT}</p>;
+  if (failed) {
+    return (
+      <>
+        <p role="alert">{LOAD_ERROR_TEXT}</p>
+        <button type="button" onClick={onRetry}>{RETRY_LABEL}</button>
+      </>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>

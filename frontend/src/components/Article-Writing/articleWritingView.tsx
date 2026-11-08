@@ -1,8 +1,10 @@
 import type { CSSProperties } from 'react';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { Stage, Layer, Rect, Text, Line, Group } from 'react-konva';
+import { visuallyHidden } from '../../helpers';
 import type { ArticleEnding } from '../../services/article';
 import type { EvidenceModel } from '../Journal/EvidenceModel';
+import JournalBook from '../Journal/parts/JournalBook';
 import { COLORS, FONT } from '../../theme';
 import { useArticleWritingModel } from './articleWritingModel';
 import ProgressBar from '../Progress-Bar/ProgressBar';
@@ -12,6 +14,9 @@ import ProgressBar from '../Progress-Bar/ProgressBar';
 const WIDTH = 1280;
 const HEIGHT = 832;
 const DESK_Y = 522;
+
+// The open journal, drawn by JournalBook at this size and position.
+const BOOK_FRAME = { x: 20, y: 266, width: 602 };
 
 // Journal: evidence cards fill the left page, then the right page.
 const PAGE_X = [73, 352];
@@ -25,17 +30,6 @@ const CARDS_PER_SPREAD = CARDS_PER_PAGE * PAGE_X.length;
 
 // Laptop screen, where the article is assembled.
 const SCREEN = { x: 688, y: 195, width: 480, height: 300 };
-
-// Hidden from sight but available to screen readers and tests, since
-// nothing inside the canvas is.
-const visuallyHidden: CSSProperties = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-};
 
 // The bar's label sits above it, so the bar itself starts at y = 51.
 const progressStyle: CSSProperties = {
@@ -319,10 +313,11 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
               />
             ))}
 
-            {/* Open journal, drawn last so it sits on top of the laptop */}
-            <Rect x={20} y={266} width={602} height={442} cornerRadius={25} fill={COLORS.journalCover} />
-            <Rect x={43} y={288} width={557} height={398} cornerRadius={12} fill={COLORS.paper} />
-            <Line points={[322, 345, 322, 633]} stroke={COLORS.divider} strokeWidth={2} />
+            {/* Open journal, drawn last so it sits on top of the laptop. The
+                cards are drawn over it in frame coordinates, not as its children. */}
+            <Group x={BOOK_FRAME.x} y={BOOK_FRAME.y}>
+              <JournalBook width={BOOK_FRAME.width} />
+            </Group>
             <Text x={73} y={345} text="Evidence:" fontFamily={FONT} fontStyle="bold" fontSize={22} fill={COLORS.text} />
             {pageEvidence.map((item, index) => {
               const side = Math.floor(index / CARDS_PER_PAGE);

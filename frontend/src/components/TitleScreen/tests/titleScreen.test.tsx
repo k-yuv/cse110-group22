@@ -122,7 +122,7 @@ describe('App title-screen integration', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(screen.getByRole('button', { name: 'START' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'START' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'START' }));
 

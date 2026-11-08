@@ -67,7 +67,7 @@ The layout uses the Figma frame's pixel positions (1280 × 832) and scales the w
 There's no backend for this yet, so two things are mocked:
 
 - **The questions, ratings and scoring** live at the bottom of `services/article.ts`, under the `MOCK` comment. When the article API exists, replace `getArticleSubjects` and `submitArticle` with `fetch` calls, and move `scoreArticle` (and its tests) to the backend.
-- **The evidence in the Journal** comes from `Journal/mockEvidence.ts`, which `App.tsx` loads at startup with `seedMockEvidence()`. Remove it once the activity screens add real evidence with `JournalController.getInstance().add()`.
+- **The evidence in the Journal** comes mostly from `Journal/mockEvidence.ts`, which fills an empty journal once `App.tsx` has loaded it. Remove it once the activity screens supply enough real evidence. Evidence from Online Articles appears here too, but `services/article.ts` doesn't rate its ids yet, so it counts as irrelevant.
 
 ## Where the code is
 
@@ -90,12 +90,7 @@ frontend/src/
     │       ├── articleWriting.test.tsx
     │       ├── articleWritingCanvas.test.tsx
     │       └── articleWritingFlow.test.tsx
-    ├── Journal/
-    │   ├── EvidenceModel.ts         ← one piece of evidence
-    │   ├── JournalModel.ts          ← the list of evidence
-    │   ├── JournalController.ts     ← the one shared journal (read / add / clear)
-    │   ├── mockEvidence.ts          ← MOCK evidence loaded at startup
-    │   └── tests/journal.test.ts
+    ├── Journal/                     ← the shared evidence store: see Journal.md
     ├── Progress-Bar/
     │   ├── ProgressBar.tsx          ← the segmented progress bar (reusable)
     │   └── tests/progressBar.test.tsx
@@ -109,6 +104,7 @@ The files depend on each other in one direction, following the [File Structure G
 ```
 articleWritingView.tsx  →  articleWritingModel.tsx  →  services/article.ts
                         →  ProgressBar.tsx          →  JournalController.ts
+                        →  Journal/parts/JournalBook.tsx
 ```
 
 The view doesn't navigate on its own. It calls `onFinish(ending)`, and `App.tsx` decides which page that goes to.
@@ -121,6 +117,7 @@ The view doesn't navigate on its own. It calls `onFinish(ending)`, and `App.tsx`
 | Change how picking, swapping, or submitting works | `articleWritingModel.tsx` |
 | Move or resize something, or change the text on screen | `articleWritingView.tsx` (constants at the top) |
 | Change a color or the font | `theme.ts` |
+| Change how the journal book itself looks | `Journal/parts/JournalBook.tsx` (shared with the Journal screen) |
 | Change where each ending goes | `App.tsx` (`ArticleWritingPage`) |
 | Change the mock evidence | `Journal/mockEvidence.ts` |
 | Connect to the real backend | `services/article.ts` |

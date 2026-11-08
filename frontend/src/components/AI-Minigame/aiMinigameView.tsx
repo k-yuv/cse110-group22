@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { Group, Image, Layer, Line, Rect, Stage, Text } from 'react-konva';
+import { visuallyHidden } from '../../helpers';
 import { useAiMinigameModel } from './aiMinigameModel';
 import {
   AI_LABEL,
@@ -22,15 +23,6 @@ import {
 } from './aiMinigameContent';
 
 const FONT = 'Arial, sans-serif';
-
-const visuallyHidden: CSSProperties = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-};
 
 function scribblePoints(x1: number, x2: number, y: number, wave: number) {
   const steps = 6;

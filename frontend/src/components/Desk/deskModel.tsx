@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { completeActivity, getProgress, resetProgress, type ActivityId } from '../../services/progress';
 import { ROUTES } from '../../routes';
+import { JournalController } from '../Journal/JournalController';
+import { seedMockEvidence } from '../Journal/mockEvidence';
 import { getDeskState, STORY_ORDER } from './deskRules';
 import type { PixelPlacement, Placement } from './deskContent';
 
@@ -74,6 +76,8 @@ export function useDeskModel() {
   }
 
   async function handleResetProgress() {
+    await JournalController.getInstance().clear();
+    seedMockEvidence();
     setCompleted(await resetProgress());
   }
 

@@ -20,6 +20,7 @@ import {
 } from './newsArticleContent';
 import { URLImage } from '../URLImage/URLImage';
 import HoverSpotlight from '../Desk/parts/HoverSpotlight';
+import Journal from '../Journal/journalView';
 import newspaperImage from '../../assets/Newspaper-Template-2.png';
 import highlighterImage from '../../assets/Highlighter.png';
 import highlighterOutline from '../../assets/Highlighter-Outline.png';
@@ -206,6 +207,8 @@ export default function NewsArticle() {
           </Layer>
         </Stage>
       )}
+
+      <Journal placement="corner" />
 
       {/* Submitting and the result are plain HTML, so tests can see them. */}
       {activity && (
