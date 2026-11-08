@@ -4,8 +4,10 @@ import type Konva from 'konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { COLORS } from '../../../theme';
 
-const HOVER_SCALE = 1.06;
+export const HOVER_SCALE = 1.06;
 const HOVER_SECONDS = 0.15;
+// How far the glow's soft edge spreads, as a share of the item's longer side.
+export const GLOW_BLUR_RATIO = 0.15;
 
 interface HoverSpotlightProps {
   // Size of the area that glows. Children are drawn from its top left.
@@ -63,7 +65,7 @@ export default function HoverSpotlight({ width, height, cornerRadius = 0, disabl
         cornerRadius={cornerRadius}
         fill={COLORS.hoverGlow}
         shadowColor={COLORS.hoverGlow}
-        shadowBlur={Math.max(width, height) * 0.15}
+        shadowBlur={Math.max(width, height) * GLOW_BLUR_RATIO}
         shadowOpacity={1}
         opacity={0}
         listening={false}

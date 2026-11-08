@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { paginate } from '../../helpers';
 import type { EvidenceModel } from '../Journal/EvidenceModel';
 import { JournalController } from '../Journal/JournalController';
 import {
@@ -61,7 +62,8 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
   const isFull = selectedIds.length >= requiredCount;
   const answeredCount = subjects.filter(isAnswered).length;
   const isLastQuestion = subjectIndex === subjects.length - 1;
-  const pageCount = Math.max(1, Math.ceil(evidence.length / evidencePerPage));
+  const spreads = paginate(evidence, evidencePerPage);
+  const pageCount = spreads.length;
 
   // Clicking new evidence on a full answer replaces one slot in place,
   // cycling through the slots so repeated clicks don't keep hitting the same one.
@@ -108,7 +110,7 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
   return {
     windowWidth: size.width,
     windowHeight: size.height,
-    pageEvidence: evidence.slice(page * evidencePerPage, (page + 1) * evidencePerPage),
+    pageEvidence: spreads[page],
     page: page + 1,
     pageCount,
     hasPreviousPage: page > 0,

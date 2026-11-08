@@ -37,12 +37,12 @@ Sentences are graded as whole sentences, by id. The player passes only with **no
 ### Mocks and placeholders
 
 - **Article content:** `services/articles.ts` returns a placeholder Big Drug Inc. catnip story from `getArticleActivity()`. It's async like a real request, so connecting a backend route only changes that function.
-- **Journal:** `journalAdapter.ts` collects the evidence in a list until the Journal (#36, on `feature/article-writing`) is merged. Then only `addEvidence` changes, to call `JournalController.getInstance().add(...)`.
+- **Journal:** `journalAdapter.ts` turns each piece of article evidence into an `EvidenceModel` and adds it to the shared [Journal](Journal.md). If it can't be saved, an error shows and the player can submit again.
 - **Progress:** uses the real (mock) `services/progress.ts`, like the desk.
 
 ### Not built here
 
-The settings, hint and back buttons and the docked Journal are shared components owned by other issues.
+The settings, hint and back buttons are shared components owned by other issues. The docked [Journal](Journal.md) is added with `<Journal placement="corner" />`.
 
 ## Where the code is
 
@@ -61,7 +61,7 @@ frontend/src/
     ├── newsArticleModel.tsx        ← state, loading, highlighter, submit
     ├── newsArticleRules.ts         ← toggling, grading, result message (plain functions, no React)
     ├── newsArticleContent.ts       ← labels, colors, and where each part sits
-    ├── journalAdapter.ts           ← TODO: stand-in for the Journal
+    ├── journalAdapter.ts           ← hands article evidence to the Journal
     └── tests/
         ├── newsArticleRules.test.ts
         ├── newsArticleModel.test.tsx
@@ -86,7 +86,6 @@ The view also reuses `Desk/parts/HoverSpotlight.tsx` for the glow-and-grow hover
 | --- | --- |
 | Change the story, the transcript, or which sentences are false | `services/articles.ts` (`MOCK_ACTIVITY`) |
 | Connect to a real backend route | `services/articles.ts` (`getArticleActivity`) |
-| Connect the real Journal | `journalAdapter.ts` |
 | Change the pass rule or the result message | `newsArticleRules.ts` |
 | Change what happens on submit or Continue | `newsArticleModel.tsx` |
 | Move or resize something, or change a color or label | `newsArticleContent.ts` |
@@ -106,10 +105,10 @@ Run the tests from `frontend/` with `npm test`.
 | Test file | What it checks |
 | --- | --- |
 | `newsArticleRules.test.ts` | Grading for exact, partial, extra, and empty highlights. Toggling a highlight on and off without changing the original array. The pass and fail messages. |
-| `newsArticleModel.test.tsx` | Loading and a load error. Picking up and putting down the highlighter. Clicks ignored without it. Highlighting and removing a highlight. A fail keeps the highlights and saves nothing. Changing a highlight clears the result. **A pass hands each piece of evidence to the Journal and saves progress.** The highlighter is put away and sentences lock after a pass. A save error. Resizing. Continue goes to the desk. |
+| `newsArticleModel.test.tsx` | Loading and a load error. Picking up and putting down the highlighter. Clicks ignored without it. Highlighting and removing a highlight. A fail keeps the highlights and saves nothing. Changing a highlight clears the result. **A pass hands each piece of evidence to the Journal and saves progress.** Submitting again after evidence fails to save. The highlighter is put away and sentences lock after a pass. A save error. Resizing. Continue goes to the desk. |
 | `newsArticle.test.tsx` | The to-do heading, the fail message after submitting with nothing highlighted, and the load error. |
 
-Like the desk, the tests can't see inside the canvas (see [Konva-Testing.md](Konva-Testing.md)), so they run `useNewsArticleModel()` directly with `renderHook`. Sentence ids and answers come from the loaded article instead of being typed out, so changing the story doesn't break the tests. Until the Journal is merged, the tests mock `journalAdapter` and check what the model hands to it.
+Like the desk, the tests can't see inside the canvas (see [Konva-Testing.md](Konva-Testing.md)), so they run `useNewsArticleModel()` directly with `renderHook`. Sentence ids and answers come from the loaded article instead of being typed out, so changing the story doesn't break the tests. The tests mock `journalAdapter` and check what the model hands to it. `Journal/tests/journalFlow.test.tsx` checks that the evidence really reaches the Journal.
 
 ### What the tests can't check
 

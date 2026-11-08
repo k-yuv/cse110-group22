@@ -20,19 +20,21 @@ vi.mock('react-konva', () => {
     Rect: () => null,
     Line: () => null,
     Text: ({ text }: { text: string }) => <span>{text}</span>,
+    // Only clickable groups are evidence cards; others, like the journal book's,
+    // just hold shapes.
     Group: ({ children, onClick, onTap, onMouseEnter, onMouseLeave }: {
-      children: ReactNode; onClick: Handler; onTap: Handler; onMouseEnter: Handler; onMouseLeave: Handler;
-    }) => (
+      children: ReactNode; onClick?: Handler; onTap?: Handler; onMouseEnter?: Handler; onMouseLeave?: Handler;
+    }) => onClick ? (
       <div
         data-testid="evidence-card"
         onClick={() => onClick(event())}
-        onTouchEnd={() => onTap(event())}
-        onMouseEnter={() => onMouseEnter(event())}
-        onMouseLeave={() => onMouseLeave(event())}
+        onTouchEnd={() => onTap?.(event())}
+        onMouseEnter={() => onMouseEnter?.(event())}
+        onMouseLeave={() => onMouseLeave?.(event())}
       >
         {children}
       </div>
-    ),
+    ) : <div>{children}</div>,
   };
 });
 

@@ -50,12 +50,23 @@ export function useNewsArticleModel() {
     if (!activity) return;
 
     const graded = gradeHighlights(highlightedIds, activity.answerKey);
-    setResult(graded);
-    if (!graded.passed) return;
+    if (!graded.passed) {
+      setResult(graded);
+      return;
+    }
+
+    // Stays unsubmitted if the evidence can't be saved, so the player can try
+    // again rather than losing it. Evidence already saved isn't added twice.
+    setError('');
+    const saved = await Promise.all(activity.answerKey.map((entry) => addEvidence(entry.evidence)));
+    if (saved.includes(false)) {
+      setError('Could not save evidence');
+      return;
+    }
 
     // The level is done, so the highlighter is put away for good.
+    setResult(graded);
     setHoldingHighlighter(false);
-    activity.answerKey.forEach((entry) => addEvidence(entry.evidence));
     try {
       await completeActivity('articles');
     } catch {
