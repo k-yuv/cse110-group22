@@ -9,6 +9,7 @@ import { seedMockEvidence } from './components/Journal/mockEvidence';
 import TitleScreen from './components/TitleScreen/titleScreenView';
 import NewsArticle from './components/NewsArticle/newsArticleView';
 import { ROUTES } from './routes';
+import Interview from './components/Interview/InterviewView';
 
 seedMockEvidence();
 
@@ -35,6 +36,7 @@ function App() {
         <Route path={ROUTES.badEnding} element={<BadEnding />} />
         <Route path={ROUTES.onlineArticle} element={<NewsArticle />} />
         <Route path={ROUTES.aiImage} element={<AiMinigame />} />
+        <Route path={ROUTES.interview} element={<Interview />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
