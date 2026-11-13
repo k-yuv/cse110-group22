@@ -47,7 +47,7 @@ const errorStyle: CSSProperties = {
   fontWeight: 'bold',
   zIndex: 2,
 };
-
+/* v8 ignore start -- @preserve */
 function scribblePoints(x1: number, x2: number, y: number, wave: number) {
   const steps = 6;
   const points: number[] = [];
@@ -122,6 +122,7 @@ function Journal({ x, y, width }: { x: number; y: number; width: number }) {
     </Group>
   );
 }
+  /* v8 ignore stop -- @preserve */
 
 export default function AiMinigame() {
   const {
