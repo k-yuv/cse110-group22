@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ArticleWriting from '../articleWritingView';
+import ArticleWriting, { ACTIVITY_NAME } from '../articleWritingView';
+import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
+import { GO_BACK_LABEL, STAY_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 import { EvidenceModel } from '../../Journal/EvidenceModel';
 import { JournalController } from '../../Journal/JournalController';
 import * as articleApi from '../../../services/article';
@@ -46,7 +48,7 @@ describe('ArticleWriting component', () => {
   });
 
   it('shows a loading message until questions arrive', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
 
     expect(screen.getByText('Loading questions...')).toBeInTheDocument();
     expect(await screen.findByText('0/2')).toBeInTheDocument();
@@ -55,7 +57,7 @@ describe('ArticleWriting component', () => {
 
   it('counts a question as answered once it has enough evidence', async () => {
     const user = userEvent.setup();
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
 
     const evidenceA = await screen.findByRole('button', { name: 'Evidence A' });
 
@@ -73,7 +75,7 @@ describe('ArticleWriting component', () => {
 
   it('only moves to the next question by submitting an answer', async () => {
     const user = userEvent.setup();
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
 
     const submitAnswer = await screen.findByRole('button', { name: 'Submit answer' });
     expect(screen.queryByRole('button', { name: /Next question/ })).not.toBeInTheDocument();
@@ -91,7 +93,7 @@ describe('ArticleWriting component', () => {
 
   it('keeps answers when going back a question', async () => {
     const user = userEvent.setup();
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
 
     await user.click(await screen.findByRole('button', { name: 'Evidence A' }));
     await user.click(screen.getByRole('button', { name: 'Evidence B' }));
@@ -116,7 +118,7 @@ describe('ArticleWriting component', () => {
     setJournal([...EVIDENCE, new EvidenceModel('d', 'Evidence D', '', '')]);
     vi.mocked(articleApi.submitArticle).mockResolvedValue({ ending: 'good' });
     const user = userEvent.setup();
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
 
     await user.click(await screen.findByRole('button', { name: 'Evidence A' }));
     await user.click(screen.getByRole('button', { name: 'Evidence B' }));
@@ -146,7 +148,7 @@ describe('ArticleWriting component', () => {
     vi.mocked(articleApi.submitArticle).mockResolvedValue({ ending: 'bad' });
     const onFinish = vi.fn();
     const user = userEvent.setup();
-    render(<ArticleWriting onFinish={onFinish} />);
+    render(<ArticleWriting onFinish={onFinish} onBack={vi.fn()} />);
 
     await user.click(await screen.findByRole('button', { name: 'Evidence B' }));
     await user.click(screen.getByRole('button', { name: 'Evidence C' }));
@@ -163,7 +165,7 @@ describe('ArticleWriting component', () => {
   it('splits long evidence lists across journal pages', async () => {
     setJournal(Array.from({ length: 10 }, (_, i) => new EvidenceModel(`e${i + 1}`, `Evidence ${i + 1}`, '', '')));
     const user = userEvent.setup();
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
 
     expect(await screen.findByText('Page 1 of 2')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Evidence 8' })).toBeInTheDocument();
@@ -189,7 +191,7 @@ describe('ArticleWriting component', () => {
   it('shows an error when questions fail to load', async () => {
     vi.mocked(articleApi.getArticleSubjects).mockRejectedValue(new Error('down'));
 
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not load questions');
   });
@@ -198,7 +200,7 @@ describe('ArticleWriting component', () => {
     vi.mocked(articleApi.submitArticle).mockRejectedValue(new Error('down'));
     const onFinish = vi.fn();
     const user = userEvent.setup();
-    render(<ArticleWriting onFinish={onFinish} />);
+    render(<ArticleWriting onFinish={onFinish} onBack={vi.fn()} />);
 
     await user.click(await screen.findByRole('button', { name: 'Evidence A' }));
     await user.click(screen.getByRole('button', { name: 'Evidence B' }));
@@ -208,5 +210,44 @@ describe('ArticleWriting component', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not submit article');
     expect(onFinish).not.toHaveBeenCalled();
+  });
+
+  describe('back button', () => {
+    it('asks before leaving, and Go Back calls onBack', async () => {
+      const user = userEvent.setup();
+      const onBack = vi.fn();
+      render(<ArticleWriting onFinish={vi.fn()} onBack={onBack} />);
+
+      await user.click(await screen.findByRole('button', { name: BACK_BUTTON_LABEL }));
+
+      expect(screen.getByRole('alertdialog')).toHaveTextContent(ACTIVITY_NAME);
+      expect(onBack).not.toHaveBeenCalled();
+
+      await user.click(screen.getByRole('button', { name: GO_BACK_LABEL }));
+
+      expect(onBack).toHaveBeenCalledOnce();
+    });
+
+    it('Stay closes the confirmation without leaving', async () => {
+      const user = userEvent.setup();
+      const onBack = vi.fn();
+      render(<ArticleWriting onFinish={vi.fn()} onBack={onBack} />);
+
+      await user.click(await screen.findByRole('button', { name: BACK_BUTTON_LABEL }));
+      await user.click(screen.getByRole('button', { name: STAY_LABEL }));
+
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      expect(onBack).not.toHaveBeenCalled();
+    });
+
+    it('puts the overlay outside the scaled section, so it covers the window', async () => {
+      const user = userEvent.setup();
+      render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
+
+      await user.click(await screen.findByRole('button', { name: BACK_BUTTON_LABEL }));
+
+      const overlay = screen.getByTestId('back-confirmation-overlay');
+      expect(overlay.closest('section')).toBeNull();
+    });
   });
 });

@@ -6,6 +6,11 @@ import type { EvidenceModel } from '../Journal/EvidenceModel';
 import { COLORS, FONT } from '../../theme';
 import { useArticleWritingModel } from './articleWritingModel';
 import ProgressBar from '../Progress-Bar/ProgressBar';
+import BackButton from '../Back-Button/backButtonView';
+import BackConfirmation from '../Back-Confirmation/backConfirmationView';
+
+// Named in the back confirmation's message.
+export const ACTIVITY_NAME = 'your article';
 
 // Layout follows the "Creating Article" Figma frame (1280 × 832), scaled to
 // fit the window.
@@ -152,10 +157,12 @@ function EvidenceCard({ item, x, y, width, selected, compact = false, onToggle }
 interface ArticleWritingProps {
   levelId?: string;
   onFinish: (ending: ArticleEnding) => void;
+  // Leaves the screen, e.g. to the desk. Asks first.
+  onBack: () => void;
 }
 
 // Display only: gets everything it needs from useArticleWritingModel.
-export default function ArticleWriting({ levelId = 'level-1', onFinish }: ArticleWritingProps) {
+export default function ArticleWriting({ levelId = 'level-1', onFinish, onBack }: ArticleWritingProps) {
   const {
     windowWidth,
     windowHeight,
@@ -182,10 +189,13 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
     isSelected,
     onToggleEvidence,
     onSubmit,
+    onBack: handleBack,
+    backConfirmation,
   } = useArticleWritingModel({
     levelId,
     evidencePerPage: CARDS_PER_SPREAD,
     onFinish,
+    onBack,
   });
 
   if (loading) return <p>Loading questions...</p>;
@@ -218,6 +228,9 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
         }}
       >
         <h1 style={visuallyHidden}>Write your article</h1>
+
+        {/* Top left of the frame, beside the progress bar. */}
+        <BackButton onClick={handleBack} size={64} style={{ left: 48, top: 28 }} />
 
         <ProgressBar completed={answeredCount} total={questionCount} style={progressStyle} />
 
@@ -346,6 +359,9 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
           {isLastQuestion ? 'Submit article' : 'Submit answer'}
         </button>
       </section>
+
+      {/* Outside the scaled section, so its fixed overlay covers the window. */}
+      <BackConfirmation activityName={ACTIVITY_NAME} {...backConfirmation} />
     </main>
   );
 }

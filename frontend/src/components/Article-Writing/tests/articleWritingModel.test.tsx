@@ -25,7 +25,7 @@ function setJournal(count: number) {
 
 async function renderModel(evidencePerPage = 4) {
   const onFinish = vi.fn();
-  const hook = renderHook(() => useArticleWritingModel({ levelId: 'level-1', evidencePerPage, onFinish }));
+  const hook = renderHook(() => useArticleWritingModel({ levelId: 'level-1', evidencePerPage, onFinish, onBack: vi.fn() }));
   await waitFor(() => expect(hook.result.current.loading).toBe(false));
   return { ...hook, onFinish };
 }
