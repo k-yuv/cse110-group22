@@ -8,6 +8,8 @@ import NotFound from './components/Not-Found/notFoundView';
 import { seedMockEvidence } from './components/Journal/mockEvidence';
 import TitleScreen from './components/TitleScreen/titleScreenView';
 import NewsArticle from './components/NewsArticle/newsArticleView';
+import SocialMedia from './components/Social-Media/socialMediaView';
+import Interview from './components/Interview/interviewView';
 import { ROUTES } from './routes';
 import RouteGuard from './components/Route-Guard/routeGuardView';
 import type { EndingState } from './components/Route-Guard/routeGuardModel';
@@ -64,6 +66,22 @@ function App() {
           }
         />
         <Route path={ROUTES.onlineArticle} element={<NewsArticle />} />
+        <Route
+          path={ROUTES.socialMedia}
+          element={
+            <RouteGuard screen="social">
+              <SocialMedia />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path={ROUTES.interview}
+          element={
+            <RouteGuard screen="interviews">
+              <Interview />
+            </RouteGuard>
+          }
+        />
         <Route path={ROUTES.aiImage} element={<AiMinigame />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
