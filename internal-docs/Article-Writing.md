@@ -44,6 +44,8 @@ Submitting the article sends the answers to `submitArticle`, which returns `'goo
 
 Both ending pages are placeholders until the real ending screens are built (issues #32 and #33).
 
+`/create-article` only opens once Interviews is done, and the endings only open right after submitting an article. `ArticleWritingPage` passes `{ articleSubmitted: true }` as router state for that, so typing an ending's URL sends the player to the desk. See [Route-Guard.md](Route-Guard.md).
+
 ### How the ending is decided
 
 **The screen never decides the ending, and never knows which evidence is good.** It only gets the questions (`id`, `prompt`, `requiredCount`) and sends back which evidence ids were picked for each. This is so that, once there's a backend, players can't find the answers by looking at the frontend code.
@@ -170,7 +172,7 @@ Run the tests from `frontend/` with `npm test`.
 | `Article-Writing/tests/articleWritingModel.test.tsx` | The model on its own: loading questions, ignoring clicks with no questions, not submitting an incomplete answer, picked order, skipping evidence that's left the journal, page and question bounds, one page for an empty journal, the button disabled while sending, and resize handling |
 | `Article-Writing/tests/articleWriting.test.tsx` | The screen through its hidden buttons: loading message, answered count, moving forward only by submitting, keeping answers when going back, swapping evidence once full, submitting every answer, journal paging, and both error messages |
 | `Article-Writing/tests/articleWritingCanvas.test.tsx` | The Konva evidence cards: prompt and instructions on the laptop, clicking a journal card to pick it, clicking a laptop card to remove it, tap, and the pointer cursor on hover |
-| `Article-Writing/tests/articleWritingFlow.test.tsx` | The whole flow with the real `App`, mock evidence and mock scoring: strong evidence ends on `/ending/good`, weak evidence on `/ending/bad` |
+| `Article-Writing/tests/articleWritingFlow.test.tsx` | The whole flow with the real `App`, mock evidence and mock scoring: strong evidence ends on `/ending/good`, weak evidence on `/ending/bad`. Each test marks the story activities done first, since Create Article is guarded |
 | `Journal/tests/journal.test.ts` | The Journal is shared, and can add, read, and clear; the mock evidence is only loaded into an empty journal, and only once |
 | `Progress-Bar/tests/progressBar.test.tsx` | The bar shows its label and completed count |
 

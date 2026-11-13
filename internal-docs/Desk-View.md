@@ -15,7 +15,7 @@ The desk is the page at `/desk`. It's drawn with Konva and shows six things the 
 | "TO DO: clean desk!" sticky note | Minigame | `/clean-desk` |
 | Create Article card | The final step | `/create-article` |
 
-None of those screens exist yet, so each URL shows the 404 page for now.
+Social Media and Interviews are placeholders for now, and the clean desk minigame still shows the 404 page. Typing the URL of a locked screen sends the player back to the desk (see [Route-Guard.md](Route-Guard.md)).
 
 ### Locked and unlocked
 
@@ -123,6 +123,8 @@ When you build one of the activity screens:
    ```tsx
    <Route path={ROUTES.onlineArticle} element={<OnlineArticles />} />
    ```
+
+   If the screen unlocks with progress, wrap it in `<RouteGuard>` so typing its URL can't skip ahead. Social Media and Interviews already have guarded placeholder routes: replace the placeholder and keep the guard. See [Route-Guard.md](Route-Guard.md).
 
 2. **Mark the activity done** when the player finishes it, by calling `completeActivity` from your screen's model, then send them back to the desk:
 
