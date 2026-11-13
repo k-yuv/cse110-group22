@@ -196,6 +196,7 @@ These are generated automatically. Changes are overwritten and should never be c
 
 - [Desk-View.md](Desk-View.md): the hub desk (level selector): what it does, where its code is, how it's tested, and how to hook an activity screen up to it.
 - [Online-Articles.md](Online-Articles.md): the first activity, where the player highlights misinformation in a news article: how it plays and grades, where its code is, and how it's tested.
+- [Route-Guard.md](Route-Guard.md): stops players reaching locked screens by typing their URL: which routes are guarded, how to guard a new screen, and the placeholder Social Media and Interviews screens.
 
 ## Other docs
 
