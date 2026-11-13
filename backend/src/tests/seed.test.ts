@@ -5,8 +5,18 @@ import { seedData } from '../utils/seed';
 
 // During tests, data files live in backend/data/test/ (DATA_DIR is set in
 // vitest.config.mts), so seeding here never touches real data.
-const SEED_FILE = path.join(__dirname, '../../seed/questions.json');
+const SEED_DIR = path.join(__dirname, '../../seed');
+const SEED_FILE = path.join(SEED_DIR, 'questions.json');
 const DATA_FILE = path.join(process.env.DATA_DIR!, 'questions.json');
+
+// seedData() reads every file in seed/, so clear all of their data files
+// (other test files may have left bad JSON in them).
+async function removeSeededDataFiles() {
+  const fileNames = (await fs.readdir(SEED_DIR)).filter((name) => name.endsWith('.json'));
+  for (const fileName of fileNames) {
+    await fs.rm(path.join(process.env.DATA_DIR!, fileName), { force: true });
+  }
+}
 
 async function readDataFile(): Promise<unknown> {
   return JSON.parse(await fs.readFile(DATA_FILE, 'utf8'));
@@ -15,7 +25,7 @@ async function readDataFile(): Promise<unknown> {
 describe('seedData', () => {
   beforeEach(async () => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
-    await fs.rm(DATA_FILE, { force: true });
+    await removeSeededDataFiles();
   });
 
   it('copies the seed file when the data file does not exist', async () => {

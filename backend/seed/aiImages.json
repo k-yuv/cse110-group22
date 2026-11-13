@@ -1,0 +1,7 @@
+[
+  { "id": "img-1", "fileName": "placeholder-1.svg", "alt": "Placeholder image 1 (pink)", "isAi": true },
+  { "id": "img-2", "fileName": "placeholder-2.svg", "alt": "Placeholder image 2 (blue)", "isAi": false },
+  { "id": "img-3", "fileName": "placeholder-3.svg", "alt": "Placeholder image 3 (green)", "isAi": true },
+  { "id": "img-4", "fileName": "placeholder-4.svg", "alt": "Placeholder image 4 (yellow)", "isAi": false },
+  { "id": "img-5", "fileName": "placeholder-5.svg", "alt": "Placeholder image 5 (purple)", "isAi": true }
+]

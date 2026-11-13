@@ -7,6 +7,8 @@ export const NOT_AI_LABEL = 'Not AI';
 export const JOURNAL_LABEL = 'Journal';
 export const PLAY_AGAIN_LABEL = 'Play again';
 export const RETURN_TO_DESK_LABEL = 'Return to desk';
+export const LOAD_ERROR = 'Could not load the images';
+export const ANSWER_ERROR = 'Could not check your answer. Try again.';
 
 export function resultText(correct: number, total: number) {
   return `You got ${correct}/${total} correct!`;

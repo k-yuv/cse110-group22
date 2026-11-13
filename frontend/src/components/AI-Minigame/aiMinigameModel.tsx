@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ROUTES } from '../../routes';
-import { checkAiAnswers, getAiImages, type AiAnswers, type AiImage, type AiResult } from '../../services/aiImage';
-import type { Box } from './aiMinigameContent';
+import { getAiImages, submitAiAnswer, type AiImage } from '../../services/aiImage';
+import { ANSWER_ERROR, LOAD_ERROR, type Box } from './aiMinigameContent';
 
 const MAX_WIDTH_TO_HEIGHT = 1.5;
+
+export interface AiResult {
+  correct: number;
+  total: number;
+}
 
 function getWindowSize() {
   return { width: window.innerWidth, height: window.innerHeight };
@@ -15,12 +20,16 @@ export function useAiMinigameModel() {
   const [size, setSize] = useState(getWindowSize);
   const [images, setImages] = useState<AiImage[]>([]);
   const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<AiAnswers>({});
+  // How many guesses so far this game were right.
+  const [correctCount, setCorrectCount] = useState(0);
   const [result, setResult] = useState<AiResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    getAiImages().then(setImages);
+    getAiImages()
+      .then(setImages)
+      .catch(() => setError(LOAD_ERROR));
   }, []);
 
   const currentImage: AiImage | undefined = images[index];
@@ -67,19 +76,26 @@ export function useAiMinigameModel() {
     navigate(ROUTES.desk);
   }
 
+  // Sends this one guess to the backend, adds it to the score, then moves on
+  // (or shows the score after the last image). If the request fails, the
+  // player stays on the same image and can try again.
   async function handleAnswer(isAi: boolean) {
     if (!currentImage || busy) return;
-    const newAnswers = { ...answers, [currentImage.id]: isAi };
-    setAnswers(newAnswers);
-
-    if (!isLastImage) {
-      setIndex(index + 1);
-      return;
-    }
 
     setSubmitting(true);
+    setError('');
     try {
-      setResult(await checkAiAnswers(newAnswers));
+      const { correct } = await submitAiAnswer(currentImage.id, isAi);
+      const newCorrectCount = correctCount + (correct ? 1 : 0);
+      setCorrectCount(newCorrectCount);
+
+      if (isLastImage) {
+        setResult({ correct: newCorrectCount, total: images.length });
+      } else {
+        setIndex(index + 1);
+      }
+    } catch {
+      setError(ANSWER_ERROR);
     } finally {
       setSubmitting(false);
     }
@@ -87,8 +103,9 @@ export function useAiMinigameModel() {
 
   function handlePlayAgain() {
     setIndex(0);
-    setAnswers({});
+    setCorrectCount(0);
     setResult(null);
+    setError('');
   }
 
   return {
@@ -102,6 +119,7 @@ export function useAiMinigameModel() {
     totalImages: images.length,
     result,
     busy,
+    error,
     onAnswer: handleAnswer,
     onBackToDesk: handleBackToDesk,
     onPlayAgain: handlePlayAgain,
