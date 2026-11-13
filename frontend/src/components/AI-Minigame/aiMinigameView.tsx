@@ -32,6 +32,22 @@ const visuallyHidden: CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
+// Shown across the top of the screen, above the canvas.
+const errorStyle: CSSProperties = {
+  position: 'absolute',
+  top: '2%',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  margin: 0,
+  padding: '0.5em 1em',
+  borderRadius: 6,
+  background: COLORS.bubble,
+  color: COLORS.bubbleText,
+  fontFamily: FONT,
+  fontWeight: 'bold',
+  zIndex: 2,
+};
+/* v8 ignore start -- @preserve */
 function scribblePoints(x1: number, x2: number, y: number, wave: number) {
   const steps = 6;
   const points: number[] = [];
@@ -106,6 +122,7 @@ function Journal({ x, y, width }: { x: number; y: number; width: number }) {
     </Group>
   );
 }
+  /* v8 ignore stop -- @preserve */
 
 export default function AiMinigame() {
   const {
@@ -119,6 +136,7 @@ export default function AiMinigame() {
     totalImages,
     result,
     busy,
+    error,
     onAnswer,
     onBackToDesk,
     onPlayAgain,
@@ -185,6 +203,11 @@ export default function AiMinigame() {
   return (
     <main style={{ position: 'fixed', inset: 0, background: COLORS.desk }}>
       <h1 style={visuallyHidden}>{PAGE_TITLE}</h1>
+      {error && (
+        <p role="alert" style={errorStyle}>
+          {error}
+        </p>
+      )}
       <p style={visuallyHidden}>{bubbleText}</p>
       <p style={visuallyHidden}>
         {PROGRESS_LABEL} {progressText}

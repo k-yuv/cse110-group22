@@ -4,11 +4,13 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import AiMinigame from '../aiMinigameView';
 import { ROUTES } from '../../../routes';
-import { checkAiAnswers, getAiImages, type AiImage, type AiResult } from '../../../services/aiImage';
+import { getAiImages, submitAiAnswer, type AiAnswerResult, type AiImage } from '../../../services/aiImage';
 import { getProgress } from '../../../services/progress';
 import {
   AI_LABEL,
+  ANSWER_ERROR,
   BACK_TO_DESK_LABEL,
+  LOAD_ERROR,
   NOT_AI_LABEL,
   PLAY_AGAIN_LABEL,
   PROGRESS_LABEL,
@@ -27,10 +29,29 @@ vi.mock('react-konva', () => ({
   Line: () => null,
 }));
 
-vi.mock('../../../services/aiImage', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../services/aiImage')>();
-  return { ...actual, checkAiAnswers: vi.fn(actual.checkAiAnswers) };
-});
+// A fake backend: the service functions are replaced with ones that use the
+// images and answers below (set up in beforeEach).
+vi.mock('../../../services/aiImage', () => ({
+  getAiImages: vi.fn(),
+  submitAiAnswer: vi.fn(),
+}));
+
+const IMAGES: AiImage[] = [
+  { id: 'img-1', src: '/api/images/1.png', alt: 'Image one' },
+  { id: 'img-2', src: '/api/images/2.png', alt: 'Image two' },
+  { id: 'img-3', src: '/api/images/3.png', alt: 'Image three' },
+  { id: 'img-4', src: '/api/images/4.png', alt: 'Image four' },
+  { id: 'img-5', src: '/api/images/5.png', alt: 'Image five' },
+];
+
+// Which images are AI, in the same order as IMAGES. Only the fake backend knows this.
+const CORRECT_ANSWERS = [true, false, true, false, true];
+const WRONG_ANSWERS = CORRECT_ANSWERS.map((isAi) => !isAi);
+
+async function fakeSubmitAiAnswer(id: string, isAi: boolean): Promise<AiAnswerResult> {
+  const index = IMAGES.findIndex((image) => image.id === id);
+  return { correct: CORRECT_ANSWERS[index] === isAi };
+}
 
 let holdImageLoads = false;
 let pendingImages: FakeImage[] = [];
@@ -52,11 +73,6 @@ function loadPendingImages() {
     pendingImages = [];
   });
 }
-
-const CORRECT_ANSWERS = [true, false, true, false, true];
-const WRONG_ANSWERS = CORRECT_ANSWERS.map((isAi) => !isAi);
-
-let IMAGES: AiImage[];
 
 function CurrentPath() {
   return <p data-testid="path">{useLocation().pathname}</p>;
@@ -101,12 +117,13 @@ function answerButtons() {
 }
 
 describe('AI minigame', () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     localStorage.clear();
     holdImageLoads = false;
     pendingImages = [];
     vi.stubGlobal('Image', FakeImage);
-    IMAGES = await getAiImages();
+    vi.mocked(getAiImages).mockResolvedValue(IMAGES);
+    vi.mocked(submitAiAnswer).mockImplementation(fakeSubmitAiAnswer);
   });
 
   describe('playing', () => {
@@ -137,6 +154,21 @@ describe('AI minigame', () => {
       await user.click(screen.getByRole('button', { name: NOT_AI_LABEL }));
 
       await expectImage(2);
+    });
+
+    it('sends one request per guess, with that image and the guess', async () => {
+      const user = renderGame();
+
+      await answerAll(user, [true, false, false, true, true]);
+      await screen.findByRole('button', { name: PLAY_AGAIN_LABEL });
+
+      expect(vi.mocked(submitAiAnswer).mock.calls).toEqual([
+        ['img-1', true],
+        ['img-2', false],
+        ['img-3', false],
+        ['img-4', true],
+        ['img-5', true],
+      ]);
     });
 
     it('shows every image in order, updating the progress each time', async () => {
@@ -323,27 +355,93 @@ describe('AI minigame', () => {
       answerButtons().forEach((button) => expect(button).toBeEnabled());
     });
 
-    it('locks AI and Not AI while the answers are scored, and only scores them once', async () => {
-      let finishScoring!: (result: AiResult) => void;
-      vi.mocked(checkAiAnswers).mockReturnValueOnce(
+    it('locks AI and Not AI while a guess is being checked, and only sends it once', async () => {
+      let finishChecking!: (result: AiAnswerResult) => void;
+      vi.mocked(submitAiAnswer).mockReturnValueOnce(
         new Promise((resolve) => {
-          finishScoring = resolve;
+          finishChecking = resolve;
         })
       );
       const user = renderGame();
-      await answerAll(user, CORRECT_ANSWERS);
+      await expectImage(1);
+
+      await user.click(screen.getByRole('button', { name: AI_LABEL }));
 
       const [aiButton, notAiButton] = answerButtons();
       expect(aiButton).toBeDisabled();
       expect(notAiButton).toBeDisabled();
+      expect(screen.getByText(progressText(1))).toBeInTheDocument();
 
       await user.click(aiButton);
       await user.click(notAiButton);
-      expect(checkAiAnswers).toHaveBeenCalledTimes(1);
+      expect(submitAiAnswer).toHaveBeenCalledTimes(1);
 
-      await act(async () => finishScoring({ correct: 4, total: IMAGES.length }));
+      await act(async () => finishChecking({ correct: true }));
+
+      await expectImage(2);
+      answerButtons().forEach((button) => expect(button).toBeEnabled());
+    });
+
+    it('locks AI and Not AI while the last guess is checked, then shows the score', async () => {
+      const user = renderGame();
+      await answerAll(user, CORRECT_ANSWERS.slice(0, -1));
+      await expectImage(IMAGES.length);
+
+      let finishChecking!: (result: AiAnswerResult) => void;
+      vi.mocked(submitAiAnswer).mockReturnValueOnce(
+        new Promise((resolve) => {
+          finishChecking = resolve;
+        })
+      );
+      await user.click(screen.getByRole('button', { name: NOT_AI_LABEL }));
+
+      answerButtons().forEach((button) => expect(button).toBeDisabled());
+      expect(screen.queryByText(resultText(4, IMAGES.length))).not.toBeInTheDocument();
+
+      await act(async () => finishChecking({ correct: false }));
 
       expect(await screen.findByText(resultText(4, IMAGES.length))).toBeInTheDocument();
+    });
+  });
+
+  describe('errors', () => {
+    it('shows an error and locks the answer buttons if the images fail to load', async () => {
+      vi.mocked(getAiImages).mockRejectedValueOnce(new Error('offline'));
+      renderGame();
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(LOAD_ERROR);
+      answerButtons().forEach((button) => expect(button).toBeDisabled());
+      expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    });
+
+    it('stays on the same image if a guess fails to send, and lets the player try again', async () => {
+      vi.mocked(submitAiAnswer).mockRejectedValueOnce(new Error('offline'));
+      const user = renderGame();
+      await expectImage(1);
+
+      await user.click(screen.getByRole('button', { name: AI_LABEL }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(ANSWER_ERROR);
+      await expectImage(1);
+      answerButtons().forEach((button) => expect(button).toBeEnabled());
+
+      await user.click(screen.getByRole('button', { name: AI_LABEL }));
+
+      await expectImage(2);
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('does not count a failed guess toward the score', async () => {
+      vi.mocked(submitAiAnswer).mockRejectedValueOnce(new Error('offline'));
+      const user = renderGame();
+      await expectImage(1);
+      await user.click(screen.getByRole('button', { name: AI_LABEL }));
+      await screen.findByRole('alert');
+
+      await answerAll(user, CORRECT_ANSWERS);
+
+      expect(await screen.findByText(resultText(IMAGES.length, IMAGES.length))).toBeInTheDocument();
+      expect(submitAiAnswer).toHaveBeenCalledTimes(IMAGES.length + 1);
     });
   });
 });

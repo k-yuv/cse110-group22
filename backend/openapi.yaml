@@ -95,8 +95,53 @@ paths:
         default:
           $ref: '#/components/responses/Error'
 
+  /api/ai-images:
+    get:
+      summary: List every image in the AI image guessing minigame
+      responses:
+        '200':
+          description: All images, in the order they should be shown (without whether each is AI)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AiImage'
+        default:
+          $ref: '#/components/responses/Error'
+
+  /api/ai-images/{id}/answers:
+    parameters:
+      - $ref: '#/components/parameters/AiImageId'
+    post:
+      summary: Guess whether an image is AI-generated and find out if the guess is correct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAiAnswer'
+      responses:
+        '200':
+          description: Whether the guess is correct
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerResult'
+        default:
+          $ref: '#/components/responses/Error'
+
 components:
   parameters:
+    AiImageId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 100
+
     Chapter:
       name: chapter
       in: path
@@ -155,6 +200,31 @@ components:
             type: string
             minLength: 1
             maxLength: 200
+
+    AiImage:
+      type: object
+      required: [id, src, alt]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        src:
+          description: URL to load the picture from, e.g. /api/images/cat.jpg
+          type: string
+          minLength: 1
+        alt:
+          description: Text description of the picture, for screen readers
+          type: string
+
+    NewAiAnswer:
+      type: object
+      required: [isAi]
+      additionalProperties: false
+      properties:
+        isAi:
+          description: The player's guess. true means "this image is AI-generated"
+          type: boolean
 
     Note:
       type: object
