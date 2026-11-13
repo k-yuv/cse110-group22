@@ -8,7 +8,7 @@ import { useInterviewModel } from './interviewScreenModel';
 
 const WIDTH = 1280;
 const HEIGHT = 832;
-const DESK_Y = 522;
+const DESK_Y = 622;
 
 function SpeechBubble({ text, y }: { text: string; y: number }) {
   return (
@@ -56,9 +56,17 @@ export default function Interview() {
   const scale = Math.min(windowWidth / WIDTH, windowHeight / HEIGHT);
   const left = (windowWidth - WIDTH * scale) / 2;
   const top = (windowHeight - HEIGHT * scale) / 2;
+  const deskTop = top + DESK_Y * scale;
 
   return (
-    <main style={{ position: 'fixed', inset: 0, background: COLORS.wall, overflow: 'hidden' }}>
+    <main
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: `linear-gradient(${COLORS.wall} ${deskTop}px, ${COLORS.desk} ${deskTop}px)`,
+        overflow: 'hidden',
+      }}
+    >
       <SettingsButton />
       {error && <p role="alert">{error}</p>}
       <section
@@ -75,7 +83,6 @@ export default function Interview() {
         <Stage width={WIDTH} height={HEIGHT}>
           <Layer>
             <Rect width={WIDTH} height={DESK_Y} fill={COLORS.wall} />
-            <Rect y={DESK_Y} width={WIDTH} height={HEIGHT - DESK_Y} fill={COLORS.desk} />
             <URLImage src={cat} x={200} y={100} width={480} height={648} />
 
             {!complete && !question && (
