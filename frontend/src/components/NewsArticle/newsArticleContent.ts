@@ -2,6 +2,8 @@ export const TODO_TEXT = 'TO DO: highlight misinformation';
 export const TRANSCRIPT_TITLE = 'Trusted transcript';
 export const SUBMIT_LABEL = 'Submit';
 export const CONTINUE_LABEL = 'Continue';
+// Named in the back confirmation's message.
+export const ACTIVITY_NAME = 'Online Articles';
 
 export const COLORS = {
   background: '#86624f',

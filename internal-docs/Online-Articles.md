@@ -42,7 +42,7 @@ Sentences are graded as whole sentences, by id. The player passes only with **no
 
 ### Not built here
 
-The settings, hint and back buttons and the docked Journal are shared components owned by other issues.
+The settings and hint buttons and the docked Journal are shared components owned by other issues. The back button and its "Are You Sure?" popup are shared too; see [Back-Confirmation.md](Back-Confirmation.md).
 
 ## Where the code is
 
@@ -107,7 +107,7 @@ Run the tests from `frontend/` with `npm test`.
 | --- | --- |
 | `newsArticleRules.test.ts` | Grading for exact, partial, extra, and empty highlights. Toggling a highlight on and off without changing the original array. The pass and fail messages. |
 | `newsArticleModel.test.tsx` | Loading and a load error. Picking up and putting down the highlighter. Clicks ignored without it. Highlighting and removing a highlight. A fail keeps the highlights and saves nothing. Changing a highlight clears the result. **A pass hands each piece of evidence to the Journal and saves progress.** The highlighter is put away and sentences lock after a pass. A save error. Resizing. Continue goes to the desk. |
-| `newsArticle.test.tsx` | The to-do heading, the fail message after submitting with nothing highlighted, and the load error. |
+| `newsArticle.test.tsx` | The to-do heading, the fail message after submitting with nothing highlighted, the load error, and the back button asking before leaving. |
 
 Like the desk, the tests can't see inside the canvas (see [Konva-Testing.md](Konva-Testing.md)), so they run `useNewsArticleModel()` directly with `renderHook`. Sentence ids and answers come from the loaded article instead of being typed out, so changing the story doesn't break the tests. Until the Journal is merged, the tests mock `journalAdapter` and check what the model hands to it.
 
