@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../../App';
 import { ROUTES } from '../../../routes';
+import { completeActivity } from '../../../services/progress';
 
 // Integration: runs the real (mock) journal evidence and article service, seeded with
 // their built-in data, from entering the screen to landing on an ending page.
@@ -32,6 +33,12 @@ async function writeArticle(answers: string[][]) {
 }
 
 describe('Article writing flow', () => {
+  // Create Article only opens once the story activities are done.
+  beforeEach(async () => {
+    localStorage.clear();
+    for (const id of ['articles', 'social', 'interviews'] as const) await completeActivity(id);
+  });
+
   it('picks the good ending with strong evidence', async () => {
     await writeArticle([
       ['Fire marshal report'],
