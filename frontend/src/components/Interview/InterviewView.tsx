@@ -1,4 +1,4 @@
-import { Layer, Rect, Stage, Text } from 'react-konva';
+import { Group, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { COLORS } from '../../theme';
 import { URLImage } from '../URLImage/URLImage';
 import cat from '../../assets/whistleblower_cat.png';
@@ -10,11 +10,11 @@ const WIDTH = 1280;
 const HEIGHT = 832;
 const DESK_Y = 622;
 
-function SpeechBubble({ text, y }: { text: string; y: number }) {
+function PromptBox({ text, y }: { text: string; y: number }) {
   return (
     <>
       <Rect
-        x={600}
+        x={700}
         y={y}
         width={500}
         height={100}
@@ -24,7 +24,7 @@ function SpeechBubble({ text, y }: { text: string; y: number }) {
         cornerRadius={40}
       />
       <Text
-        x={600}
+        x={700}
         y={y}
         width={500}
         height={100}
@@ -36,6 +36,43 @@ function SpeechBubble({ text, y }: { text: string; y: number }) {
         fill="#4C2100"
       />
     </>
+  );
+}
+
+function SpeechBubble({ text, y }: { text: string; y: number }) {
+  return (
+    <Group>
+      <Line
+        points={[710, y + 55, 675, y + 78, 710, y + 88]}
+        closed
+        fill="#F7FCFD"
+        lineJoin="round"
+        stroke="#d1cce7"
+        strokeWidth={4}
+      />
+      <Rect
+        x={700}
+        y={y}
+        width={500}
+        height={100}
+        fill="#F7FCFD"
+        stroke="#d1cce7"
+        strokeWidth={4}
+        cornerRadius={40}
+      />
+      <Text
+        x={720}
+        y={y}
+        width={460}
+        height={100}
+        text={text}
+        align="center"
+        verticalAlign="middle"
+        fontSize={32}
+        fontFamily="Coiny"
+        fill="#4C2100"
+      />
+    </Group>
   );
 }
 
@@ -87,12 +124,12 @@ export default function Interview() {
 
             {!complete && !question && (
               <>
-                <SpeechBubble text="Select a question to ask" y={80} />
+                <PromptBox text="Select a question to ask" y={80} />
                 {questions.map((item, index) => (
                   <TitleButton
                     key={item.id}
                     text={item.label}
-                    x={600}
+                    x={700}
                     y={210 + index * 90}
                     width={500}
                     height={70}
@@ -110,7 +147,7 @@ export default function Interview() {
                   <TitleButton
                     key={item.id}
                     text={item.label}
-                    x={600}
+                    x={700}
                     y={210 + index * 90}
                     width={500}
                     height={70}
@@ -123,7 +160,7 @@ export default function Interview() {
                     <SpeechBubble text={choice.answer} y={210} />
                     <TitleButton
                       text="Add to Journal"
-                      x={600}
+                      x={700}
                       y={340}
                       width={500}
                       height={70}
@@ -135,7 +172,7 @@ export default function Interview() {
                 {!choice && question.choices.length === 0 && (
                   <TitleButton
                     text="Add to Journal"
-                    x={600}
+                    x={700}
                     y={210}
                     width={500}
                     height={70}
@@ -149,7 +186,7 @@ export default function Interview() {
             {complete && (
               <TitleButton
                 text="Finish Interview"
-                x={600}
+                x={700}
                 y={210}
                 width={500}
                 height={80}
