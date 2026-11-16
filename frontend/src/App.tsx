@@ -8,6 +8,7 @@ import NotFound from './components/Not-Found/notFoundView';
 import { seedMockEvidence } from './components/Journal/mockEvidence';
 import TitleScreen from './components/TitleScreen/titleScreenView';
 import NewsArticle from './components/NewsArticle/newsArticleView';
+import DeskCleanup from './components/Desk-Cleanup-Minigame/deskCleanupView';
 import { ROUTES } from './routes';
 
 seedMockEvidence();
@@ -35,6 +36,7 @@ function App() {
         <Route path={ROUTES.badEnding} element={<BadEnding />} />
         <Route path={ROUTES.onlineArticle} element={<NewsArticle />} />
         <Route path={ROUTES.aiImage} element={<AiMinigame />} />
+        <Route path={ROUTES.cleanDesk} element={<DeskCleanup />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
