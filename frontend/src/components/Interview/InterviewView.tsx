@@ -1,4 +1,6 @@
 import { Group, Layer, Line, Rect, Stage, Text } from 'react-konva';
+import { useEffect, useRef } from 'react';
+import type Konva from 'konva';
 import { COLORS } from '../../theme';
 import { URLImage } from '../URLImage/URLImage';
 import cat from '../../assets/whistleblower_cat.png';
@@ -40,8 +42,18 @@ function PromptBox({ text, y }: { text: string; y: number }) {
 }
 
 function SpeechBubble({ text, y }: { text: string; y: number }) {
+  const groupRef = useRef<Konva.Group>(null);
+
+  useEffect(() => {
+    groupRef.current?.to({
+      opacity: 1,
+      y: 0,
+      duration: 0.3,
+    });
+  }, []);
+
   return (
-    <Group>
+    <Group ref={groupRef} y={-20} opacity={0}>
       <Line
         points={[710, y + 55, 675, y + 78, 710, y + 88]}
         closed
@@ -90,10 +102,27 @@ export default function Interview() {
     onAddToJournal,
     onFinishInterview,
   } = useInterviewModel();
+  const catRef = useRef<Konva.Group>(null);
+  const questionId = question?.id;
+  const choiceId = choice?.id;
   const scale = Math.min(windowWidth / WIDTH, windowHeight / HEIGHT);
   const left = (windowWidth - WIDTH * scale) / 2;
   const top = (windowHeight - HEIGHT * scale) / 2;
   const deskTop = top + DESK_Y * scale;
+
+  useEffect(() => {
+    if ((!questionId && !choiceId) || !catRef.current) return;
+
+    const bounceUp = catRef.current.to({
+      y: 90,
+      duration: 0.12,
+      onFinish: () => {
+        catRef.current?.to({ y: 100, duration: 0.12 });
+      },
+    });
+
+    return () => bounceUp.destroy();
+  }, [choiceId, questionId]);
 
   return (
     <main
@@ -120,7 +149,9 @@ export default function Interview() {
         <Stage width={WIDTH} height={HEIGHT}>
           <Layer>
             <Rect width={WIDTH} height={DESK_Y} fill={COLORS.wall} />
-            <URLImage src={cat} x={200} y={100} width={480} height={648} />
+            <Group ref={catRef} x={200} y={100}>
+              <URLImage src={cat} x={0} y={0} width={480} height={648} />
+            </Group>
 
             {!complete && !question && (
               <>
