@@ -88,6 +88,45 @@ function SpeechBubble({ text, y }: { text: string; y: number }) {
   );
 }
 
+function AdvicePopup() {
+  const popupRef = useRef<Konva.Group>(null);
+
+  useEffect(() => {
+    popupRef.current?.to({
+      opacity: 1,
+      y: 0,
+      duration: 0.25,
+    });
+  }, []);
+
+  return (
+    <Group ref={popupRef} y={15} opacity={0}>
+      <Rect
+        x={700}
+        y={430}
+        width={500}
+        height={80}
+        fill="#fff2a8"
+        stroke="#d39b35"
+        strokeWidth={4}
+        cornerRadius={24}
+      />
+      <Text
+        x={720}
+        y={430}
+        width={460}
+        height={80}
+        text="Choose your question wisely! You can only ask one."
+        align="center"
+        verticalAlign="middle"
+        fontSize={24}
+        fontFamily="Coiny"
+        fill="#4C2100"
+      />
+    </Group>
+  );
+}
+
 export default function Interview() {
   const {
     questions,
@@ -174,6 +213,7 @@ export default function Interview() {
             {question && (
               <>
                 <SpeechBubble text={question.answer} y={80} />
+                {question.id === 'q1' && !choice && <AdvicePopup />}
                 {!choice && question.choices.map((item, index) => (
                   <TitleButton
                     key={item.id}
