@@ -95,6 +95,25 @@ paths:
         default:
           $ref: '#/components/responses/Error'
 
+  /api/article/answers:
+    post:
+      summary: Submit the evidence picked for every article question and find out which ending it earns
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewArticleAnswers'
+      responses:
+        '200':
+          description: The ending the answers earn
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleResult'
+        default:
+          $ref: '#/components/responses/Error'
+
 components:
   parameters:
     Chapter:
@@ -155,6 +174,31 @@ components:
             type: string
             minLength: 1
             maxLength: 200
+
+    NewArticleAnswers:
+      type: object
+      required: [answers]
+      additionalProperties: false
+      properties:
+        answers:
+          description: 'Subject (question) id → the evidence ids picked for it, e.g. {"subject-cause": ["ev-marshal", "ev-foreman"]}'
+          type: object
+          additionalProperties:
+            type: array
+            maxItems: 50
+            items:
+              type: string
+              minLength: 1
+              maxLength: 100
+
+    ArticleResult:
+      type: object
+      required: [ending]
+      additionalProperties: false
+      properties:
+        ending:
+          type: string
+          enum: [good, bad]
 
     Note:
       type: object

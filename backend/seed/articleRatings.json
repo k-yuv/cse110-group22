@@ -1,0 +1,63 @@
+[
+  {
+    "subjectId": "subject-catnip",
+    "ratings": {
+      "ev-marshal": "strong",
+      "ev-cctv": "strong",
+      "ev-inspection": "strong",
+      "ev-foreman": "strong",
+      "ev-insurance": "strong",
+      "ev-forum": "weak",
+      "ev-neighbor": "weak",
+      "ev-weather": "irrelevant",
+      "ev-electrician": "strong",
+      "ev-911": "strong",
+      "ev-lab": "strong",
+      "ev-photos": "strong",
+      "ev-employee": "strong",
+      "ev-tweet": "weak",
+      "ev-tabloid": "weak",
+      "ev-cousin": "weak",
+      "ev-menu": "irrelevant",
+      "ev-parking": "irrelevant",
+      "ev-nicotine": "strong"
+    }
+  },
+  {
+    "subjectId": "subject-arson",
+    "ratings": {
+      "ev-cctv": "strong",
+      "ev-lab": "strong",
+      "ev-insurance": "strong",
+      "ev-photos": "strong",
+      "ev-forum": "weak",
+      "ev-neighbor": "weak",
+      "ev-tabloid": "weak",
+      "ev-cousin": "weak"
+    }
+  },
+  {
+    "subjectId": "subject-warnings",
+    "ratings": {
+      "ev-inspection": "strong",
+      "ev-electrician": "strong",
+      "ev-employee": "strong",
+      "ev-tweet": "weak",
+      "ev-cousin": "weak"
+    }
+  },
+  {
+    "subjectId": "subject-cause",
+    "ratings": {
+      "ev-marshal": "strong",
+      "ev-foreman": "strong",
+      "ev-911": "strong",
+      "ev-photos": "strong",
+      "ev-lab": "strong",
+      "ev-forum": "weak",
+      "ev-neighbor": "weak",
+      "ev-tweet": "weak",
+      "ev-tabloid": "weak"
+    }
+  }
+]

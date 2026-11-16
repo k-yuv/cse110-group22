@@ -3,6 +3,7 @@ import express from 'express';
 import * as OpenApiValidator from 'express-openapi-validator';
 import notesRouter from './features/notes/notes.router';
 import questionsRouter from './features/questions/questions.router';
+import articleRouter from './features/article/article.router';
 import { errorHandler } from './middleware/errorHandler';
 
 // ---------------------------------------------------------------
@@ -38,6 +39,27 @@ export interface AnswerResult {
   correct: boolean;
 }
 
+// How useful one piece of evidence is for answering one article question.
+export type EvidenceRating = 'strong' | 'weak' | 'irrelevant';
+
+// How one question's ratings are saved in backend/data/articleRatings.json.
+// Ratings are never sent to the client.
+export interface StoredSubjectRatings {
+  // The question (subject) these ratings are for, e.g. "subject-cause".
+  subjectId: string;
+  // Evidence id → its rating for this question. A missing id counts as irrelevant.
+  ratings: Record<string, EvidenceRating>;
+}
+
+// Matches the ArticleAnswers schema in backend/openapi.yaml:
+// subject id → the evidence ids the player picked for it.
+export type ArticleAnswers = Record<string, string[]>;
+
+// Matches the ArticleResult schema in backend/openapi.yaml.
+export interface ArticleResult {
+  ending: 'good' | 'bad';
+}
+
 const app = express();
 
 app.use(express.json());
@@ -59,6 +81,7 @@ app.get('/api/health', (req, res) => {
 // Feature routers. Each one handles every URL under its prefix.
 app.use('/api/notes', notesRouter);
 app.use('/api/chapters/:chapter/questions', questionsRouter);
+app.use('/api/article', articleRouter);
 
 // Must stay last: it only runs when something above passed along an error.
 app.use(errorHandler);
