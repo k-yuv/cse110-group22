@@ -54,7 +54,7 @@ export function useInterviewModel() {
     finishing,
     onSelectQuestion: (id: string) => update(() => controller.selectQuestion(id)),
     onSelectChoice: (id: string) => update(() => controller.selectChoice(id)),
-    onAddToJournal: () => update(() => controller.completeCurrentQuestion()),
+    onAddToJournal: () => update(() => controller.completeCurrentQuestion()), // placeholder for now, will add to Journal once backend is built.
     onFinishInterview: finishInterview,
   };
 }
