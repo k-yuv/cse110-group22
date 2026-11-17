@@ -5,11 +5,13 @@ import ArticleWriting from './components/Article-Writing/articleWritingView';
 import GoodEnding from './components/Endings/goodEndingView';
 import BadEnding from './components/Endings/badEndingView';
 import NotFound from './components/Not-Found/notFoundView';
-import { seedMockEvidence } from './components/Journal/mockEvidence';
+import { LOADING_TEXT, LOAD_ERROR_TEXT, RETRY_LABEL } from './components/Journal/journalContent';
+import { useJournalLoader } from './components/Journal/journalViewModel';
 import TitleScreen from './components/TitleScreen/titleScreenView';
 import NewsArticle from './components/NewsArticle/newsArticleView';
 import SocialMedia from './components/Social-Media/socialMediaView';
 import Interview from './components/Interview/interviewView';
+import DeskCleanup from './components/Desk-Cleanup-Minigame/deskCleanupView';
 import { ROUTES } from './routes';
 import RouteGuard from './components/Route-Guard/routeGuardView';
 import type { EndingState } from './components/Route-Guard/routeGuardModel';
@@ -21,6 +23,7 @@ const SUBMITTED: EndingState = { articleSubmitted: true };
 
 // Submitting the article goes to that ending's page. The state lets the
 // ending's guard know the player got there by submitting.
+// Submitting the article goes to that ending's page.
 function ArticleWritingPage() {
   const navigate = useNavigate();
   return (
@@ -37,6 +40,19 @@ function ArticleWritingPage() {
 // Wrap screens that have to be unlocked first in <RouteGuard> so typing the
 // URL can't skip ahead.
 function App() {
+  const { loading, failed, onRetry } = useJournalLoader();
+
+  // Screens read the journal as they open, so it has to be loaded first.
+  if (loading) return <p>{LOADING_TEXT}</p>;
+  if (failed) {
+    return (
+      <>
+        <p role="alert">{LOAD_ERROR_TEXT}</p>
+        <button type="button" onClick={onRetry}>{RETRY_LABEL}</button>
+      </>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -84,6 +100,7 @@ function App() {
           }
         />
         <Route path={ROUTES.aiImage} element={<AiMinigame />} />
+        <Route path={ROUTES.cleanDesk} element={<DeskCleanup />} />
         <Route path={ROUTES.interview} element={<Interview />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

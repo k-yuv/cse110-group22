@@ -8,6 +8,7 @@ import HoverSpotlight from '../parts/HoverSpotlight';
 import { ROUTES } from '../../../routes';
 import { completeActivity, getProgress, type ActivityId } from '../../../services/progress';
 import { ACTIVITY_LABELS, CREATE_ARTICLE_LABEL, DONE_TEXT, LOADING_TEXT, LOCKED_TEXT } from '../deskContent';
+import { CLOSE_LABEL, DIALOG_LABEL, JOURNAL_PLACEMENTS } from '../../Journal/journalContent';
 
 // The real progress service, except getProgress and completeActivity can be
 // made to fail in a single test with mockRejectedValueOnce.
@@ -76,6 +77,7 @@ vi.mock('react-konva', async () => {
       return null;
     },
     Circle: () => null,
+    Line: () => null,
     Text: ({ text }: FakeProps) => <span>{text}</span>,
   };
 });
@@ -118,6 +120,18 @@ function itemLabel(label: string) {
 describe('Desk view', () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  it('docks the journal, which opens and closes', async () => {
+    const user = userEvent.setup();
+    await renderDesk();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await user.click(screen.getByText(JOURNAL_PLACEMENTS.desk.label));
+    expect(screen.getByRole('dialog', { name: DIALOG_LABEL })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: CLOSE_LABEL }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('shows a loading message until progress loads', async () => {
