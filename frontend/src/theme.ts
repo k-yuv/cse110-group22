@@ -29,6 +29,23 @@ export const COLORS = {
   progressDone: '#ffb404',
   progressTodo: '#fff7dd',
   error: '#b00020',
+
+  // Back button
+  backButton: '#6e4440',
+  backButtonArrow: '#ffffff',
+  backButtonHover: '#7a4e4a',
+
+  // Popups, matching Settings and the title screen buttons
+  overlay: 'rgba(0, 0, 0, 0.6)',
+  popupBox: '#f7fcfd',
+  popupBorder: '#6fb3f3',
+  popupText: '#4c2100',
+
+  // Back confirmation
+  goBackButton: '#e39a90',
+  stayButton: '#7dbe87',
+  goBackButtonHover: '#d98b81',
+  stayButtonHover: '#6fb07a',
 };
 
 // Konva's default font, which the desk uses for all its text.
