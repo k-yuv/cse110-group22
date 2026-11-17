@@ -13,6 +13,7 @@ import Interview from './components/Interview/interviewView';
 import { ROUTES } from './routes';
 import RouteGuard from './components/Route-Guard/routeGuardView';
 import type { EndingState } from './components/Route-Guard/routeGuardModel';
+import Interview from './components/Interview/InterviewView';
 
 seedMockEvidence();
 
@@ -83,6 +84,7 @@ function App() {
           }
         />
         <Route path={ROUTES.aiImage} element={<AiMinigame />} />
+        <Route path={ROUTES.interview} element={<Interview />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
