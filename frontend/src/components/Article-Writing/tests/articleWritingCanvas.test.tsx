@@ -59,7 +59,7 @@ describe('ArticleWriting canvas cards', () => {
   });
 
   it('shows the prompt and instructions on the laptop before anything is picked', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
 
     expect(await screen.findByText('What happened?')).toBeInTheDocument();
     expect(screen.getByText('Evidence 0/2')).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe('ArticleWriting canvas cards', () => {
   });
 
   it('selects evidence when its journal card is clicked and shows it on the laptop', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
     await screen.findByText('What happened?');
 
     fireEvent.click(cards()[0]);
@@ -86,7 +86,7 @@ describe('ArticleWriting canvas cards', () => {
   });
 
   it('removes evidence when its card on the laptop is clicked', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
     await screen.findByText('What happened?');
 
     fireEvent.click(cards()[0]);
@@ -98,7 +98,7 @@ describe('ArticleWriting canvas cards', () => {
   });
 
   it('selects evidence on tap', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
     await screen.findByText('What happened?');
 
     fireEvent.touchEnd(cards()[1]);
@@ -107,7 +107,7 @@ describe('ArticleWriting canvas cards', () => {
   });
 
   it('shows a pointer cursor while hovering a card', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
     await screen.findByText('What happened?');
 
     fireEvent.mouseEnter(cards()[0]);
@@ -119,7 +119,7 @@ describe('ArticleWriting canvas cards', () => {
 
   it('does nothing on hover when the card is not on a stage', async () => {
     konva.stageContainer = null;
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
     await screen.findByText('What happened?');
 
     expect(() => {

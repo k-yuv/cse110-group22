@@ -1,11 +1,12 @@
 import type { CSSProperties } from 'react';
 import { Group, Image, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { useAiMinigameModel } from './aiMinigameModel';
+import BackButton from '../Back-Button/backButtonView';
+import BackConfirmation from '../Back-Confirmation/backConfirmationView';
 import {
   AI_LABEL,
   ANSWER_LAYOUT,
-  BACK_BUTTON_LAYOUT,
-  BACK_TO_DESK_LABEL,
+  BACK_BUTTON_SIZE,
   BUBBLE_LAYOUT,
   COLORS,
   FRAME_LAYOUT,
@@ -122,6 +123,7 @@ export default function AiMinigame() {
     onAnswer,
     onBackToDesk,
     onPlayAgain,
+    backConfirmation,
   } = useAiMinigameModel();
 
   const bubbleText = result ? resultText(result.correct, result.total) : QUESTION_TEXT;
@@ -138,25 +140,6 @@ export default function AiMinigame() {
   const progress = place(PROGRESS_LAYOUT.box);
   const bubble = place(BUBBLE_LAYOUT.box);
   const bubbleStroke = BUBBLE_LAYOUT.strokeWidth * sizeUnit;
-  const back = place(BACK_BUTTON_LAYOUT);
-
-  const backButtonStyle: CSSProperties = {
-    position: 'absolute',
-    left: back.x,
-    top: back.y,
-    width: back.width,
-    height: back.height,
-    borderRadius: '50%',
-    border: 'none',
-    padding: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: COLORS.backButton,
-    cursor: 'pointer',
-    zIndex: 1,
-  };
-  const arrowSize = back.width * 0.4;
 
   function answerButtonStyle(
     layout: typeof ANSWER_LAYOUT.ai,
@@ -290,22 +273,9 @@ export default function AiMinigame() {
         </>
       )}
 
-      <button type="button" aria-label={BACK_TO_DESK_LABEL} onClick={onBackToDesk} style={backButtonStyle}>
-        <svg
-          width={arrowSize}
-          height={arrowSize}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={COLORS.backButtonArrow}
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <line x1="20" y1="12" x2="4" y2="12" />
-          <polyline points="10,6 4,12 10,18" />
-        </svg>
-      </button>
+      <BackButton onClick={onBackToDesk} size={BACK_BUTTON_SIZE * sizeUnit} />
+
+      <BackConfirmation activityName={PAGE_TITLE} {...backConfirmation} />
     </main>
   );
 }

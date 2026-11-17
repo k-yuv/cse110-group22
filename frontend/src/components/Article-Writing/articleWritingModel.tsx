@@ -8,12 +8,15 @@ import {
   type ArticleEnding,
   type ArticleSubject,
 } from '../../services/article';
+import { useBackConfirmationModel } from '../Back-Confirmation/backConfirmationModel';
 
 interface ArticleWritingModelOptions {
   levelId: string;
   // How many evidence cards fit on one open spread of the journal.
   evidencePerPage: number;
   onFinish: (ending: ArticleEnding) => void;
+  // Leaves the screen. Asks first, since unsubmitted answers are lost.
+  onBack: () => void;
 }
 
 function getWindowSize() {
@@ -22,7 +25,7 @@ function getWindowSize() {
 
 // Owns all state and service calls for the Article Writing screen. Which
 // ending the player gets is decided by submitArticle, not here.
-export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: ArticleWritingModelOptions) {
+export function useArticleWritingModel({ levelId, evidencePerPage, onFinish, onBack }: ArticleWritingModelOptions) {
   // Evidence can't change while the player is writing, so read it once.
   const evidence = JournalController.getInstance().read();
   const [subjects, setSubjects] = useState<ArticleSubject[]>([]);
@@ -105,6 +108,8 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
     }
   }
 
+  const { onBack: handleBack, confirmation } = useBackConfirmationModel({ onLeave: onBack });
+
   return {
     windowWidth: size.width,
     windowHeight: size.height,
@@ -133,5 +138,7 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
     isSelected: (id: string) => selectedIds.includes(id),
     onToggleEvidence: handleToggleEvidence,
     onSubmit: handleSubmit,
+    onBack: handleBack,
+    backConfirmation: confirmation,
   };
 }

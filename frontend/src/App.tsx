@@ -10,15 +10,18 @@ import TitleScreen from './components/TitleScreen/titleScreenView';
 import NewsArticle from './components/NewsArticle/newsArticleView';
 import DeskCleanup from './components/Desk-Cleanup-Minigame/deskCleanupView';
 import { ROUTES } from './routes';
+import Interview from './components/Interview/InterviewView';
 
 seedMockEvidence();
 
-// Submitting the article goes to that ending's page.
+// Submitting the article goes to that ending's page; going back goes to
+// the desk.
 function ArticleWritingPage() {
   const navigate = useNavigate();
   return (
     <ArticleWriting
       onFinish={(ending) => navigate(ending === 'good' ? ROUTES.goodEnding : ROUTES.badEnding)}
+      onBack={() => navigate(ROUTES.desk)}
     />
   );
 }
@@ -37,6 +40,7 @@ function App() {
         <Route path={ROUTES.onlineArticle} element={<NewsArticle />} />
         <Route path={ROUTES.aiImage} element={<AiMinigame />} />
         <Route path={ROUTES.cleanDesk} element={<DeskCleanup />} />
+        <Route path={ROUTES.interview} element={<Interview />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
