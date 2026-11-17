@@ -70,7 +70,7 @@ const pageNavStyle: CSSProperties = {
   fontSize: 14,
 };
 
-// Question number and stepping back to an earlier question, above the laptop.
+// Question number and stepping back to an earlier question, above the socialMediaLaptop.
 const questionNavStyle: CSSProperties = {
   ...pageNavStyle,
   left: SCREEN.x,
@@ -103,7 +103,7 @@ interface EvidenceCardProps {
   onToggle: (id: string) => void;
 }
 
-// compact cards show only the title, to fit five on the laptop screen.
+// compact cards show only the title, to fit five on the socialMediaLaptop screen.
 function EvidenceCard({ item, x, y, width, selected, compact = false, onToggle }: EvidenceCardProps) {
   return (
     <Group
@@ -319,7 +319,7 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
               />
             ))}
 
-            {/* Open journal, drawn last so it sits on top of the laptop */}
+            {/* Open journal, drawn last so it sits on top of the socialMediaLaptop */}
             <Rect x={20} y={266} width={602} height={442} cornerRadius={25} fill={COLORS.journalCover} />
             <Rect x={43} y={288} width={557} height={398} cornerRadius={12} fill={COLORS.paper} />
             <Line points={[322, 345, 322, 633]} stroke={COLORS.divider} strokeWidth={2} />

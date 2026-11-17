@@ -11,14 +11,14 @@ The screen is the page at `/create-article`, opened from the **Create Article** 
 | Open journal (left) | Every piece of evidence in the Journal, as clickable cards |
 | Laptop (right) | The current question, and the evidence picked for it |
 | Progress bar (top) | One slot per question, filled as questions are answered |
-| Submit button (under the laptop) | **Submit answer**, or **Submit article** on the last question |
+| Submit button (under the socialMediaLaptop) | **Submit answer**, or **Submit article** on the last question |
 
 ### Answering a question
 
-The laptop shows one question at a time, for example *"What caused the fire?"*. Each question needs a set number of pieces of evidence (`requiredCount`), shown as `Evidence 1/2`.
+The socialMediaLaptop shows one question at a time, for example *"What caused the fire?"*. Each question needs a set number of pieces of evidence (`requiredCount`), shown as `Evidence 1/2`.
 
 - **Clicking a card in the journal** adds it to the current question. The card turns yellow with a ✓.
-- **Clicking a picked card again** (in the journal or on the laptop) removes it.
+- **Clicking a picked card again** (in the journal or on the socialMediaLaptop) removes it.
 - **Clicking a new card when the question is already full** swaps it in for one of the picked cards. Repeated swaps cycle through the slots, so you don't keep replacing the same one.
 
 The submit button stays disabled until the question has enough evidence.
@@ -26,7 +26,7 @@ The submit button stays disabled until the question has enough evidence.
 ### Moving between questions
 
 - The player only moves **forward** by pressing **Submit answer**.
-- **‹ Previous question** (above the laptop) goes back to change an earlier answer. Answers are kept when going back.
+- **‹ Previous question** (above the socialMediaLaptop) goes back to change an earlier answer. Answers are kept when going back.
 - On the last question the button reads **Submit article**, which sends every answer at once.
 
 ### Journal pages
@@ -228,7 +228,7 @@ Run the tests with `npm test`, from `frontend/` for the screen and from `backend
 | `services/tests/article.test.ts` | `submitArticle` posts every answer to `/api/article/answers` and returns the ending, and throws on an error response. The mock questions have the right shape. |
 | `Article-Writing/tests/articleWritingModel.test.tsx` | The model on its own: loading questions, ignoring clicks with no questions, not submitting an incomplete answer, picked order, skipping evidence that's left the journal, page and question bounds, one page for an empty journal, the button disabled while sending, and resize handling |
 | `Article-Writing/tests/articleWriting.test.tsx` | The screen through its hidden buttons: loading message, answered count, moving forward only by submitting, keeping answers when going back, swapping evidence once full, submitting every answer, journal paging, and both error messages |
-| `Article-Writing/tests/articleWritingCanvas.test.tsx` | The Konva evidence cards: prompt and instructions on the laptop, clicking a journal card to pick it, clicking a laptop card to remove it, tap, and the pointer cursor on hover |
+| `Article-Writing/tests/articleWritingCanvas.test.tsx` | The Konva evidence cards: prompt and instructions on the socialMediaLaptop, clicking a journal card to pick it, clicking a socialMediaLaptop card to remove it, tap, and the pointer cursor on hover |
 | `Article-Writing/tests/articleWritingFlow.test.tsx` | The whole flow with the real `App`, mock evidence and mock questions: picking strong (or weak) evidence sends those evidence ids, and a `good` (or `bad`) response ends on `/ending/good` (or `/ending/bad`). `submitArticle` is faked here, since the backend test checks the same picks against the real ratings. |
 | `Journal/tests/journal.test.ts` | The Journal is shared, and can add, read, and clear; the mock evidence is only loaded into an empty journal, and only once |
 | `Progress-Bar/tests/progressBar.test.tsx` | The bar shows its label and completed count |
@@ -257,8 +257,8 @@ These depend on actually drawing the screen, so we can only check them by hand w
 
 - [ ] Strong evidence (e.g. Fire marshal report, Security camera footage, Inspection records, then Fire marshal report + Foreman interview) ends on the good ending, and weak evidence on the bad one.
 - [ ] With the backend stopped, **Submit article** shows "Could not submit article".
-- [ ] The journal, laptop, progress bar, and buttons line up with the "Creating Article" Figma frame.
+- [ ] The journal, socialMediaLaptop, progress bar, and buttons line up with the "Creating Article" Figma frame.
 - [ ] Nothing is cut off or blurry at different window sizes.
-- [ ] Picked cards turn yellow with a ✓ in the journal, and appear on the laptop.
+- [ ] Picked cards turn yellow with a ✓ in the journal, and appear on the socialMediaLaptop.
 - [ ] A long question or evidence title is cut off with `…` instead of spilling out.
 - [ ] The progress bar slots pop in as questions are answered.

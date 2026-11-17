@@ -58,7 +58,7 @@ describe('ArticleWriting canvas cards', () => {
     vi.mocked(articleApi.getArticleSubjects).mockResolvedValue(SUBJECTS);
   });
 
-  it('shows the prompt and instructions on the laptop before anything is picked', async () => {
+  it('shows the prompt and instructions on the socialMediaLaptop before anything is picked', async () => {
     render(<ArticleWriting onFinish={vi.fn()} />);
 
     expect(await screen.findByText('What happened?')).toBeInTheDocument();
@@ -69,7 +69,7 @@ describe('ArticleWriting canvas cards', () => {
     expect(within(cards()[0]).getByText('About A')).toBeInTheDocument();
   });
 
-  it('selects evidence when its journal card is clicked and shows it on the laptop', async () => {
+  it('selects evidence when its journal card is clicked and shows it on the socialMediaLaptop', async () => {
     render(<ArticleWriting onFinish={vi.fn()} />);
     await screen.findByText('What happened?');
 
@@ -79,18 +79,18 @@ describe('ArticleWriting canvas cards', () => {
     expect(screen.queryByText('Submit 2 pieces of evidence.')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Evidence A' })).toHaveAttribute('aria-pressed', 'true');
 
-    // The laptop copy is compact (title only), the journal copy keeps its description.
+    // The socialMediaLaptop copy is compact (title only), the journal copy keeps its description.
     const selected = cards().filter((card) => within(card).queryByText('✓ Evidence A'));
     expect(selected).toHaveLength(2);
     expect(selected.filter((card) => within(card).queryByText('About A'))).toHaveLength(1);
   });
 
-  it('removes evidence when its card on the laptop is clicked', async () => {
+  it('removes evidence when its card on the socialMediaLaptop is clicked', async () => {
     render(<ArticleWriting onFinish={vi.fn()} />);
     await screen.findByText('What happened?');
 
     fireEvent.click(cards()[0]);
-    // Laptop cards are drawn before the journal, so the first card is the laptop's.
+    // Laptop cards are drawn before the journal, so the first card is the socialMediaLaptop's.
     fireEvent.click(cards()[0]);
 
     expect(screen.getByText('Evidence 0/2')).toBeInTheDocument();
