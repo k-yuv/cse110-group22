@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../../App';
 import { ROUTES } from '../../../routes';
+import { completeActivity } from '../../../services/progress';
 import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
 import { GO_BACK_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 import { submitArticle } from '../../../services/article';
@@ -43,6 +44,12 @@ async function writeArticle(answers: string[][]) {
 }
 
 describe('Article writing flow', () => {
+  // Create Article only opens once the story activities are done.
+  beforeEach(async () => {
+    localStorage.clear();
+    for (const id of ['articles', 'social', 'interviews'] as const) await completeActivity(id);
+  });
+
   it('sends strong evidence and goes to the good ending', async () => {
     vi.mocked(submitArticle).mockResolvedValue({ ending: 'good' });
 
