@@ -3,6 +3,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../../App';
 import { ROUTES } from '../../../routes';
+import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
+import { GO_BACK_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 import { submitArticle } from '../../../services/article';
 
 // Integration: runs the real (mock) journal evidence and questions, from
@@ -77,5 +79,18 @@ describe('Article writing flow', () => {
       'subject-warnings': ['ev-weather'],
       'subject-cause': ['ev-forum', 'ev-neighbor'],
     });
+  });
+
+  it('the back button asks first, then Go Back returns to the desk', async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, '', ROUTES.createArticle);
+    render(<App />);
+
+    await user.click(await screen.findByRole('button', { name: BACK_BUTTON_LABEL }));
+    expect(window.location.pathname).toBe(ROUTES.createArticle);
+
+    await user.click(screen.getByRole('button', { name: GO_BACK_LABEL }));
+
+    expect(window.location.pathname).toBe(ROUTES.desk);
   });
 });

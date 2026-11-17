@@ -5,6 +5,7 @@ import { completeActivity } from '../../services/progress';
 import { ROUTES } from '../../routes';
 import { gradeHighlights, toggleHighlight, type GradeResult } from './newsArticleRules';
 import { addEvidence } from './journalAdapter';
+import { useBackConfirmationModel } from '../Back-Confirmation/backConfirmationModel';
 
 function getWindowSize() {
   return { width: window.innerWidth, height: window.innerHeight };
@@ -67,6 +68,13 @@ export function useNewsArticleModel() {
     navigate(ROUTES.desk);
   }
 
+  // Leaving loses the highlights, so ask first, until the level is passed
+  // and saved.
+  const { onBack, confirmation } = useBackConfirmationModel({
+    onLeave: () => navigate(ROUTES.desk),
+    hasProgressToLose: !result?.passed,
+  });
+
   return {
     activity,
     error,
@@ -80,5 +88,7 @@ export function useNewsArticleModel() {
     onSentenceClick: handleSentenceClick,
     onSubmit: handleSubmit,
     onContinue: handleContinue,
+    onBack,
+    backConfirmation: confirmation,
   };
 }

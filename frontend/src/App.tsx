@@ -12,12 +12,14 @@ import { ROUTES } from './routes';
 
 seedMockEvidence();
 
-// Submitting the article goes to that ending's page.
+// Submitting the article goes to that ending's page; going back goes to
+// the desk.
 function ArticleWritingPage() {
   const navigate = useNavigate();
   return (
     <ArticleWriting
       onFinish={(ending) => navigate(ending === 'good' ? ROUTES.goodEnding : ROUTES.badEnding)}
+      onBack={() => navigate(ROUTES.desk)}
     />
   );
 }

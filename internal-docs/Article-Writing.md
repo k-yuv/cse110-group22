@@ -166,7 +166,7 @@ articleWritingView.tsx  →  articleWritingModel.tsx  →  services/article.ts  
 article.router.ts  →  article.controller.ts  →  article.service.ts  →  utils/jsonStore.ts
 ```
 
-The view doesn't navigate on its own. It calls `onFinish(ending)`, and `App.tsx` decides which page that goes to.
+The view doesn't navigate on its own. It calls `onFinish(ending)`, and `App.tsx` decides which page that goes to. Likewise, the back arrow in the top left asks "Are You Sure?" first, then calls `onBack()`, which `App.tsx` sends to the desk. See [Back-Confirmation.md](Back-Confirmation.md).
 
 ### Which file do I open?
 
