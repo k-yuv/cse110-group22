@@ -10,12 +10,12 @@ import { useJournalLoader } from './components/Journal/journalViewModel';
 import TitleScreen from './components/TitleScreen/titleScreenView';
 import NewsArticle from './components/NewsArticle/newsArticleView';
 import SocialMedia from './components/Social-Media/socialMediaView';
-import Interview from './components/Interview/interviewView';
+import Interview from './components/Interview/InterviewView';
 import DeskCleanup from './components/Desk-Cleanup-Minigame/deskCleanupView';
 import { ROUTES } from './routes';
 import RouteGuard from './components/Route-Guard/routeGuardView';
 import type { EndingState } from './components/Route-Guard/routeGuardModel';
-import Interview from './components/Interview/InterviewView';
+import { seedMockEvidence } from './components/Journal/mockEvidence';
 
 seedMockEvidence();
 
@@ -23,7 +23,6 @@ const SUBMITTED: EndingState = { articleSubmitted: true };
 
 // Submitting the article goes to that ending's page. The state lets the
 // ending's guard know the player got there by submitting.
-// Submitting the article goes to that ending's page.
 function ArticleWritingPage() {
   const navigate = useNavigate();
   return (
@@ -31,6 +30,7 @@ function ArticleWritingPage() {
       onFinish={(ending) =>
         navigate(ending === 'good' ? ROUTES.goodEnding : ROUTES.badEnding, { state: SUBMITTED })
       }
+      onBack={() => navigate(ROUTES.desk)}
     />
   );
 }
@@ -101,7 +101,6 @@ function App() {
         />
         <Route path={ROUTES.aiImage} element={<AiMinigame />} />
         <Route path={ROUTES.cleanDesk} element={<DeskCleanup />} />
-        <Route path={ROUTES.interview} element={<Interview />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

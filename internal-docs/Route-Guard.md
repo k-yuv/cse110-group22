@@ -8,7 +8,7 @@ Stops players from reaching locked screens by typing their URL (issue #75). The 
 | --- | --- | --- |
 | `/create-article` | Interviews is done | `<RouteGuard screen="createArticle">` |
 | `/social-media` (placeholder) | Online Articles is done | `<RouteGuard screen="social">` |
-| `/interview` (placeholder) | Social Media is done | `<RouteGuard screen="interviews">` |
+| `/interview` | Social Media is done | `<RouteGuard screen="interviews">` |
 | `/ending/good`, `/ending/bad` | The player just submitted an article | `<RouteGuard screen="ending">` |
 
 Everything else (title, desk, Online Articles, minigames, 404) is open to everyone.
@@ -31,7 +31,7 @@ Nothing in saved progress records that an article was submitted, so `ArticleWrit
 
 ### Placeholder screens
 
-Social Media and Interviews aren't built yet, so `Social-Media/socialMediaView.tsx` and `Interview/interviewView.tsx` render `Placeholder-Activity`: a title and a **Finish (placeholder)** button that marks the activity done and returns to the desk. That lets you play through the whole unlock order by hand. When the real screen is built, replace the placeholder's body and keep the `<RouteGuard>` wrapper in `App.tsx`. Delete `Placeholder-Activity/` once nothing uses it.
+Social Media isn't built yet, so `Social-Media/socialMediaView.tsx` renders `Placeholder-Activity`: a title and a **Finish (placeholder)** button that marks the activity done and returns to the desk. That lets you play through the whole unlock order by hand. Interviews is now the real screen (see [Interview-Level.md](Interview-Level.md)). When the real screen is built, replace the placeholder's body and keep the `<RouteGuard>` wrapper in `App.tsx`. Delete `Placeholder-Activity/` once nothing uses it.
 
 ## Adding a new locked screen
 
