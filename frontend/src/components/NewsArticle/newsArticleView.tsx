@@ -5,6 +5,7 @@ import type { KonvaEventObject } from 'konva/lib/Node';
 import { useNewsArticleModel } from './newsArticleModel';
 import { getResultMessage } from './newsArticleRules';
 import {
+  ACTIVITY_NAME,
   ARTICLE_COLUMN,
   COLORS,
   CONTINUE_LABEL,
@@ -21,6 +22,8 @@ import {
 import { URLImage } from '../URLImage/URLImage';
 import HoverSpotlight from '../Desk/parts/HoverSpotlight';
 import Journal from '../Journal/journalView';
+import BackButton from '../Back-Button/backButtonView';
+import BackConfirmation from '../Back-Confirmation/backConfirmationView';
 import newspaperImage from '../../assets/Newspaper-Template-2.png';
 import highlighterImage from '../../assets/Highlighter.png';
 import highlighterOutline from '../../assets/Highlighter-Outline.png';
@@ -43,6 +46,8 @@ export default function NewsArticle() {
     onSentenceClick,
     onSubmit,
     onContinue,
+    onBack,
+    backConfirmation,
   } = useNewsArticleModel();
 
   // The highlighter that follows the mouse while it's held. It's moved
@@ -229,6 +234,9 @@ export default function NewsArticle() {
           )}
         </div>
       )}
+
+      <BackButton onClick={onBack} />
+      <BackConfirmation activityName={ACTIVITY_NAME} {...backConfirmation} />
     </main>
   );
 }

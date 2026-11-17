@@ -9,7 +9,9 @@ import { LOADING_TEXT, LOAD_ERROR_TEXT, RETRY_LABEL } from './components/Journal
 import { useJournalLoader } from './components/Journal/journalViewModel';
 import TitleScreen from './components/TitleScreen/titleScreenView';
 import NewsArticle from './components/NewsArticle/newsArticleView';
+import DeskCleanup from './components/Desk-Cleanup-Minigame/deskCleanupView';
 import { ROUTES } from './routes';
+import Interview from './components/Interview/InterviewView';
 
 // Submitting the article goes to that ending's page.
 function ArticleWritingPage() {
@@ -17,6 +19,7 @@ function ArticleWritingPage() {
   return (
     <ArticleWriting
       onFinish={(ending) => navigate(ending === 'good' ? ROUTES.goodEnding : ROUTES.badEnding)}
+      onBack={() => navigate(ROUTES.desk)}
     />
   );
 }
@@ -47,6 +50,8 @@ function App() {
         <Route path={ROUTES.badEnding} element={<BadEnding />} />
         <Route path={ROUTES.onlineArticle} element={<NewsArticle />} />
         <Route path={ROUTES.aiImage} element={<AiMinigame />} />
+        <Route path={ROUTES.cleanDesk} element={<DeskCleanup />} />
+        <Route path={ROUTES.interview} element={<Interview />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

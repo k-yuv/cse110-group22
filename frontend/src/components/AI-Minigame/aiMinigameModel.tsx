@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { ROUTES } from '../../routes';
 import { checkAiAnswers, getAiImages, type AiAnswers, type AiImage, type AiResult } from '../../services/aiImage';
 import type { Box } from './aiMinigameContent';
+import { useBackConfirmationModel } from '../Back-Confirmation/backConfirmationModel';
 
 const MAX_WIDTH_TO_HEIGHT = 1.5;
 
@@ -63,9 +64,12 @@ export function useAiMinigameModel() {
     };
   }
 
-  function handleBackToDesk() {
-    navigate(ROUTES.desk);
-  }
+  // Leaving mid-game loses the answers so far, so ask first. Once the
+  // results are showing there's nothing left to lose.
+  const { onBack, confirmation } = useBackConfirmationModel({
+    onLeave: () => navigate(ROUTES.desk),
+    hasProgressToLose: result === null,
+  });
 
   async function handleAnswer(isAi: boolean) {
     if (!currentImage || busy) return;
@@ -103,7 +107,8 @@ export function useAiMinigameModel() {
     result,
     busy,
     onAnswer: handleAnswer,
-    onBackToDesk: handleBackToDesk,
+    onBackToDesk: onBack,
+    backConfirmation: confirmation,
     onPlayAgain: handlePlayAgain,
   };
 }
