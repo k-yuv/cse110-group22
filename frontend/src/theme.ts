@@ -18,6 +18,9 @@ export const COLORS = {
   // Article writing
   wall: '#fff6df',
   journalCover: '#553a16',
+  journalNote: '#f7ddd0',
+  journalText: '#4c2100',
+  journalButton: '#d9d9d9',
   paper: '#f5fcfc',
   divider: '#c8c8c8',
   laptop: '#222222',

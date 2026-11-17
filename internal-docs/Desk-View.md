@@ -52,13 +52,12 @@ Which activities are done is saved in the browser (`localStorage`), so it surviv
 When you run the app with `npm run dev`, two buttons appear in the bottom left:
 
 - **Dev: complete next level** marks the next main activity done, in story order.
-- **Dev: reset progress** clears all progress.
+- **Dev: reset progress** clears all progress and collected evidence, then reloads the mock evidence.
 
 They exist only so you can try out the desk before the activity screens are built, and they never appear in production builds. Remove them (search for `TEMPORARY`) once the activities can actually be played.
 
 ### Not built yet
 
-- The docked Journal (issue #36).
 - The settings and help buttons from the mockup (issues #37 and #24).
 
 ## Where the code is

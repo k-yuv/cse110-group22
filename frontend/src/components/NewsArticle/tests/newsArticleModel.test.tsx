@@ -19,8 +19,8 @@ vi.mock('../../../services/progress', async (importOriginal) => {
   return { ...actual, completeActivity: vi.fn(actual.completeActivity) };
 });
 
-// Nothing can read the Journal yet, so these tests check what the model
-// hands to it instead.
+// These tests check what the model hands to the Journal. journalFlow.test.tsx
+// checks that it really arrives.
 vi.mock('../journalAdapter', () => ({ addEvidence: vi.fn() }));
 
 function Router({ children }: { children: ReactNode }) {
@@ -143,6 +143,26 @@ describe('useNewsArticleModel', () => {
     expect(result.current.article.error).toBe('');
     for (const entry of answerKey) expect(addEvidence).toHaveBeenCalledWith(entry.evidence);
     expect(addEvidence).toHaveBeenCalledTimes(answerKey.length);
+    expect(await getProgress()).toEqual(['articles']);
+  });
+
+  it('lets the player submit again if the evidence could not be saved', async () => {
+    const { result, answerKey, answerIds } = await renderArticleModel();
+    act(() => result.current.article.onToggleHighlighter());
+    clickSentences(result, answerIds);
+    vi.mocked(addEvidence).mockResolvedValueOnce(false);
+
+    await act(() => result.current.article.onSubmit());
+
+    expect(result.current.article.error).toBe('Could not save evidence');
+    expect(result.current.article.result).toBeNull();
+    expect(await getProgress()).toEqual([]);
+
+    await act(() => result.current.article.onSubmit());
+
+    expect(result.current.article.error).toBe('');
+    expect(result.current.article.result?.passed).toBe(true);
+    expect(addEvidence).toHaveBeenCalledTimes(answerKey.length * 2);
     expect(await getProgress()).toEqual(['articles']);
   });
 
