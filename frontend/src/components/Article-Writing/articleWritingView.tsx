@@ -1,17 +1,27 @@
 import type { CSSProperties } from 'react';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { Stage, Layer, Rect, Text, Line, Group } from 'react-konva';
+import { visuallyHidden } from '../../helpers';
 import type { ArticleEnding } from '../../services/article';
 import type { EvidenceModel } from '../Journal/EvidenceModel';
+import JournalBook from '../Journal/parts/JournalBook';
 import { COLORS, FONT } from '../../theme';
 import { useArticleWritingModel } from './articleWritingModel';
 import ProgressBar from '../Progress-Bar/ProgressBar';
+import BackButton from '../Back-Button/backButtonView';
+import BackConfirmation from '../Back-Confirmation/backConfirmationView';
+
+// Named in the back confirmation's message.
+export const ACTIVITY_NAME = 'your article';
 
 // Layout follows the "Creating Article" Figma frame (1280 × 832), scaled to
 // fit the window.
 const WIDTH = 1280;
 const HEIGHT = 832;
 const DESK_Y = 522;
+
+// The open journal, drawn by JournalBook at this size and position.
+const BOOK_FRAME = { x: 20, y: 266, width: 602 };
 
 // Journal: evidence cards fill the left page, then the right page.
 const PAGE_X = [73, 352];
@@ -25,17 +35,6 @@ const CARDS_PER_SPREAD = CARDS_PER_PAGE * PAGE_X.length;
 
 // Laptop screen, where the article is assembled.
 const SCREEN = { x: 688, y: 195, width: 480, height: 300 };
-
-// Hidden from sight but available to screen readers and tests, since
-// nothing inside the canvas is.
-const visuallyHidden: CSSProperties = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-};
 
 // The bar's label sits above it, so the bar itself starts at y = 51.
 const progressStyle: CSSProperties = {
@@ -70,7 +69,7 @@ const pageNavStyle: CSSProperties = {
   fontSize: 14,
 };
 
-// Question number and stepping back to an earlier question, above the socialMediaLaptop.
+// Question number and stepping back to an earlier question, above the laptop.
 const questionNavStyle: CSSProperties = {
   ...pageNavStyle,
   left: SCREEN.x,
@@ -103,7 +102,7 @@ interface EvidenceCardProps {
   onToggle: (id: string) => void;
 }
 
-// compact cards show only the title, to fit five on the socialMediaLaptop screen.
+// compact cards show only the title, to fit five on the laptop screen.
 function EvidenceCard({ item, x, y, width, selected, compact = false, onToggle }: EvidenceCardProps) {
   return (
     <Group
@@ -152,10 +151,12 @@ function EvidenceCard({ item, x, y, width, selected, compact = false, onToggle }
 interface ArticleWritingProps {
   levelId?: string;
   onFinish: (ending: ArticleEnding) => void;
+  // Leaves the screen, e.g. to the desk. Asks first.
+  onBack: () => void;
 }
 
 // Display only: gets everything it needs from useArticleWritingModel.
-export default function ArticleWriting({ levelId = 'level-1', onFinish }: ArticleWritingProps) {
+export default function ArticleWriting({ levelId = 'level-1', onFinish, onBack }: ArticleWritingProps) {
   const {
     windowWidth,
     windowHeight,
@@ -182,10 +183,13 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
     isSelected,
     onToggleEvidence,
     onSubmit,
+    onBack: handleBack,
+    backConfirmation,
   } = useArticleWritingModel({
     levelId,
     evidencePerPage: CARDS_PER_SPREAD,
     onFinish,
+    onBack,
   });
 
   if (loading) return <p>Loading questions...</p>;
@@ -218,6 +222,9 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
         }}
       >
         <h1 style={visuallyHidden}>Write your article</h1>
+
+        {/* Top left of the frame, beside the progress bar. */}
+        <BackButton onClick={handleBack} size={64} style={{ left: 48, top: 28 }} />
 
         <ProgressBar completed={answeredCount} total={questionCount} style={progressStyle} />
 
@@ -319,10 +326,11 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
               />
             ))}
 
-            {/* Open journal, drawn last so it sits on top of the socialMediaLaptop */}
-            <Rect x={20} y={266} width={602} height={442} cornerRadius={25} fill={COLORS.journalCover} />
-            <Rect x={43} y={288} width={557} height={398} cornerRadius={12} fill={COLORS.paper} />
-            <Line points={[322, 345, 322, 633]} stroke={COLORS.divider} strokeWidth={2} />
+            {/* Open journal, drawn last so it sits on top of the laptop. The
+                cards are drawn over it in frame coordinates, not as its children. */}
+            <Group x={BOOK_FRAME.x} y={BOOK_FRAME.y}>
+              <JournalBook width={BOOK_FRAME.width} />
+            </Group>
             <Text x={73} y={345} text="Evidence:" fontFamily={FONT} fontStyle="bold" fontSize={22} fill={COLORS.text} />
             {pageEvidence.map((item, index) => {
               const side = Math.floor(index / CARDS_PER_PAGE);
@@ -346,6 +354,9 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish }: Articl
           {isLastQuestion ? 'Submit article' : 'Submit answer'}
         </button>
       </section>
+
+      {/* Outside the scaled section, so its fixed overlay covers the window. */}
+      <BackConfirmation activityName={ACTIVITY_NAME} {...backConfirmation} />
     </main>
   );
 }

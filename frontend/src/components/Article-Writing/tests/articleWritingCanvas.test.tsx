@@ -20,19 +20,21 @@ vi.mock('react-konva', () => {
     Rect: () => null,
     Line: () => null,
     Text: ({ text }: { text: string }) => <span>{text}</span>,
+    // Only clickable groups are evidence cards; others, like the journal book's,
+    // just hold shapes.
     Group: ({ children, onClick, onTap, onMouseEnter, onMouseLeave }: {
-      children: ReactNode; onClick: Handler; onTap: Handler; onMouseEnter: Handler; onMouseLeave: Handler;
-    }) => (
+      children: ReactNode; onClick?: Handler; onTap?: Handler; onMouseEnter?: Handler; onMouseLeave?: Handler;
+    }) => onClick ? (
       <div
         data-testid="evidence-card"
         onClick={() => onClick(event())}
-        onTouchEnd={() => onTap(event())}
-        onMouseEnter={() => onMouseEnter(event())}
-        onMouseLeave={() => onMouseLeave(event())}
+        onTouchEnd={() => onTap?.(event())}
+        onMouseEnter={() => onMouseEnter?.(event())}
+        onMouseLeave={() => onMouseLeave?.(event())}
       >
         {children}
       </div>
-    ),
+    ) : <div>{children}</div>,
   };
 });
 
@@ -58,8 +60,8 @@ describe('ArticleWriting canvas cards', () => {
     vi.mocked(articleApi.getArticleSubjects).mockResolvedValue(SUBJECTS);
   });
 
-  it('shows the prompt and instructions on the socialMediaLaptop before anything is picked', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+  it('shows the prompt and instructions on the laptop before anything is picked', async () => {
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
 
     expect(await screen.findByText('What happened?')).toBeInTheDocument();
     expect(screen.getByText('Evidence 0/2')).toBeInTheDocument();
@@ -69,8 +71,8 @@ describe('ArticleWriting canvas cards', () => {
     expect(within(cards()[0]).getByText('About A')).toBeInTheDocument();
   });
 
-  it('selects evidence when its journal card is clicked and shows it on the socialMediaLaptop', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+  it('selects evidence when its journal card is clicked and shows it on the laptop', async () => {
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
     await screen.findByText('What happened?');
 
     fireEvent.click(cards()[0]);
@@ -79,18 +81,18 @@ describe('ArticleWriting canvas cards', () => {
     expect(screen.queryByText('Submit 2 pieces of evidence.')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Evidence A' })).toHaveAttribute('aria-pressed', 'true');
 
-    // The socialMediaLaptop copy is compact (title only), the journal copy keeps its description.
+    // The laptop copy is compact (title only), the journal copy keeps its description.
     const selected = cards().filter((card) => within(card).queryByText('✓ Evidence A'));
     expect(selected).toHaveLength(2);
     expect(selected.filter((card) => within(card).queryByText('About A'))).toHaveLength(1);
   });
 
-  it('removes evidence when its card on the socialMediaLaptop is clicked', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+  it('removes evidence when its card on the laptop is clicked', async () => {
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
     await screen.findByText('What happened?');
 
     fireEvent.click(cards()[0]);
-    // Laptop cards are drawn before the journal, so the first card is the socialMediaLaptop's.
+    // Laptop cards are drawn before the journal, so the first card is the laptop's.
     fireEvent.click(cards()[0]);
 
     expect(screen.getByText('Evidence 0/2')).toBeInTheDocument();
@@ -98,7 +100,7 @@ describe('ArticleWriting canvas cards', () => {
   });
 
   it('selects evidence on tap', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
     await screen.findByText('What happened?');
 
     fireEvent.touchEnd(cards()[1]);
@@ -107,7 +109,7 @@ describe('ArticleWriting canvas cards', () => {
   });
 
   it('shows a pointer cursor while hovering a card', async () => {
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
     await screen.findByText('What happened?');
 
     fireEvent.mouseEnter(cards()[0]);
@@ -119,7 +121,7 @@ describe('ArticleWriting canvas cards', () => {
 
   it('does nothing on hover when the card is not on a stage', async () => {
     konva.stageContainer = null;
-    render(<ArticleWriting onFinish={vi.fn()} />);
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
     await screen.findByText('What happened?');
 
     expect(() => {

@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d7f0dc4d-5b26-42f2-a6a7-391002e051e0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Social-Media/parts/SocialMediaLaptop.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Social-Media/parts/ThinkButton.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Social-Media/socialMediaContent.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Social-Media/socialMediaModel.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Social-Media/socialMediaView.tsx" beforeDir="false" />
-    </list>
+    <list default="true" id="d7f0dc4d-5b26-42f2-a6a7-391002e051e0" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -115,7 +108,7 @@
       <workItem from="1793924563431" duration="9502000" />
       <workItem from="1794269396608" duration="1278000" />
       <workItem from="1794883612294" duration="9513000" />
-      <workItem from="1795039425460" duration="10401000" />
+      <workItem from="1795039425460" duration="11422000" />
     </task>
     <servers />
   </component>

@@ -15,7 +15,7 @@ The desk is the page at `/desk`. It's drawn with Konva and shows six things the 
 | "TO DO: clean desk!" sticky note | Minigame | `/clean-desk` |
 | Create Article card | The final step | `/create-article` |
 
-None of those screens exist yet, so each URL shows the 404 page for now.
+Social Media and Interviews are placeholders for now, and the clean desk minigame still shows the 404 page. Typing the URL of a locked screen sends the player back to the desk (see [Route-Guard.md](Route-Guard.md)).
 
 ### Locked and unlocked
 
@@ -52,13 +52,12 @@ Which activities are done is saved in the browser (`localStorage`), so it surviv
 When you run the app with `npm run dev`, two buttons appear in the bottom left:
 
 - **Dev: complete next level** marks the next main activity done, in story order.
-- **Dev: reset progress** clears all progress.
+- **Dev: reset progress** clears all progress and collected evidence, then reloads the mock evidence.
 
 They exist only so you can try out the desk before the activity screens are built, and they never appear in production builds. Remove them (search for `TEMPORARY`) once the activities can actually be played.
 
 ### Not built yet
 
-- The docked Journal (issue #36).
 - The settings and help buttons from the mockup (issues #37 and #24).
 
 ## Where the code is
@@ -123,6 +122,8 @@ When you build one of the activity screens:
    ```tsx
    <Route path={ROUTES.onlineArticle} element={<OnlineArticles />} />
    ```
+
+   If the screen unlocks with progress, wrap it in `<RouteGuard>` so typing its URL can't skip ahead. Social Media and Interviews already have guarded placeholder routes: replace the placeholder and keep the guard. See [Route-Guard.md](Route-Guard.md).
 
 2. **Mark the activity done** when the player finishes it, by calling `completeActivity` from your screen's model, then send them back to the desk:
 
