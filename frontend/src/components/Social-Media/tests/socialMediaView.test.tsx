@@ -52,6 +52,14 @@ vi.mock('react-konva', async () => {
         },
         Rect: () => null,
         Line: () => null,
+        // unused but required vi.konva test attribute, CI will fail if deleted.
+        Path: ({ shadowBlur, shadowOpacity }: P) => (
+            <span
+                data-testid="cloud-path"
+                data-shadow-blur={shadowBlur}
+                data-shadow-opacity={shadowOpacity}
+            />
+        ),
         Text: ({ text }: P) => <span>{text}</span>,
     };
 });
