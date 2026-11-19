@@ -1,12 +1,20 @@
+
 import { act, renderHook } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
-import { getSocialPost, LAYOUT, SCENE, SOCIAL_LEVELS, type SocialPost } from '../socialMediaContent.tsx';
+import {
+    getSocialPost, LAYOUT, SCENE, SOCIAL_LEVELS,
+    type SocialPost,
+} from '../socialMediaContent.tsx';
 import { useSocialMediaModel } from '../socialMediaModel.tsx';
 
 describe('useSocialMediaModel', () => {
     it('keeps only the latest answer and sends complete metadata to its consumer', () => {
         const changed = vi.fn();
-        const { result } = renderHook(() => useSocialMediaModel('catnip', 0, changed));
+        const { result } = renderHook(
+            () => useSocialMediaModel('catnip', 0, changed),
+            { wrapper: MemoryRouter },
+        );
 
         act(() => result.current.toggleThoughts());
         act(() => result.current.selectThought('catnip-support-1'));
@@ -24,7 +32,10 @@ describe('useSocialMediaModel', () => {
 
     it('deselects the current answer only when that same answer is selected again', () => {
         const changed = vi.fn();
-        const { result } = renderHook(() => useSocialMediaModel('catnip', 0, changed));
+        const { result } = renderHook(
+            () => useSocialMediaModel('catnip', 0, changed),
+            { wrapper: MemoryRouter },
+        );
 
         act(() => result.current.selectThought('catnip-support-2'));
         act(() => result.current.selectThought('catnip-support-2'));
@@ -35,7 +46,10 @@ describe('useSocialMediaModel', () => {
 
     it('keeps an answer selected through Clear Mind and Gather Thoughts', () => {
         const changed = vi.fn();
-        const { result } = renderHook(() => useSocialMediaModel('catnip', 0, changed));
+        const { result } = renderHook(
+            () => useSocialMediaModel('catnip', 0, changed),
+            { wrapper: MemoryRouter },
+        );
 
         act(() => result.current.toggleThoughts());
         act(() => result.current.selectThought('catnip-support-1'));
@@ -48,13 +62,18 @@ describe('useSocialMediaModel', () => {
         act(() => result.current.toggleThoughts());
         expect(result.current.thoughtsOpen).toBe(true);
         expect(result.current.selection?.thoughtId).toBe('catnip-support-1');
+
         // Visibility changes should not emit new answers (or null) to the backend.
         expect(changed).toHaveBeenCalledTimes(1);
     });
 
     it('rejects a nonexistent thought without changing its selected answer', () => {
         const changed = vi.fn();
-        const { result } = renderHook(() => useSocialMediaModel('catnip', 0, changed));
+        const { result } = renderHook(
+            () => useSocialMediaModel('catnip', 0, changed),
+            { wrapper: MemoryRouter },
+        );
+
         act(() => result.current.selectThought('catnip-support-1'));
 
         expect(() => act(() => result.current.selectThought('missing'))).toThrow(RangeError);
@@ -70,15 +89,22 @@ describe('useSocialMediaModel', () => {
         const nextPost: SocialPost = {
             ...original,
             id: 'catnip-followup',
-            thoughts: original.thoughts.map(t => ({ ...t, id: `followup-${t.id}` })) as unknown as SocialPost['thoughts'],
+            thoughts: original.thoughts.map(t => ({
+                ...t,
+                id: `followup-${t.id}`,
+            })) as unknown as SocialPost['thoughts'],
         };
         posts.push(nextPost);
 
         try {
             const { result, rerender, unmount } = renderHook(
                 ({ index }) => useSocialMediaModel('catnip', index),
-                { initialProps: { index: 0 } },
+                {
+                    initialProps: { index: 0 },
+                    wrapper: MemoryRouter,
+                },
             );
+
             act(() => result.current.toggleThoughts());
             act(() => result.current.selectThought('catnip-support-1'));
 
@@ -104,14 +130,25 @@ describe('useSocialMediaModel', () => {
         const widthDescriptor = Object.getOwnPropertyDescriptor(window, 'innerWidth');
         const heightDescriptor = Object.getOwnPropertyDescriptor(window, 'innerHeight');
         const removeListener = vi.spyOn(window, 'removeEventListener');
-        const { result, unmount } = renderHook(() => useSocialMediaModel('catnip'));
+
+        const { result, unmount } = renderHook(
+            () => useSocialMediaModel('catnip'),
+            { wrapper: MemoryRouter },
+        );
 
         try {
             act(() => {
-                Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1200 });
-                Object.defineProperty(window, 'innerHeight', { configurable: true, value: 600 });
+                Object.defineProperty(window, 'innerWidth', {
+                    configurable: true,
+                    value: 1200,
+                });
+                Object.defineProperty(window, 'innerHeight', {
+                    configurable: true,
+                    value: 600,
+                });
                 window.dispatchEvent(new Event('resize'));
             });
+
             const scale = Math.min(1200 / SCENE.width, 600 / SCENE.height);
             expect(result.current.width).toBe(1200);
             expect(result.current.height).toBe(600);
@@ -125,6 +162,7 @@ describe('useSocialMediaModel', () => {
             if (widthDescriptor) Object.defineProperty(window, 'innerWidth', widthDescriptor);
             if (heightDescriptor) Object.defineProperty(window, 'innerHeight', heightDescriptor);
         }
+
         expect(removeListener).toHaveBeenCalledWith('resize', expect.any(Function));
         removeListener.mockRestore();
     });
