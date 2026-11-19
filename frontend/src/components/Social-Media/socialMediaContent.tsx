@@ -1,3 +1,4 @@
+export const PAGE_TITLE = 'Social Media';
 
 export const SCENE = { width: 1280, height: 854 } as const;
 
@@ -48,6 +49,8 @@ export interface ThoughtOption {
     text: string;
     stance: 'supporting' | 'questioning';
 }
+
+export const BACK_BUTTON_SIZE = 0.047;
 
 export interface SocialPost {
     id: string;

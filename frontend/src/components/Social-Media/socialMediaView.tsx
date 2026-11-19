@@ -10,6 +10,9 @@ import type { SocialThoughtSelection } from './socialMediaSelection.ts';
 import { useSocialMediaModel } from './socialMediaModel.tsx';
 import SocialMediaLaptop from './parts/SocialMediaLaptop.tsx';
 import ThinkButton, { ThoughtBubble } from './parts/ThinkButton.tsx';
+import BackButton from '../Back-Button/backButtonView';
+import BackConfirmation from '../Back-Confirmation/backConfirmationView';
+import {BACK_BUTTON_SIZE, PAGE_TITLE} from "./socialMediaContent.tsx";
 
 interface Props {
     levelId?: SocialLevelId;
@@ -19,8 +22,8 @@ interface Props {
 
 export default function SocialMedia({ levelId = DEFAULT_LEVEL, postIndex = 0, onSelectionChange }: Props) {
     const {
-        width, height, scale, originX, originY,
-        post, thoughtsOpen, toggleThoughts, selection, selectThought,
+        width, height, scale, originX, originY, sizeUnit,
+        post, thoughtsOpen, toggleThoughts, selection, selectThought, onBackToDesk, backConfirmation,
     } = useSocialMediaModel(levelId, postIndex, onSelectionChange);
 
     const sceneTransform = {
@@ -70,13 +73,52 @@ export default function SocialMedia({ levelId = DEFAULT_LEVEL, postIndex = 0, on
                     </Group>
                 </Layer>
             </Stage>
-            <SettingsButton />
+
             {/* An offscreen native button exposes the Konva-only action to keyboard users. */}
             <button type="button" onClick={toggleThoughts}
                     aria-pressed={thoughtsOpen}
                     style={{ position: 'absolute', left: -10000, top: 0 }}>
                 {thoughtsOpen ? 'Clear thoughts' : 'Gather thoughts'}
             </button>
+
+            {/* TEMPORARY NAVBAR*/}
+            {/* TODO FIX IT GLOBALLY */}
+
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    zIndex: 10,
+                }}
+            >
+                {/* Settings */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                    }}
+                >
+                    <SettingsButton />
+                </div>
+
+                {/* Back */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 90,
+                        left: 0,
+                    }}
+                >
+                    <BackButton
+                        onClick={onBackToDesk}
+                        size={BACK_BUTTON_SIZE * sizeUnit}
+                    />
+                </div>
+            </div>
+
+            <BackConfirmation activityName={PAGE_TITLE} {...backConfirmation} />
         </main>
     );
 }

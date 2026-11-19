@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import {
     getSocialLevel, getSocialPost, LAYOUT, SCENE,
     type SocialLevelId,
@@ -7,6 +8,10 @@ import {
     makeThoughtSelection, toggleThoughtSelection,
     type SocialThoughtSelection,
 } from './socialMediaSelection.ts';
+import {useBackConfirmationModel} from "../Back-Confirmation/backConfirmationModel.tsx";
+import {ROUTES} from "../../routes.ts";
+
+const MAX_WIDTH_TO_HEIGHT = 1.5;
 
 // Fall back to the design canvas size when window is unavailable.
 function viewport() {
@@ -23,6 +28,7 @@ export function useSocialMediaModel(
     const [size, setSize] = useState(viewport);
     const [thoughtsOpen, setThoughtsOpen] = useState(false);
     const [savedSelection, setSavedSelection] = useState<SocialThoughtSelection | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const onResize = () => setSize(viewport());
@@ -48,6 +54,8 @@ export function useSocialMediaModel(
     const originX = (size.width - SCENE.width * scale) / 2;
     const originY = (size.height - SCENE.height * scale) / 2 + LAYOUT.verticalOffset * scale;
 
+    const sizeUnit = Math.min(size.width, size.height * MAX_WIDTH_TO_HEIGHT);
+
     // Selecting the active answer clears it; selecting another replaces it and notifies the parent.
     function selectThought(thoughtId: string) {
         const next = toggleThoughtSelection(selection, makeThoughtSelection(levelId, post, thoughtId));
@@ -60,8 +68,12 @@ export function useSocialMediaModel(
         setThoughtsOpen(previous => !previous);
     }
 
+    const { onBack, confirmation } = useBackConfirmationModel({
+        onLeave: () => navigate(ROUTES.desk),
+    });
+
     return {
-        ...size, scale, originX, originY, level, post,
-        thoughtsOpen, selection, selectThought, toggleThoughts,
+        ...size, scale, originX, originY, level, post, sizeUnit,
+        thoughtsOpen, selection, selectThought, toggleThoughts, onBackToDesk: onBack, backConfirmation: confirmation,
     };
 }
