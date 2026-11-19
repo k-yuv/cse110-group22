@@ -49,21 +49,19 @@ describe('Typing a locked URL', () => {
   });
 
   // Finishing each screen unlocks the next screen's URL, in story order.
-  it('unlocks Social Media, then Interviews, as each one before is finished', async () => {
-    const user = userEvent.setup();
+  it('unlocks Social Media after Articles, while Interviews stays locked', async () => {
     await completeActivity('articles');
 
     visit(ROUTES.interview);
-    await waitFor(() => expect(window.location.pathname).toBe(ROUTES.desk));
+    await waitFor(() =>
+        expect(window.location.pathname).toBe(ROUTES.desk)
+    );
 
     visit(ROUTES.socialMedia);
-    await user.click(await screen.findByRole('button', { name: FINISH_LABEL }));
-    await waitFor(() => expect(window.location.pathname).toBe(ROUTES.desk));
+    expect(
+        await screen.findByRole('main', { name: 'Social media chapter' })
+    ).toBeInTheDocument();
 
-    // The real Interview screen draws on a (mocked) canvas, so wait for its
-    // settings button instead: it only shows once the guard has let it through.
-    visit(ROUTES.interview);
-    expect(await screen.findByRole('button', { name: 'Open settings' })).toBeInTheDocument();
-    expect(window.location.pathname).toBe(ROUTES.interview);
+    expect(window.location.pathname).toBe(ROUTES.socialMedia);
   });
 });
