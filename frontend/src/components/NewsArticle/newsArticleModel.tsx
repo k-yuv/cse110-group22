@@ -5,6 +5,7 @@ import { completeActivity } from '../../services/progress';
 import { ROUTES } from '../../routes';
 import { gradeHighlights, toggleHighlight, type GradeResult } from './newsArticleRules';
 import { addEvidence } from './journalAdapter';
+import { useBackConfirmationModel } from '../Back-Confirmation/backConfirmationModel';
 
 function getWindowSize() {
   return { width: window.innerWidth, height: window.innerHeight };
@@ -50,12 +51,23 @@ export function useNewsArticleModel() {
     if (!activity) return;
 
     const graded = gradeHighlights(highlightedIds, activity.answerKey);
-    setResult(graded);
-    if (!graded.passed) return;
+    if (!graded.passed) {
+      setResult(graded);
+      return;
+    }
+
+    // Stays unsubmitted if the evidence can't be saved, so the player can try
+    // again rather than losing it. Evidence already saved isn't added twice.
+    setError('');
+    const saved = await Promise.all(activity.answerKey.map((entry) => addEvidence(entry.evidence)));
+    if (saved.includes(false)) {
+      setError('Could not save evidence');
+      return;
+    }
 
     // The level is done, so the highlighter is put away for good.
+    setResult(graded);
     setHoldingHighlighter(false);
-    activity.answerKey.forEach((entry) => addEvidence(entry.evidence));
     try {
       await completeActivity('articles');
     } catch {
@@ -66,6 +78,13 @@ export function useNewsArticleModel() {
   function handleContinue() {
     navigate(ROUTES.desk);
   }
+
+  // Leaving loses the highlights, so ask first, until the level is passed
+  // and saved.
+  const { onBack, confirmation } = useBackConfirmationModel({
+    onLeave: () => navigate(ROUTES.desk),
+    hasProgressToLose: !result?.passed,
+  });
 
   return {
     activity,
@@ -80,5 +99,7 @@ export function useNewsArticleModel() {
     onSentenceClick: handleSentenceClick,
     onSubmit: handleSubmit,
     onContinue: handleContinue,
+    onBack,
+    backConfirmation: confirmation,
   };
 }

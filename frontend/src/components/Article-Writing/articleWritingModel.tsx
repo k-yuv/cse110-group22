@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { paginate } from '../../helpers';
 import type { EvidenceModel } from '../Journal/EvidenceModel';
 import { JournalController } from '../Journal/JournalController';
 import {
@@ -8,12 +9,15 @@ import {
   type ArticleEnding,
   type ArticleSubject,
 } from '../../services/article';
+import { useBackConfirmationModel } from '../Back-Confirmation/backConfirmationModel';
 
 interface ArticleWritingModelOptions {
   levelId: string;
   // How many evidence cards fit on one open spread of the journal.
   evidencePerPage: number;
   onFinish: (ending: ArticleEnding) => void;
+  // Leaves the screen. Asks first, since unsubmitted answers are lost.
+  onBack: () => void;
 }
 
 function getWindowSize() {
@@ -22,7 +26,7 @@ function getWindowSize() {
 
 // Owns all state and service calls for the Article Writing screen. Which
 // ending the player gets is decided by submitArticle, not here.
-export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: ArticleWritingModelOptions) {
+export function useArticleWritingModel({ levelId, evidencePerPage, onFinish, onBack }: ArticleWritingModelOptions) {
   // Evidence can't change while the player is writing, so read it once.
   const evidence = JournalController.getInstance().read();
   const [subjects, setSubjects] = useState<ArticleSubject[]>([]);
@@ -52,7 +56,7 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
   const isAnswered = (subject: ArticleSubject) =>
     (answers[subject.id]?.length ?? 0) >= subject.requiredCount;
 
-  // The question currently shown on the laptop; evidence clicks go to it.
+  // The question currently shown on the socialMediaLaptop; evidence clicks go to it.
   // Players only move forward by submitting an answer, but can step back to
   // change an earlier one.
   const subject: ArticleSubject | undefined = subjects[subjectIndex];
@@ -61,7 +65,8 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
   const isFull = selectedIds.length >= requiredCount;
   const answeredCount = subjects.filter(isAnswered).length;
   const isLastQuestion = subjectIndex === subjects.length - 1;
-  const pageCount = Math.max(1, Math.ceil(evidence.length / evidencePerPage));
+  const spreads = paginate(evidence, evidencePerPage);
+  const pageCount = spreads.length;
 
   // Clicking new evidence on a full answer replaces one slot in place,
   // cycling through the slots so repeated clicks don't keep hitting the same one.
@@ -105,10 +110,12 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
     }
   }
 
+  const { onBack: handleBack, confirmation } = useBackConfirmationModel({ onLeave: onBack });
+
   return {
     windowWidth: size.width,
     windowHeight: size.height,
-    pageEvidence: evidence.slice(page * evidencePerPage, (page + 1) * evidencePerPage),
+    pageEvidence: spreads[page],
     page: page + 1,
     pageCount,
     hasPreviousPage: page > 0,
@@ -133,5 +140,7 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish }: A
     isSelected: (id: string) => selectedIds.includes(id),
     onToggleEvidence: handleToggleEvidence,
     onSubmit: handleSubmit,
+    onBack: handleBack,
+    backConfirmation: confirmation,
   };
 }

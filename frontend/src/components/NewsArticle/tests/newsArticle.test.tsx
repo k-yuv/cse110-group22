@@ -1,11 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router';
+import { ROUTES } from '../../../routes';
+import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
+import { GO_BACK_LABEL, STAY_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 import NewsArticle from '../newsArticleView';
-import { SUBMIT_LABEL, TODO_TEXT } from '../newsArticleContent';
+import { ACTIVITY_NAME, SUBMIT_LABEL, TODO_TEXT } from '../newsArticleContent';
 import { getResultMessage, gradeHighlights } from '../newsArticleRules';
 import { getArticleActivity } from '../../../services/articles';
+import { CLOSE_LABEL, DIALOG_LABEL, OPEN_LABEL } from '../../Journal/journalContent';
 
 // Tests can't draw the canvas (see internal-docs/Konva-Testing.md), so the
 // Konva parts render nothing here. Highlighting is tested through the model
@@ -16,6 +20,7 @@ vi.mock('react-konva', () => ({
   Group: () => null,
   Rect: () => null,
   Text: () => null,
+  Line: () => null,
   Image: () => null,
 }));
 
@@ -26,8 +31,11 @@ vi.mock('../../../services/articles', async (importOriginal) => {
 
 function renderNewsArticle() {
   render(
-    <MemoryRouter>
-      <NewsArticle />
+    <MemoryRouter initialEntries={[ROUTES.onlineArticle]}>
+      <Routes>
+        <Route path={ROUTES.onlineArticle} element={<NewsArticle />} />
+        <Route path={ROUTES.desk} element={<p>Desk</p>} />
+      </Routes>
     </MemoryRouter>,
   );
 }
@@ -41,6 +49,17 @@ describe('NewsArticle', () => {
     renderNewsArticle();
 
     expect(await screen.findByRole('heading', { name: TODO_TEXT })).toBeInTheDocument();
+  });
+
+  it('has the journal in the corner, which opens and closes', async () => {
+    const user = userEvent.setup();
+    renderNewsArticle();
+
+    await user.click(await screen.findByRole('button', { name: OPEN_LABEL }));
+    expect(screen.getByRole('dialog', { name: DIALOG_LABEL })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: CLOSE_LABEL }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('shows the fail message when nothing is highlighted and the player submits', async () => {
@@ -59,5 +78,49 @@ describe('NewsArticle', () => {
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: SUBMIT_LABEL })).not.toBeInTheDocument();
+  });
+
+  describe('back button', () => {
+    it('asks before leaving, naming the activity', async () => {
+      const user = userEvent.setup();
+      renderNewsArticle();
+
+      await user.click(await screen.findByRole('button', { name: BACK_BUTTON_LABEL }));
+
+      expect(screen.getByRole('alertdialog')).toHaveTextContent(ACTIVITY_NAME);
+      expect(screen.queryByText('Desk')).not.toBeInTheDocument();
+    });
+
+    it('Go Back goes to the desk', async () => {
+      const user = userEvent.setup();
+      renderNewsArticle();
+
+      await user.click(await screen.findByRole('button', { name: BACK_BUTTON_LABEL }));
+      await user.click(screen.getByRole('button', { name: GO_BACK_LABEL }));
+
+      expect(screen.getByText('Desk')).toBeInTheDocument();
+    });
+
+    it('Stay keeps the player on the article', async () => {
+      const user = userEvent.setup();
+      renderNewsArticle();
+
+      await user.click(await screen.findByRole('button', { name: BACK_BUTTON_LABEL }));
+      await user.click(screen.getByRole('button', { name: STAY_LABEL }));
+
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: TODO_TEXT })).toBeInTheDocument();
+    });
+
+    it('Escape closes it like Stay', async () => {
+      const user = userEvent.setup();
+      renderNewsArticle();
+
+      await user.click(await screen.findByRole('button', { name: BACK_BUTTON_LABEL }));
+      await user.keyboard('{Escape}');
+
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      expect(screen.queryByText('Desk')).not.toBeInTheDocument();
+    });
   });
 });

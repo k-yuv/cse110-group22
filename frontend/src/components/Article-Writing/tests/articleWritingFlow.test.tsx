@@ -1,11 +1,23 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../../App';
 import { ROUTES } from '../../../routes';
+import { completeActivity } from '../../../services/progress';
+import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
+import { GO_BACK_LABEL } from '../../Back-Confirmation/backConfirmationContent';
+import { submitArticle } from '../../../services/article';
 
-// Integration: runs the real (mock) journal evidence and article service, seeded with
-// their built-in data, from entering the screen to landing on an ending page.
+// Integration: runs the real (mock) journal evidence and questions, from
+// entering the screen to landing on an ending page. Scoring happens on the
+// backend (backend/src/features/article/tests/article.test.ts checks these same
+// picks against the real ratings), so here submitArticle is faked: the test
+// checks the right evidence ids are sent, and that each ending goes to its page.
+
+vi.mock('../../../services/article', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../services/article')>();
+  return { ...actual, submitArticle: vi.fn() };
+});
 
 vi.mock('react-konva', () => ({
   Stage: () => null,
@@ -32,7 +44,15 @@ async function writeArticle(answers: string[][]) {
 }
 
 describe('Article writing flow', () => {
-  it('picks the good ending with strong evidence', async () => {
+  // Create Article only opens once the story activities are done.
+  beforeEach(async () => {
+    localStorage.clear();
+    for (const id of ['articles', 'social', 'interviews'] as const) await completeActivity(id);
+  });
+
+  it('sends strong evidence and goes to the good ending', async () => {
+    vi.mocked(submitArticle).mockResolvedValue({ ending: 'good' });
+
     await writeArticle([
       ['Fire marshal report'],
       ['Security camera footage'],
@@ -41,9 +61,17 @@ describe('Article writing flow', () => {
     ]);
 
     expect(await screen.findByText('Good Ending page not built yet.')).toBeInTheDocument();
+    expect(submitArticle).toHaveBeenCalledWith({
+      'subject-catnip': ['ev-marshal'],
+      'subject-arson': ['ev-cctv'],
+      'subject-warnings': ['ev-inspection'],
+      'subject-cause': ['ev-marshal', 'ev-foreman'],
+    });
   });
 
-  it('picks the bad ending with weak evidence', async () => {
+  it('sends weak evidence and goes to the bad ending', async () => {
+    vi.mocked(submitArticle).mockResolvedValue({ ending: 'bad' });
+
     await writeArticle([
       ['Anonymous forum post'],
       ["Neighbor's rumor"],
@@ -52,5 +80,24 @@ describe('Article writing flow', () => {
     ]);
 
     expect(await screen.findByText('Bad Ending page not built yet.')).toBeInTheDocument();
+    expect(submitArticle).toHaveBeenCalledWith({
+      'subject-catnip': ['ev-forum'],
+      'subject-arson': ['ev-neighbor'],
+      'subject-warnings': ['ev-weather'],
+      'subject-cause': ['ev-forum', 'ev-neighbor'],
+    });
+  });
+
+  it('the back button asks first, then Go Back returns to the desk', async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, '', ROUTES.createArticle);
+    render(<App />);
+
+    await user.click(await screen.findByRole('button', { name: BACK_BUTTON_LABEL }));
+    expect(window.location.pathname).toBe(ROUTES.createArticle);
+
+    await user.click(screen.getByRole('button', { name: GO_BACK_LABEL }));
+
+    expect(window.location.pathname).toBe(ROUTES.desk);
   });
 });
