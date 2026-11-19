@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import App from '../../../App';
 import { ROUTES } from '../../../routes';
 import { completeActivity } from '../../../services/progress';
-import { FINISH_LABEL } from '../../Placeholder-Activity/placeholderActivityContent';
 
 // Integration: the real App and (mock) progress service, starting from a URL
 // typed straight into the address bar.
