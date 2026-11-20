@@ -14,6 +14,9 @@ vi.mock('react-konva', () => ({
   Text: () => null,
   Line: () => null,
   Group: () => null,
+  Circle: () => null,
+  Ellipse: () => null,
+  Wedge: () => null,
 }));
 
 // The evidence titles for each question, in question order.
@@ -40,7 +43,7 @@ describe('Article writing flow', () => {
       ['Fire marshal report', 'Foreman interview'],
     ]);
 
-    expect(await screen.findByText('Good Ending page not built yet.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'CEO: Arrested' })).toBeInTheDocument();
   });
 
   it('picks the bad ending with weak evidence', async () => {
@@ -51,6 +54,6 @@ describe('Article writing flow', () => {
       ['Anonymous forum post', "Neighbor's rumor"],
     ]);
 
-    expect(await screen.findByText('Bad Ending page not built yet.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'You Lost Your Job' })).toBeInTheDocument();
   });
 });

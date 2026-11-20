@@ -1,9 +1,8 @@
-// MOCK: placeholder until the real Good Ending screen is built (#32/#33).
+import EndingView from './endingView';
+import ArrestScene from './scenes/ArrestScene';
+import { COLORS } from '../../theme';
+
+// Shown after a strong article: the CEO of Big Drug Inc. is arrested.
 export default function GoodEnding() {
-  return (
-    <main>
-      <h1>404</h1>
-      <p>Good Ending page not built yet.</p>
-    </main>
-  );
+  return <EndingView ending="good" scene={<ArrestScene />} background={COLORS.wall} />;
 }
