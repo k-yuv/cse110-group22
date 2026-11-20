@@ -48,6 +48,8 @@ export const COLORS = {
   sirenRed: '#ff3b3b',
   sirenBlue: '#3b8bff',
   streetWall: '#b9c0cc',
+  // Edge colour of GoodEnding.png, shown around the image if it doesn't fill the screen.
+  goodEndingBackdrop: '#32313b',
   streetBrick: '#a3abb8',
   sidewalk: '#8f96a3',
   titleButtonFill: '#F7FCFD',
