@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Group, Layer, Rect, Stage, Text } from 'react-konva';
 import { visuallyHidden } from '../../../helpers';
 import { COLORS, FONT } from '../../../theme';
@@ -17,12 +17,23 @@ import {
   PREVIOUS_LABEL,
 } from '../journalContent';
 import JournalBook from './JournalBook';
+import EvidenceDetail from './EvidenceDetail';
 
-function EvidenceNote({ item, x, y }: { item: EvidenceModel; x: number; y: number }) {
+interface EvidenceNoteProps {
+  item: EvidenceModel;
+  x: number;
+  y: number;
+  onHoverChange: (hovering: boolean) => void;
+  onTap: () => void;
+}
+
+// Long text is cut short here; hovering (or tapping, on touch screens) shows
+// all of it in an EvidenceDetail.
+function EvidenceNote({ item, x, y, onHoverChange, onTap }: EvidenceNoteProps) {
   const textWidth = NOTE.width - NOTE.padding * 2;
 
   return (
-    <Group x={x} y={y}>
+    <Group x={x} y={y} onMouseEnter={() => onHoverChange(true)} onMouseLeave={() => onHoverChange(false)} onTap={onTap}>
       <Rect width={NOTE.width} height={NOTE.height} cornerRadius={4} fill={COLORS.journalNote} />
       <Text
         x={NOTE.padding}
@@ -78,6 +89,15 @@ export default function JournalOverlay({
   onPreviousPage,
   onNextPage,
 }: JournalOverlayProps) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const notes = evidence.map((item, index) => ({
+    item,
+    x: PAGE_X[Math.floor(index / NOTES_PER_PAGE)],
+    y: NOTES_TOP + (index % NOTES_PER_PAGE) * (NOTE.height + NOTE.gap),
+  }));
+  // Looked up from this page's notes, so turning the page closes it.
+  const expanded = notes.find((note) => note.item.id === expandedId);
+
   const scale = Math.min(
     (windowWidth * OVERLAY.windowFraction) / BOOK.width,
     (windowHeight * OVERLAY.windowFraction) / OVERLAY.height,
@@ -142,14 +162,34 @@ export default function JournalOverlay({
                   fill={COLORS.mutedText}
                 />
               )}
-              {evidence.map((item, index) => (
+              {notes.map(({ item, x, y }) => (
                 <EvidenceNote
                   key={item.id}
                   item={item}
-                  x={PAGE_X[Math.floor(index / NOTES_PER_PAGE)]}
-                  y={NOTES_TOP + (index % NOTES_PER_PAGE) * (NOTE.height + NOTE.gap)}
+                  x={x}
+                  y={y}
+                  onHoverChange={(hovering) =>
+                    setExpandedId((current) => (hovering ? item.id : current === item.id ? null : current))
+                  }
+                  onTap={() => setExpandedId((current) => (current === item.id ? null : item.id))}
                 />
               ))}
+              {expanded && (
+                <EvidenceDetail
+                  item={expanded.item}
+                  x={expanded.x}
+                  y={expanded.y}
+                  width={NOTE.width}
+                  maxBottom={BOOK.dividerBottom}
+                  fill={COLORS.journalNote}
+                  nameColor={COLORS.journalText}
+                  descriptionColor={COLORS.journalText}
+                  nameFontSize={15}
+                  descriptionFontSize={13}
+                  padding={NOTE.padding}
+                  cornerRadius={4}
+                />
+              )}
             </JournalBook>
           </Layer>
         </Stage>
