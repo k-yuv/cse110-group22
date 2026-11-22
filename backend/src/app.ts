@@ -45,7 +45,7 @@ export type EvidenceRating = 'strong' | 'weak' | 'irrelevant';
 // How one question's ratings are saved in backend/data/articleRatings.json.
 // Ratings are never sent to the client.
 export interface StoredSubjectRatings {
-  // The question (subject) these ratings are for, e.g. "subject-cause".
+  // The question (subject) these ratings are for, e.g. "subject-ingredient".
   subjectId: string;
   // Evidence id → its rating for this question. A missing id counts as irrelevant.
   ratings: Record<string, EvidenceRating>;
