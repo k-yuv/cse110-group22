@@ -4,8 +4,6 @@ import userEvent from '@testing-library/user-event';
 import App from '../../../App';
 import { ROUTES } from '../../../routes';
 import { completeActivity } from '../../../services/progress';
-import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
-import { GO_BACK_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 import { submitArticle } from '../../../services/article';
 
 // Integration: runs the real (mock) journal evidence and questions, from
