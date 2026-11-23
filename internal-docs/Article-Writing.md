@@ -54,7 +54,7 @@ The request and response look like this:
 
 ```
 POST /api/article/answers
-{ "answers": { "subject-cause": ["ev-marshal", "ev-foreman"], "subject-arson": ["ev-cctv"], ... } }
+{ "answers": { "subject-quitting": ["ev-avogato-post", "ev-withdrawal-posts"], "subject-ingredient": ["ev-nicotine"], ... } }
 
 → 200 { "ending": "good" }
 ```
@@ -73,7 +73,7 @@ The backend scores each pick **against the question it answers**, so the same ev
 | Weak | -1 |
 | Irrelevant (or not rated) | 0 |
 
-The points are added up over every question. A total of `GOOD_ENDING_THRESHOLD` (currently **2**, in `backend/src/features/article/article.service.ts`) or more gives the good ending. The response only says the ending, never the score or the ratings.
+The points are added up over every question. The good ending needs a total of at least `GOOD_ENDING_SHARE` (currently **0.5**, in `backend/src/features/article/article.service.ts`) times the number of evidence picks. Each article asks a random set of questions, so it has 5 to 10 picks; with 8 picks, 6 strong and 2 weak is good, and 5 strong and 3 weak is bad. An empty article is always bad. The response only says the ending, never the score or the ratings.
 
 ### The ratings "table"
 
@@ -86,13 +86,14 @@ The ratings are stored like a tiny database table: one row per question, saying 
 
 ```json
 {
-  "subjectId": "subject-cause",
-  "ratings": { "ev-marshal": "strong", "ev-forum": "weak", ... }
+  "subjectId": "subject-ingredient",
+  "ratings": { "ev-nicotine": "strong", "ev-ceo-pr-claims": "weak", ... }
 }
 ```
 
 - `subjectId` must match a question `id` in `frontend/src/services/article.ts`.
-- Each key in `ratings` must match an evidence id in the Journal (e.g. `Journal/mockEvidence.ts`). Evidence that isn't listed counts as irrelevant.
+- Each key in `ratings` must match an evidence id in the Journal (`Journal/storyEvidence.ts`). Evidence that isn't listed counts as irrelevant.
+- `services/tests/articleQuestionBank.test.ts` fails if these get out of sync, or if a question can't be fully answered with strong evidence.
 
 **To change a rating:** edit `backend/seed/articleRatings.json`, then stop the backend, delete `backend/data/articleRatings.json`, and start it again. Seeding never overwrites a data file that already has something in it.
 
@@ -102,10 +103,11 @@ The layout uses the Figma frame's pixel positions (1280 × 832) and scales the w
 
 ### Mock data
 
-Scoring is real (on the backend), but the data is still placeholder:
+Scoring is real (on the backend), and the questions and evidence are the real story content, but some of it is still wired up temporarily:
 
-- **The questions, ratings and scoring** live at the bottom of `services/article.ts`, under the `MOCK` comment. When the article API exists, replace `getArticleSubjects` and `submitArticle` with `fetch` calls, and move `scoreArticle` (and its tests) to the backend.
-- **The evidence in the Journal** comes mostly from `Journal/mockEvidence.ts`, which fills an empty journal once `App.tsx` has loaded it. Remove it once the activity screens supply enough real evidence. Evidence from Online Articles appears here too, but `services/article.ts` doesn't rate its ids yet, so it counts as irrelevant.
+- **The questions** live at the bottom of `services/article.ts`, under the `MOCK` comment, until there is a backend route for them. The bank has 11, in 5 sections (`ARTICLE_SECTIONS`), which together argue that cats are addicted to Big Drug Inc.'s catnip, the company knows it, and it hides it. Each time the page loads, `pickArticleSubjects()` asks one random question from each section, in order, so an article has at most `MAX_ARTICLE_QUESTIONS` (5) questions.
+- **The evidence in the Journal** is listed in `Journal/storyEvidence.ts`, grouped by the story event that gives it (`STORY_EVIDENCE`, matching the E1–E7 badges on Figma's Page Story). For now `seedStoryEvidence()` puts all of it into an empty journal at once. Once each activity screen adds its own `STORY_EVIDENCE[event]` when the player finds it, remove the seeding. Evidence from Online Articles appears here too, but its ids aren't rated yet, so it counts as irrelevant.
+- **A journal saved before this change** still holds the old fire evidence, since seeding only fills an empty journal. Use the desk's reset button, or clear the `journal` key in localStorage.
 
 ## Where the code is
 
@@ -169,16 +171,17 @@ The view doesn't navigate on its own. It calls `onFinish(ending)`, and `App.tsx`
 
 | I want to... | Open |
 | --- | --- |
-| Change the questions | `services/article.ts` (`MOCK_SUBJECTS`), and keep `backend/seed/articleRatings.json` in sync |
+| Change the questions | `services/article.ts` (`ARTICLE_SECTIONS`), and keep `backend/seed/articleRatings.json` in sync |
+| Change how many questions are asked, or how they're picked | `services/article.ts` (`MAX_ARTICLE_QUESTIONS`, `pickArticleSubjects`) |
 | Change how evidence is rated | `backend/seed/articleRatings.json` (see [The ratings "table"](#the-ratings-table)) |
-| Change the points or the good-ending threshold | `backend/src/features/article/article.service.ts` |
+| Change the points or the good-ending share | `backend/src/features/article/article.service.ts` |
 | Change what the route accepts or returns | `backend/openapi.yaml` first, then the types in `backend/src/app.ts` |
 | Change how picking, swapping, or submitting works | `articleWritingModel.tsx` |
 | Move or resize something, or change the text on screen | `articleWritingView.tsx` (constants at the top) |
 | Change a color or the font | `theme.ts` |
 | Change how the journal book itself looks | `Journal/parts/JournalBook.tsx` (shared with the Journal screen) |
 | Change where each ending goes | `App.tsx` (`ArticleWritingPage`) |
-| Change the mock evidence | `Journal/mockEvidence.ts` |
+| Change the evidence | `Journal/storyEvidence.ts`, and keep `backend/seed/articleRatings.json` in sync |
 | Change how the frontend calls the backend | `services/article.ts` (`submitArticle`) |
 
 ## Using the shared pieces
@@ -222,13 +225,14 @@ Run the tests with `npm test`, from `frontend/` for the screen and from `backend
 
 | Test file | What it checks |
 | --- | --- |
-| `backend/src/features/article/tests/article.test.ts` | **The scoring:** strong is +1, weak is -1, scores add up across questions, irrelevant and unknown evidence count as zero, evidence is rated against its own question, unknown questions are ignored. **The route:** good and bad endings, exactly at and just below the threshold, no answers, only `ending` is sent back, the ratings file isn't changed, and the `400` / `405` / `415` / `500` cases. **The seed file:** the strong and weak picks used by the flow test give the good and bad endings. |
+| `backend/src/features/article/tests/article.test.ts` | **The scoring:** strong is +1, weak is -1, scores add up across questions, irrelevant and unknown evidence count as zero, evidence is rated against its own question, unknown questions are ignored. **The ending:** good once the score reaches half the picks, bad for an empty article. **The route:** good and bad endings, exactly at and just below half the picks, no answers, only `ending` is sent back, the ratings file isn't changed, and the `400` / `405` / `415` / `500` cases. **The seed file:** the strong and weak picks used by the flow test give the good and bad endings, and mixing in too many weak picks gives the bad ending. |
 | `services/tests/article.test.ts` | `submitArticle` posts every answer to `/api/article/answers` and returns the ending, and throws on an error response. The mock questions have the right shape. |
+| `services/tests/articleQuestionBank.test.ts` | The questions, the Journal evidence and `backend/seed/articleRatings.json` agree: every question is rated, only collectable evidence is rated, every question has enough strong answers and at least one weak one. Each article asks at most 5 questions, one per section in order, and every question in the bank can come up |
 | `Article-Writing/tests/articleWritingModel.test.tsx` | The model on its own: loading questions, ignoring clicks with no questions, not submitting an incomplete answer, picked order, skipping evidence that's left the journal, page and question bounds, one page for an empty journal, the button disabled while sending, and resize handling |
 | `Article-Writing/tests/articleWriting.test.tsx` | The screen through its hidden buttons: loading message, answered count, moving forward only by submitting, keeping answers when going back, swapping evidence once full, submitting every answer, journal paging, and both error messages |
 | `Article-Writing/tests/articleWritingCanvas.test.tsx` | The Konva evidence cards: prompt and instructions on the laptop, clicking a journal card to pick it, clicking a laptop card to remove it, tap, and the pointer cursor on hover |
-| `Article-Writing/tests/articleWritingFlow.test.tsx` | The whole flow with the real `App`, mock evidence and mock scoring: strong evidence ends on `/ending/good`, weak evidence on `/ending/bad`. Each test marks the story activities done first, since Create Article is guarded |
-| `Journal/tests/journal.test.ts` | The Journal is shared, and can add, read, and clear; the mock evidence is only loaded into an empty journal, and only once |
+| `Article-Writing/tests/articleWritingFlow.test.tsx` | The whole flow with the real `App`, the story evidence and questions (with `Math.random` fixed so the same 5 come up), and mock scoring (turning journal pages to find each card): strong evidence ends on `/ending/good`, weak evidence on `/ending/bad`. Each test marks the story activities done first, since Create Article is guarded |
+| `Journal/tests/journal.test.ts` | The Journal is shared, and can add, read, and clear; every piece of story evidence is loaded into an empty journal, only once, and every story event has evidence |
 | `Progress-Bar/tests/progressBar.test.tsx` | The bar shows its label and completed count |
 
 ### How the tests see a canvas

@@ -51,7 +51,7 @@ await journal.clear();
 ### Mocks and placeholders
 
 - **Saving:** `services/journal.ts` is a mock API that saves to localStorage. It's async like a real request, so connecting a backend route only changes its three functions.
-- **Evidence:** `App.tsx` loads the saved evidence, then `mockEvidence.ts` fills an empty journal with 19 fake entries, which get saved too. Article Writing can't reach the good ending without them, because `services/article.ts` only rates their `ev-*` ids. Remove the seed once real activities supply enough evidence.
+- **Evidence:** `App.tsx` loads the saved evidence, then `storyEvidence.ts` fills an empty journal with every piece of story evidence (grouped by story event in `STORY_EVIDENCE`), which gets saved too. Article Writing can't reach the good ending without it, because `backend/seed/articleRatings.json` rates these `ev-*` ids. Remove the seed once each activity adds its own event's evidence.
 - **Icons:** `iconPath` is stored but not drawn. Nothing has an icon yet.
 
 ## Where the code is
@@ -66,7 +66,7 @@ frontend/src/
     ├── EvidenceModel.ts         ← one piece of evidence
     ├── JournalModel.ts          ← the list of evidence
     ├── JournalController.ts     ← the one shared journal, kept in memory and saved through the service
-    ├── mockEvidence.ts          ← MOCK evidence loaded at startup
+    ├── storyEvidence.ts         ← story evidence by event; seeded at startup for now
     ├── journalView.tsx          ← <Journal />: the docked and open journal together (display only)
     ├── journalViewModel.tsx     ← open/closed, page, window size; useJournalLoader for App
     ├── journalRules.ts          ← dockBounds (plain function, no React)
@@ -87,7 +87,7 @@ The hook file is `journalViewModel.tsx` rather than the usual `journalModel.tsx`
 | Change how many notes fit, or move something | `journalContent.ts` |
 | Change how a note looks | `parts/JournalOverlay.tsx` |
 | Change how the docked book looks | `parts/JournalDock.tsx` |
-| Change the mock evidence | `mockEvidence.ts` |
+| Change the evidence | `storyEvidence.ts`, and keep `backend/seed/articleRatings.json` in sync |
 | Change the book's cover or pages (every screen) | `parts/JournalBook.tsx` |
 
 ## How it's tested

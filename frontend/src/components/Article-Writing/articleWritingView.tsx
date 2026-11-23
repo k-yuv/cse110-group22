@@ -1,10 +1,12 @@
-import type { CSSProperties } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import type Konva from 'konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { Stage, Layer, Rect, Text, Line, Group } from 'react-konva';
 import { visuallyHidden } from '../../helpers';
 import type { ArticleEnding } from '../../services/article';
 import type { EvidenceModel } from '../Journal/EvidenceModel';
 import JournalBook from '../Journal/parts/JournalBook';
+import EvidenceDetail from '../Journal/parts/EvidenceDetail';
 import { COLORS, FONT } from '../../theme';
 import { useArticleWritingModel } from './articleWritingModel';
 import ProgressBar from '../Progress-Bar/ProgressBar';
@@ -32,9 +34,13 @@ const COMPACT_CARD_HEIGHT = 40;
 const CARD_GAP = 8;
 const CARDS_PER_PAGE = 4;
 const CARDS_PER_SPREAD = CARDS_PER_PAGE * PAGE_X.length;
+// A hovered card's full text stays above the page buttons.
+const PAGES_BOTTOM = 636;
 
 // Laptop screen, where the article is assembled.
 const SCREEN = { x: 688, y: 195, width: 480, height: 300 };
+const PROMPT_FONT_SIZE = 20;
+const PROMPT_LINE_HEIGHT = 1.2;
 
 // The bar's label sits above it, so the bar itself starts at y = 51.
 const progressStyle: CSSProperties = {
@@ -100,18 +106,38 @@ interface EvidenceCardProps {
   selected: boolean;
   compact?: boolean;
   onToggle: (id: string) => void;
+  onHoverChange: (hovering: boolean) => void;
+}
+
+// Where a card is drawn. key tells the journal's and the laptop's copies of
+// the same evidence apart.
+interface CardLayout {
+  key: string;
+  item: EvidenceModel;
+  x: number;
+  y: number;
+  width: number;
+  // How far down its full text may reach when hovered.
+  maxBottom: number;
 }
 
 // compact cards show only the title, to fit five on the laptop screen.
-function EvidenceCard({ item, x, y, width, selected, compact = false, onToggle }: EvidenceCardProps) {
+// Long text is cut short here; hovering shows all of it (see EvidenceDetail).
+function EvidenceCard({ item, x, y, width, selected, compact = false, onToggle, onHoverChange }: EvidenceCardProps) {
   return (
     <Group
       x={x}
       y={y}
       onClick={() => onToggle(item.id)}
       onTap={() => onToggle(item.id)}
-      onMouseEnter={(event) => setCursor(event, 'pointer')}
-      onMouseLeave={(event) => setCursor(event, 'default')}
+      onMouseEnter={(event) => {
+        setCursor(event, 'pointer');
+        onHoverChange(true);
+      }}
+      onMouseLeave={(event) => {
+        setCursor(event, 'default');
+        onHoverChange(false);
+      }}
     >
       <Rect
         width={width}
@@ -157,6 +183,11 @@ interface ArticleWritingProps {
 
 // Display only: gets everything it needs from useArticleWritingModel.
 export default function ArticleWriting({ levelId = 'level-1', onFinish, onBack }: ArticleWritingProps) {
+  // Canvas layout only, so it lives here rather than in the model.
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const promptRef = useRef<Konva.Text>(null);
+  const [promptHeight, setPromptHeight] = useState(PROMPT_FONT_SIZE * PROMPT_LINE_HEIGHT);
+
   const {
     windowWidth,
     windowHeight,
@@ -192,7 +223,41 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish, onBack }
     onBack,
   });
 
+  // Long questions wrap onto more lines, pushing what's below them down.
+  useLayoutEffect(() => {
+    if (promptRef.current) setPromptHeight(promptRef.current.height());
+  }, [prompt, loading]);
+
   if (loading) return <p>Loading questions...</p>;
+
+  const promptBottom = SCREEN.y + 20 + promptHeight;
+
+  const screenCards: CardLayout[] = selectedEvidence.map((item, index) => ({
+    key: `screen-${item.id}`,
+    item,
+    x: SCREEN.x + 24,
+    y: promptBottom + 30 + index * (COMPACT_CARD_HEIGHT + 4),
+    width: SCREEN.width - 48,
+    maxBottom: SCREEN.y + SCREEN.height - 8,
+  }));
+
+  const journalCards: CardLayout[] = pageEvidence.map((item, index) => ({
+    key: `journal-${item.id}`,
+    item,
+    x: PAGE_X[Math.floor(index / CARDS_PER_PAGE)],
+    y: CARDS_TOP + (index % CARDS_PER_PAGE) * (CARD_HEIGHT + CARD_GAP),
+    width: CARD_WIDTH,
+    maxBottom: PAGES_BOTTOM,
+  }));
+
+  // Looked up from what's drawn now, so a card that's gone (deselected, or on
+  // another page) stops showing without needing a mouse leave.
+  const hovered = [...screenCards, ...journalCards].find((card) => card.key === hoveredKey);
+
+  function hoverHandler(key: string) {
+    return (hovering: boolean) =>
+      setHoveredKey((current) => (hovering ? key : current === key ? null : current));
+  }
 
   // Fit the whole frame in the window, centered. The wall and desk colors
   // continue past its edges so the screen is filled at any window shape.
@@ -283,20 +348,21 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish, onBack }
             <Rect x={643} y={150} width={570} height={390} cornerRadius={50} fill={COLORS.laptop} />
             <Rect {...SCREEN} cornerRadius={20} fill={COLORS.paper} />
             <Text
+              ref={promptRef}
               x={SCREEN.x + 24}
               y={SCREEN.y + 20}
               width={SCREEN.width - 48}
               text={prompt}
               fontFamily={FONT}
               fontStyle="bold"
-              fontSize={20}
+              fontSize={PROMPT_FONT_SIZE}
+              lineHeight={PROMPT_LINE_HEIGHT}
               fill={COLORS.text}
-              ellipsis
-              wrap="none"
+              wrap="word"
             />
             <Text
               x={SCREEN.x + 24}
-              y={SCREEN.y + 46}
+              y={promptBottom + 6}
               text={`Evidence ${selectedCount}/${requiredCount}`}
               fontFamily={FONT}
               fontSize={12}
@@ -305,7 +371,7 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish, onBack }
             {selectedEvidence.length === 0 && (
               <Text
                 x={SCREEN.x + 24}
-                y={SCREEN.y + 80}
+                y={promptBottom + 40}
                 width={SCREEN.width - 48}
                 text={`Submit ${requiredCount} pieces of evidence.`}
                 fontFamily={FONT}
@@ -313,16 +379,17 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish, onBack }
                 fill={COLORS.mutedText}
               />
             )}
-            {selectedEvidence.map((item, index) => (
+            {screenCards.map((card) => (
               <EvidenceCard
-                key={item.id}
-                item={item}
-                x={SCREEN.x + 24}
-                y={SCREEN.y + 70 + index * (COMPACT_CARD_HEIGHT + 4)}
-                width={SCREEN.width - 48}
+                key={card.key}
+                item={card.item}
+                x={card.x}
+                y={card.y}
+                width={card.width}
                 selected
                 compact
                 onToggle={onToggleEvidence}
+                onHoverChange={hoverHandler(card.key)}
               />
             ))}
 
@@ -332,21 +399,34 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish, onBack }
               <JournalBook width={BOOK_FRAME.width} />
             </Group>
             <Text x={73} y={345} text="Evidence:" fontFamily={FONT} fontStyle="bold" fontSize={22} fill={COLORS.text} />
-            {pageEvidence.map((item, index) => {
-              const side = Math.floor(index / CARDS_PER_PAGE);
-              const row = index % CARDS_PER_PAGE;
-              return (
-                <EvidenceCard
-                  key={item.id}
-                  item={item}
-                  x={PAGE_X[side]}
-                  y={CARDS_TOP + row * (CARD_HEIGHT + CARD_GAP)}
-                  width={CARD_WIDTH}
-                  selected={isSelected(item.id)}
-                  onToggle={onToggleEvidence}
-                />
-              );
-            })}
+            {journalCards.map((card) => (
+              <EvidenceCard
+                key={card.key}
+                item={card.item}
+                x={card.x}
+                y={card.y}
+                width={card.width}
+                selected={isSelected(card.item.id)}
+                onToggle={onToggleEvidence}
+                onHoverChange={hoverHandler(card.key)}
+              />
+            ))}
+
+            {hovered && (
+              <EvidenceDetail
+                item={hovered.item}
+                x={hovered.x}
+                y={hovered.y}
+                width={hovered.width}
+                maxBottom={hovered.maxBottom}
+                fill={isSelected(hovered.item.id) ? COLORS.cardSelected : COLORS.card}
+                stroke={COLORS.journalCover}
+                nameColor={COLORS.text}
+                descriptionColor={COLORS.mutedText}
+                nameFontSize={14}
+                descriptionFontSize={12}
+              />
+            )}
           </Layer>
         </Stage>
 
