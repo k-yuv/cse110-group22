@@ -1,12 +1,21 @@
 
-import { act, renderHook } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
-import { describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { MemoryRouter, useLocation } from 'react-router';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { completeActivity, getProgress } from '../../../services/progress';
+import { ROUTES } from '../../../routes';
 import {
     getSocialPost, LAYOUT, SCENE, SOCIAL_LEVELS,
     type SocialPost,
 } from '../socialMediaContent.tsx';
 import { useSocialMediaModel } from '../socialMediaModel.tsx';
+
+// The real progress service, except completeActivity can be made to fail in a
+// single test with mockRejectedValueOnce.
+vi.mock('../../../services/progress', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('../../../services/progress')>();
+    return { ...actual, completeActivity: vi.fn(actual.completeActivity) };
+});
 
 describe('useSocialMediaModel', () => {
     it('keeps only the latest answer and sends complete metadata to its consumer', () => {
@@ -165,5 +174,49 @@ describe('useSocialMediaModel', () => {
 
         expect(removeListener).toHaveBeenCalledWith('resize', expect.any(Function));
         removeListener.mockRestore();
+    });
+});
+
+describe('useSocialMediaModel finishing', () => {
+    beforeEach(() => localStorage.clear());
+
+    function renderModel() {
+        return renderHook(
+            () => ({ model: useSocialMediaModel('catnip'), path: useLocation().pathname }),
+            { wrapper: ({ children }) => <MemoryRouter initialEntries={[ROUTES.socialMedia]}>{children}</MemoryRouter> },
+        ).result;
+    }
+
+    it('cannot finish until a thought is picked', async () => {
+        const result = renderModel();
+
+        expect(result.current.model.canFinish).toBe(false);
+        await act(() => result.current.model.onFinish());
+
+        expect(await getProgress()).toEqual([]);
+        expect(result.current.path).toBe(ROUTES.socialMedia);
+    });
+
+    it('marks Social Media done and returns to the desk after a pick', async () => {
+        const result = renderModel();
+
+        act(() => result.current.model.selectThought('catnip-support-1'));
+        expect(result.current.model.canFinish).toBe(true);
+        await act(() => result.current.model.onFinish());
+
+        expect(await getProgress()).toEqual(['social']);
+        expect(result.current.path).toBe(ROUTES.desk);
+    });
+
+    it('shows an error and stays put if saving fails', async () => {
+        vi.mocked(completeActivity).mockRejectedValueOnce(new Error('down'));
+        const result = renderModel();
+
+        act(() => result.current.model.selectThought('catnip-question-1'));
+        await act(() => result.current.model.onFinish());
+
+        await waitFor(() => expect(result.current.model.error).not.toBe(''));
+        expect(result.current.model.finishing).toBe(false);
+        expect(result.current.path).toBe(ROUTES.socialMedia);
     });
 });
