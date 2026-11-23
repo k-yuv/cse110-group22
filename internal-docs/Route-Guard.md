@@ -7,7 +7,7 @@ Stops players from reaching locked screens by typing their URL (issue #75). The 
 | Route | Opens when | Guard |
 | --- | --- | --- |
 | `/create-article` | Interviews is done | `<RouteGuard screen="createArticle">` |
-| `/social-media` (placeholder) | Online Articles is done | `<RouteGuard screen="social">` |
+| `/social-media` | Online Articles is done | `<RouteGuard screen="social">` |
 | `/interview` | Social Media is done | `<RouteGuard screen="interviews">` |
 | `/ending/good`, `/ending/bad` | The player just submitted an article | `<RouteGuard screen="ending">` |
 
@@ -28,10 +28,6 @@ The unlock rules aren't duplicated: `useRouteGuardModel` calls `isScreenLocked` 
 ### Endings
 
 Nothing in saved progress records that an article was submitted, so `ArticleWritingPage` in `App.tsx` navigates to the ending with router state `{ articleSubmitted: true }`. A typed URL has no state and gets redirected. `BrowserRouter` stores state in the browser history, so reloading an ending still works.
-
-### Placeholder screens
-
-Social Media isn't built yet, so `Social-Media/socialMediaView.tsx` renders `Placeholder-Activity`: a title and a **Finish (placeholder)** button that marks the activity done and returns to the desk. That lets you play through the whole unlock order by hand. Interviews is now the real screen (see [Interview-Level.md](Interview-Level.md)). When the real screen is built, replace the placeholder's body and keep the `<RouteGuard>` wrapper in `App.tsx`. Delete `Placeholder-Activity/` once nothing uses it.
 
 ## Adding a new locked screen
 
@@ -58,5 +54,4 @@ Players can still skip ahead by editing the `progress` key in localStorage. Fixi
 
 - `Route-Guard/tests/routeGuard.test.tsx`: each guarded screen with empty, partial and full progress; nothing shown while loading; locked when loading fails; no redirect if the player already left; endings redirect on a direct visit and open after submitting.
 - `Route-Guard/tests/routeGuardApp.test.tsx` (integration): with the real `App`, a new player typing any locked URL lands on `/desk`; finishing Social Media unlocks `/interview`; once the story is done, Create Article opens.
-- `Placeholder-Activity/tests/placeholderActivity.test.tsx`: Finish saves progress and returns to the desk, or shows an error if saving fails.
 - `Article-Writing/tests/articleWritingFlow.test.tsx` now completes the story activities first, since Create Article is guarded.
