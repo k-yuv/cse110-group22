@@ -26,6 +26,9 @@ vi.mock('react-konva', () => ({
   Text: () => null,
   Line: () => null,
   Group: () => null,
+  Circle: () => null,
+  Ellipse: () => null,
+  Wedge: () => null,
 }));
 
 // Clicks the evidence with this title, turning the journal's pages to find it:
@@ -138,7 +141,7 @@ describe('Article writing flow', () => {
 
     await writeArticle(titlesPerQuestion(STRONG));
 
-    expect(await screen.findByText('Good Ending page not built yet.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'CEO: Arrested' })).toBeInTheDocument();
     expect(submitArticle).toHaveBeenCalledWith(answersSent(STRONG));
   });
 
@@ -147,7 +150,7 @@ describe('Article writing flow', () => {
 
     await writeArticle(titlesPerQuestion(WEAK));
 
-    expect(await screen.findByText('Bad Ending page not built yet.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'You Lost Your Job' })).toBeInTheDocument();
     expect(submitArticle).toHaveBeenCalledWith(answersSent(WEAK));
   });
 

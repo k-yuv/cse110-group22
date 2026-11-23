@@ -11,18 +11,23 @@ background and title artwork, then shows the three available actions:
 | Button | What it does | Goes to |
 | --- | --- | --- |
 | START | Begins the game | `/desk` |
-| OPTIONS | Opens the options screen | `/options` |
+| OPTIONS | Opens the settings popup on top of the title screen | stays on `/` |
 | Teacher Dashboard | Opens the teacher dashboard | `/teacher-dashboard` |
 
-The options and teacher dashboard screens are not built yet. Their URLs are
-handled by the catch-all route, so they show the 404 page for now. They are
-placeholder routes rather than completed screens.
+The settings popup is the shared `Settings` component (see
+[Settings-Menu.md](Settings-Menu.md)). It's an empty frame for now; the actual
+settings come in sprint 2.
+
+The teacher dashboard is not built yet. Its URL is handled by the catch-all
+route, so it shows the 404 page for now.
 
 ### Button behavior
 
 Each button is a Konva group containing a rounded rectangle and centered text.
-Clicking a button uses React Router navigation. Hovering a button scales it
-slightly and changes the canvas cursor to a pointer.
+START and Teacher Dashboard use React Router navigation. OPTIONS sets
+`settingsOpen` in `titleScreenView.tsx`, which shows the popup without
+changing the URL. Hovering a button scales it slightly and changes the canvas
+cursor to a pointer.
 
 ### Fits any window size
 
@@ -55,6 +60,8 @@ frontend/src/
 └── components/
     ├── Not-Found/
     │   └── notFoundView.tsx             <- placeholder for unfinished routes
+    ├── Settings/
+    │   └── Settings.tsx                 <- popup opened by OPTIONS
     └── TitleScreen/
         ├── titleScreenView.tsx          <- screen layout and navigation
         ├── titleButton.tsx              <- reusable Konva button
@@ -75,8 +82,9 @@ The files depend on each other in one direction:
 
 ```
 App.tsx -> titleScreenView.tsx -> titleButton.tsx
-              |                 -> URLImage.tsx
-              -> routes.ts (to navigate)
+                                -> URLImage.tsx
+                                -> Settings.tsx
+                                -> routes.ts (to navigate)
 ```
 
 ### Which file do I open?
@@ -86,13 +94,14 @@ App.tsx -> titleScreenView.tsx -> titleButton.tsx
 | Change the title screen layout or artwork placement | `TitleScreen/titleScreenView.tsx` |
 | Change a button's appearance or hover effect | `TitleScreen/titleButton.tsx` |
 | Change what a button does | `TitleScreen/titleScreenView.tsx` and `routes.ts` |
-| Add the real options screen | `App.tsx` and the new options screen component |
+| Add the real settings to the OPTIONS popup | Pass them as children to `<Settings>` in `TitleScreen/titleScreenView.tsx` (see [Settings-Menu.md](Settings-Menu.md)) |
+| Change the popup's look | `Settings/Settings.tsx` |
 | Add the real teacher dashboard | `App.tsx` and the new dashboard component |
 | Change or rename a URL | `routes.ts`, then `App.tsx` |
 
-## Hooking up an unfinished screen
+## Hooking up the teacher dashboard
 
-When the options or teacher dashboard screen is built:
+When the teacher dashboard is built:
 
 1. Keep its existing path in `routes.ts`, unless the URL is intentionally
    changing.
@@ -100,11 +109,14 @@ When the options or teacher dashboard screen is built:
 3. Add its route above the `"*"` route:
 
    ```tsx
-   <Route path={ROUTES.options} element={<Options />} />
+   <Route path={ROUTES.teacherDashboard} element={<TeacherDashboard />} />
    ```
 
-4. Replace the 404 placeholder with the new screen by adding the corresponding
-   route. The title screen button already navigates to the correct path.
+4. This replaces the 404 placeholder. The title screen button already
+   navigates to the correct path.
+
+`ROUTES.options` in `routes.ts` is no longer used, since OPTIONS opens a popup
+instead of a separate screen.
 
 When the Central View is replaced or renamed, update `ROUTES.desk` and keep
 the START button using that route constant rather than a hard-coded string.
@@ -117,7 +129,7 @@ Run the tests from `frontend/` with `npm test`.
 
 | Test file | What it checks |
 | --- | --- |
-| `TitleScreen/tests/titleScreen.test.tsx` | Each button navigates to its configured route, the title artwork and all three buttons render, button positions use the expected layout scale, and the app opens on the title screen |
+| `TitleScreen/tests/titleScreen.test.tsx` | START and Teacher Dashboard navigate to their configured routes, OPTIONS opens the settings popup without navigating and ✕ closes it, the title artwork and all three buttons render, button positions use the expected layout scale, and the app opens on the title screen |
 
 The tests replace Konva with small DOM test doubles because jsdom does not
 provide a real canvas. This keeps the tests focused on the title screen's
@@ -127,6 +139,7 @@ observable behavior:
 - artwork rendering
 - configured button positions
 - navigation after clicking
+- opening and closing the settings popup
 - the default route and START-to-desk integration
 
 The tests import route values from `routes.ts`, so changing a route in one
@@ -141,5 +154,7 @@ browser:
 - [ ] The artwork is positioned correctly at different aspect ratios.
 - [ ] The hover scale and pointer cursor work on each button.
 - [ ] The buttons look correct with the Coiny font loaded.
-- [ ] The options and teacher dashboard screens replace the 404 page when they
-  are implemented.
+- [ ] The settings popup covers the title screen and is centered at different
+  window sizes.
+- [ ] The teacher dashboard screen replaces the 404 page when it is
+  implemented.
