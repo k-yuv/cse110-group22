@@ -12,7 +12,7 @@ import SocialMediaLaptop from './parts/SocialMediaLaptop.tsx';
 import ThinkButton, { ThoughtBubble } from './parts/ThinkButton.tsx';
 import BackButton from '../Back-Button/backButtonView';
 import BackConfirmation from '../Back-Confirmation/backConfirmationView';
-import {BACK_BUTTON_SIZE, PAGE_TITLE} from "./socialMediaContent.tsx";
+import {BACK_BUTTON_SIZE, FINISH_LABEL, PAGE_TITLE} from "./socialMediaContent.tsx";
 
 interface Props {
     levelId?: SocialLevelId;
@@ -24,6 +24,7 @@ export default function SocialMedia({ levelId = DEFAULT_LEVEL, postIndex = 0, on
     const {
         width, height, scale, originX, originY, sizeUnit,
         post, thoughtsOpen, toggleThoughts, selection, selectThought, onBackToDesk, backConfirmation,
+        canFinish, finishing, error, onFinish,
     } = useSocialMediaModel(levelId, postIndex, onSelectionChange);
 
     const sceneTransform = {
@@ -117,6 +118,18 @@ export default function SocialMedia({ levelId = DEFAULT_LEVEL, postIndex = 0, on
                     />
                 </div>
             </div>
+
+            {/* Shown once a thought is picked: marks Social Media done and returns to the desk. */}
+            {(canFinish || error) && (
+                <div style={{ position: 'absolute', right: 24, bottom: 24, zIndex: 10, textAlign: 'right' }}>
+                    {error && <p role="alert">{error}</p>}
+                    {canFinish && (
+                        <button type="button" onClick={onFinish} disabled={finishing}>
+                            {FINISH_LABEL}
+                        </button>
+                    )}
+                </div>
+            )}
 
             <BackConfirmation activityName={PAGE_TITLE} {...backConfirmation} />
         </main>

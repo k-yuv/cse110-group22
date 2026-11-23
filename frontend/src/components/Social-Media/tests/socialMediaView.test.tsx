@@ -76,6 +76,7 @@ vi.mock('react-konva', async () => {
 });
 
 import SocialMedia from '../socialMediaView.tsx';
+import { FINISH_LABEL } from '../socialMediaContent.tsx';
 
 // Provide routing context without changing browser history.
 function renderSocialMedia(ui: ReactElement) {
@@ -176,5 +177,19 @@ describe('SocialMedia view', () => {
         expect(shadow('catnip-support-1').blur).toBe(0);
         expect(changed).toHaveBeenCalledTimes(2);
         expect(changed).toHaveBeenLastCalledWith(null);
+    });
+
+    it('shows Finish only while a thought is picked', async () => {
+        const user = userEvent.setup();
+        renderSocialMedia(<SocialMedia />);
+
+        expect(screen.queryByRole('button', { name: FINISH_LABEL })).not.toBeInTheDocument();
+
+        await user.click(screen.getByText('Gather Thoughts'));
+        await user.click(thought('catnip-support-1'));
+        expect(screen.getByRole('button', { name: FINISH_LABEL })).toBeInTheDocument();
+
+        await user.click(thought('catnip-support-1'));
+        expect(screen.queryByRole('button', { name: FINISH_LABEL })).not.toBeInTheDocument();
     });
 });
