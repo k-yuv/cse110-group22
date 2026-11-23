@@ -56,7 +56,7 @@ export function useArticleWritingModel({ levelId, evidencePerPage, onFinish, onB
   const isAnswered = (subject: ArticleSubject) =>
     (answers[subject.id]?.length ?? 0) >= subject.requiredCount;
 
-  // The question currently shown on the laptop; evidence clicks go to it.
+  // The question currently shown on the socialMediaLaptop; evidence clicks go to it.
   // Players only move forward by submitting an answer, but can step back to
   // change an earlier one.
   const subject: ArticleSubject | undefined = subjects[subjectIndex];
