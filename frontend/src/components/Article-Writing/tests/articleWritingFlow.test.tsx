@@ -4,7 +4,9 @@ import userEvent from '@testing-library/user-event';
 import App from '../../../App';
 import { ROUTES } from '../../../routes';
 import { completeActivity } from '../../../services/progress';
-import { submitArticle } from '../../../services/article';
+import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
+import { GO_BACK_LABEL } from '../../Back-Confirmation/backConfirmationContent';
+import { pickArticleSubjects, submitArticle } from '../../../services/article';
 
 // Integration: runs the real (mock) journal evidence and questions, from
 // entering the screen to landing on an ending page. Scoring happens on the
@@ -140,6 +142,7 @@ describe('Article writing flow', () => {
     await writeArticle(titlesPerQuestion(STRONG));
 
     expect(await screen.findByRole('heading', { name: 'CEO: Arrested' })).toBeInTheDocument();
+    expect(submitArticle).toHaveBeenCalledWith(answersSent(STRONG));
   });
 
   it('sends weak evidence and goes to the bad ending', async () => {
@@ -148,5 +151,19 @@ describe('Article writing flow', () => {
     await writeArticle(titlesPerQuestion(WEAK));
 
     expect(await screen.findByRole('heading', { name: 'You Lost Your Job' })).toBeInTheDocument();
+    expect(submitArticle).toHaveBeenCalledWith(answersSent(WEAK));
+  });
+
+  it('the back button asks first, then Go Back returns to the desk', async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, '', ROUTES.createArticle);
+    render(<App />);
+
+    await user.click(await screen.findByRole('button', { name: BACK_BUTTON_LABEL }));
+    expect(window.location.pathname).toBe(ROUTES.createArticle);
+
+    await user.click(screen.getByRole('button', { name: GO_BACK_LABEL }));
+
+    expect(window.location.pathname).toBe(ROUTES.desk);
   });
 });
