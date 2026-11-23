@@ -12,8 +12,16 @@ const RATING_POINTS: Record<EvidenceRating, number> = {
   irrelevant: 0,
 };
 
-// Score needed for the good ending, summed over every question.
-export const GOOD_ENDING_THRESHOLD = 2;
+// The share of the article's picks the score has to reach for the good ending.
+// Each article asks a random set of questions, so the number of picks varies
+// (5 to 10). At 0.5, an article of 8 picks needs a score of 4: 6 strong and 2
+// weak is good, 5 strong and 3 weak is bad.
+export const GOOD_ENDING_SHARE = 0.5;
+
+// An empty article is never good.
+export function endingFor(score: number, pickCount: number): ArticleResult['ending'] {
+  return pickCount > 0 && score >= pickCount * GOOD_ENDING_SHARE ? 'good' : 'bad';
+}
 
 // Adds up the points for every picked piece of evidence. Each pick is rated
 // against the question it answers, so the same evidence can be strong for one
@@ -33,5 +41,7 @@ export function scoreArticle(ratings: StoredSubjectRatings[], answers: ArticleAn
 export async function scoreAnswers(answers: ArticleAnswers): Promise<ArticleResult['ending']> {
   const ratings = await readJson<StoredSubjectRatings[]>(RATINGS_FILE, []);
 
-  return scoreArticle(ratings, answers) >= GOOD_ENDING_THRESHOLD ? 'good' : 'bad';
+  const pickCount = Object.values(answers).reduce((count, ids) => count + ids.length, 0);
+
+  return endingFor(scoreArticle(ratings, answers), pickCount);
 }

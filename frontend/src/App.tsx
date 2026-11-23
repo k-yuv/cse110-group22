@@ -15,9 +15,9 @@ import DeskCleanup from './components/Desk-Cleanup-Minigame/deskCleanupView';
 import { ROUTES } from './routes';
 import RouteGuard from './components/Route-Guard/routeGuardView';
 import type { EndingState } from './components/Route-Guard/routeGuardModel';
-import { seedMockEvidence } from './components/Journal/mockEvidence';
+import { seedStoryEvidence } from './components/Journal/storyEvidence';
 
-seedMockEvidence();
+seedStoryEvidence();
 
 const SUBMITTED: EndingState = { articleSubmitted: true };
 
