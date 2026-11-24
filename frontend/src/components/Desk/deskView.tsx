@@ -6,6 +6,7 @@ import Folder from './parts/Folder';
 import MinigameEntry from './parts/MinigameEntry';
 import CreateArticleButton from './parts/CreateArticleButton';
 import SettingsButton from '../SettingsButton/SettingsButton';
+import Journal from '../Journal/journalView';
 
 const FOLDERS = ['articles', 'social', 'interviews'] as const;
 
@@ -71,6 +72,8 @@ export default function Desk() {
           />
         </Layer>
       </Stage>
+
+      <Journal placement="desk" />
 
       <SettingsButton />
 

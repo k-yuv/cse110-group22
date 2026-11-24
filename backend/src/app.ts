@@ -4,6 +4,7 @@ import * as OpenApiValidator from 'express-openapi-validator';
 import notesRouter from './features/notes/notes.router';
 import questionsRouter from './features/questions/questions.router';
 import aiImagesRouter from './features/aiImages/aiImages.router';
+import articleRouter from './features/article/article.router';
 import { errorHandler } from './middleware/errorHandler';
 import { IMAGES_DIR, IMAGES_URL } from './utils/images';
 
@@ -60,6 +61,27 @@ export interface StoredAiImage {
   isAi: boolean;
 }
 
+// How useful one piece of evidence is for answering one article question.
+export type EvidenceRating = 'strong' | 'weak' | 'irrelevant';
+
+// How one question's ratings are saved in backend/data/articleRatings.json.
+// Ratings are never sent to the client.
+export interface StoredSubjectRatings {
+  // The question (subject) these ratings are for, e.g. "subject-ingredient".
+  subjectId: string;
+  // Evidence id → its rating for this question. A missing id counts as irrelevant.
+  ratings: Record<string, EvidenceRating>;
+}
+
+// Matches the ArticleAnswers schema in backend/openapi.yaml:
+// subject id → the evidence ids the player picked for it.
+export type ArticleAnswers = Record<string, string[]>;
+
+// Matches the ArticleResult schema in backend/openapi.yaml.
+export interface ArticleResult {
+  ending: 'good' | 'bad';
+}
+
 const app = express();
 
 app.use(express.json());
@@ -88,6 +110,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/notes', notesRouter);
 app.use('/api/chapters/:chapter/questions', questionsRouter);
 app.use('/api/ai-images', aiImagesRouter);
+app.use('/api/article', articleRouter);
 
 // Must stay last: it only runs when something above passed along an error.
 app.use(errorHandler);

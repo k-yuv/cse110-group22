@@ -36,3 +36,12 @@ export function getDeskState(completed: readonly ActivityId[]): DeskState {
     createArticleLocked: !completed.includes(STORY_ORDER[STORY_ORDER.length - 1]),
   };
 }
+
+// Every screen that can be locked: the main activities plus Create Article.
+// The route guard uses this so typing a URL follows the same rules as the desk.
+export type LockableScreen = ActivityId | 'createArticle';
+
+export function isScreenLocked(screen: LockableScreen, completed: readonly ActivityId[]): boolean {
+  const { activities, createArticleLocked } = getDeskState(completed);
+  return screen === 'createArticle' ? createArticleLocked : activities[screen].locked;
+}

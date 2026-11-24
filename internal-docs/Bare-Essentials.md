@@ -197,7 +197,11 @@ These are generated automatically. Changes are overwritten and should never be c
 
 - [Desk-View.md](Desk-View.md): the hub desk (level selector): what it does, where its code is, how it's tested, and how to hook an activity screen up to it.
 - [Online-Articles.md](Online-Articles.md): the first activity, where the player highlights misinformation in a news article: how it plays and grades, where its code is, and how it's tested.
-- [AI-Minigame.md](AI-Minigame.md): the AI image guessing minigame: its two routes, how the game screen uses them, where the images and their data live, and how to add images.
+- [AI-Image-Minigame.md](AI-Image-Minigame.md): the AI image guessing minigame's game screen: how it plays, keeps score and handles a failed request, where its code is, and how it's tested.
+- [AI-Minigame.md](AI-Minigame.md): the AI image guessing minigame's backend: its two routes, how the game screen uses them, where the images and their data live, and how to add images.
+- [Route-Guard.md](Route-Guard.md): stops players reaching locked screens by typing their URL: which routes are guarded, how to guard a new screen, and the placeholder Social Media screen.
+- [Back-Confirmation.md](Back-Confirmation.md): the shared back button and "Are You Sure?" popup on activity screens: what they do, which screens use them, how to add them to a new screen, and how they're tested.
+- [Social-Media.md](Social-Media.md): the second activity, where the player reacts to an influencer's post: how picking a thought and finishing work, where its code is, and how it's tested.
 
 ## Other docs
 

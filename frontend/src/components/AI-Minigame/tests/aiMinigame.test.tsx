@@ -9,7 +9,6 @@ import { getProgress } from '../../../services/progress';
 import {
   AI_LABEL,
   ANSWER_ERROR,
-  BACK_TO_DESK_LABEL,
   LOAD_ERROR,
   NOT_AI_LABEL,
   PLAY_AGAIN_LABEL,
@@ -18,6 +17,8 @@ import {
   RETURN_TO_DESK_LABEL,
   resultText,
 } from '../aiMinigameContent';
+import { BACK_BUTTON_LABEL as BACK_TO_DESK_LABEL } from '../../Back-Button/backButtonView';
+import { GO_BACK_LABEL, STAY_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 
 vi.mock('react-konva', () => ({
   Stage: () => null,
@@ -290,7 +291,7 @@ describe('AI minigame', () => {
       expect(screen.getByText('Desk')).toBeInTheDocument();
     });
 
-    it('the back arrow goes to the desk in the middle of a game', async () => {
+    it('the back arrow asks first in the middle of a game, and Go Back goes to the desk', async () => {
       const user = renderGame();
       await expectImage(1);
       await user.click(screen.getByRole('button', { name: AI_LABEL }));
@@ -298,8 +299,27 @@ describe('AI minigame', () => {
 
       await user.click(screen.getByRole('button', { name: BACK_TO_DESK_LABEL }));
 
+      expect(screen.getByRole('alertdialog')).toHaveTextContent('AI Images');
+      expect(screen.getByTestId('path').textContent).toBe(ROUTES.aiImage);
+
+      await user.click(screen.getByRole('button', { name: GO_BACK_LABEL }));
+
       expect(screen.getByTestId('path').textContent).toBe(ROUTES.desk);
       expect(screen.getByText('Desk')).toBeInTheDocument();
+    });
+
+    it('Stay keeps the game where it was', async () => {
+      const user = renderGame();
+      await expectImage(1);
+      await user.click(screen.getByRole('button', { name: AI_LABEL }));
+      await expectImage(2);
+
+      await user.click(screen.getByRole('button', { name: BACK_TO_DESK_LABEL }));
+      await user.click(screen.getByRole('button', { name: STAY_LABEL }));
+
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      expect(screen.getByTestId('path').textContent).toBe(ROUTES.aiImage);
+      await expectImage(2);
     });
 
     it('the back arrow also goes to the desk from the results', async () => {
@@ -310,6 +330,8 @@ describe('AI minigame', () => {
 
       await user.click(screen.getByRole('button', { name: BACK_TO_DESK_LABEL }));
 
+      // Nothing left to lose, so it doesn't ask.
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
       expect(screen.getByTestId('path').textContent).toBe(ROUTES.desk);
     });
   });

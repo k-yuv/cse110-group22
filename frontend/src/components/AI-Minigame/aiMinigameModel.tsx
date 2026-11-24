@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { ROUTES } from '../../routes';
 import { getAiImages, submitAiAnswer, type AiImage } from '../../services/aiImage';
 import { ANSWER_ERROR, LOAD_ERROR, type Box } from './aiMinigameContent';
+import { useBackConfirmationModel } from '../Back-Confirmation/backConfirmationModel';
 
 const MAX_WIDTH_TO_HEIGHT = 1.5;
 
@@ -72,9 +73,12 @@ export function useAiMinigameModel() {
     };
   }
 
-  function handleBackToDesk() {
-    navigate(ROUTES.desk);
-  }
+  // Leaving mid-game loses the answers so far, so ask first. Once the
+  // results are showing there's nothing left to lose.
+  const { onBack, confirmation } = useBackConfirmationModel({
+    onLeave: () => navigate(ROUTES.desk),
+    hasProgressToLose: result === null,
+  });
 
   // Sends this one guess to the backend, adds it to the score, then moves on
   // (or shows the score after the last image). If the request fails, the
@@ -121,7 +125,8 @@ export function useAiMinigameModel() {
     busy,
     error,
     onAnswer: handleAnswer,
-    onBackToDesk: handleBackToDesk,
+    onBackToDesk: onBack,
+    backConfirmation: confirmation,
     onPlayAgain: handlePlayAgain,
   };
 }

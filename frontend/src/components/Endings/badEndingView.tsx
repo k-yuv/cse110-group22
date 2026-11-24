@@ -1,9 +1,8 @@
-// MOCK: placeholder until the real Bad Ending screen is built (#32/#33).
+import EndingView from './endingView';
+import FiredScene from './scenes/FiredScene';
+import { COLORS } from '../../theme';
+
+// Shown after a weak article: the player loses their job.
 export default function BadEnding() {
-  return (
-    <main>
-      <h1>404</h1>
-      <p>Bad Ending page not built yet.</p>
-    </main>
-  );
+  return <EndingView ending="bad" scene={<FiredScene />} background={COLORS.streetWall} />;
 }
