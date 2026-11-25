@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { completeActivity, getProgress, resetProgress, type ActivityId } from '../../services/progress';
+import { getProgress, type ActivityId } from '../../services/progress';
 import { ROUTES } from '../../routes';
-import { JournalController } from '../Journal/JournalController';
-import { seedStoryEvidence } from '../Journal/storyEvidence';
-import { getDeskState, STORY_ORDER } from './deskRules';
+import { getDeskState } from './deskRules';
 import type { PixelPlacement, Placement } from './deskContent';
 
 // Where clicking each activity goes.
@@ -60,27 +58,6 @@ export function useDeskModel() {
     if (!createArticleLocked) navigate(ROUTES.createArticle);
   }
 
-  // TEMPORARY dev controls for testing level progression. Remove these (and
-  // their buttons in deskView) once the activity screens can be played.
-  const nextLevel = STORY_ORDER.find((id) => !completed.includes(id));
-
-  async function handleCompleteNextLevel() {
-    if (!nextLevel) return;
-    setError('');
-
-    try {
-      setCompleted(await completeActivity(nextLevel));
-    } catch {
-      setError('Could not save progress');
-    }
-  }
-
-  async function handleResetProgress() {
-    await JournalController.getInstance().clear();
-    seedStoryEvidence();
-    setCompleted(await resetProgress());
-  }
-
   return {
     activities,
     createArticleLocked,
@@ -91,8 +68,5 @@ export function useDeskModel() {
     place,
     onOpenActivity: handleOpenActivity,
     onCreateArticle: handleCreateArticle,
-    hasNextLevel: nextLevel !== undefined,
-    onCompleteNextLevel: handleCompleteNextLevel,
-    onResetProgress: handleResetProgress,
   };
 }
