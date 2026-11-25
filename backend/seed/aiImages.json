@@ -1,7 +1,7 @@
 [
-  { "id": "img-1", "fileName": "placeholder-1.svg", "alt": "Placeholder image 1 (pink)", "isAi": true },
-  { "id": "img-2", "fileName": "placeholder-2.svg", "alt": "Placeholder image 2 (blue)", "isAi": false },
-  { "id": "img-3", "fileName": "placeholder-3.svg", "alt": "Placeholder image 3 (green)", "isAi": true },
-  { "id": "img-4", "fileName": "placeholder-4.svg", "alt": "Placeholder image 4 (yellow)", "isAi": false },
-  { "id": "img-5", "fileName": "placeholder-5.svg", "alt": "Placeholder image 5 (purple)", "isAi": true }
+  { "id": "img-1", "fileName": "cat-1.jpg", "alt": "Close-up of an orange tabby cat's face", "isAi": true },
+  { "id": "img-2", "fileName": "cat-2.jpg", "alt": "Close-up of a tabby and white cat with blue eyes", "isAi": false },
+  { "id": "img-3", "fileName": "cat-3.jpg", "alt": "A black cat sitting on a concrete floor near a window", "isAi": true },
+  { "id": "img-4", "fileName": "cat-4.jpg", "alt": "A grey tabby cat stretched out on its back on a sidewalk", "isAi": false },
+  { "id": "img-5", "fileName": "cat-5.jpg", "alt": "A very fluffy white cat sitting on a white background", "isAi": true }
 ]

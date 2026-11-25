@@ -107,7 +107,7 @@ cd ../backend && npm run typecheck && npm test
 The backend saves each feature's data to its own JSON file in `backend/data/` (e.g. `notes.json`, `questions.json`). You can open these in VS Code to see exactly what's stored.
 
 - `backend/data/` is in `.gitignore`, so everyone's local data stays on their own computer and never gets committed.
-  - **Exception:** `backend/data/images/` holds the AI minigame's picture files and **is** committed (see [AI-Minigame.md](AI-Minigame.md)).
+  - **Exception:** `backend/data/images/` holds the AI minigame's picture files and **is** committed (see [AI-Image-Minigame.md](AI-Image-Minigame.md)).
 - Tests use a separate folder, `backend/data/test/`, so running tests never touches your data.
 
 ### Starter data (`backend/seed/`)
@@ -197,8 +197,7 @@ These are generated automatically. Changes are overwritten and should never be c
 
 - [Desk-View.md](Desk-View.md): the hub desk (level selector): what it does, where its code is, how it's tested, and how to hook an activity screen up to it.
 - [Online-Articles.md](Online-Articles.md): the first activity, where the player highlights misinformation in a news article: how it plays and grades, where its code is, and how it's tested.
-- [AI-Image-Minigame.md](AI-Image-Minigame.md): the AI image guessing minigame's game screen: how it plays, keeps score and handles a failed request, where its code is, and how it's tested.
-- [AI-Minigame.md](AI-Minigame.md): the AI image guessing minigame's backend: its two routes, how the game screen uses them, where the images and their data live, and how to add images.
+- [AI-Image-Minigame.md](AI-Image-Minigame.md): the AI image guessing minigame: how it plays and keeps score, its two backend routes, where the images and their answers live, how to add images, where its code is, and how it's tested.
 - [Route-Guard.md](Route-Guard.md): stops players reaching locked screens by typing their URL: which routes are guarded, how to guard a new screen, and the placeholder Social Media screen.
 - [Route-Guard.md](Route-Guard.md): stops players reaching locked screens by typing their URL: which routes are guarded and how to guard a new screen.
 - [Back-Confirmation.md](Back-Confirmation.md): the shared back button and "Are You Sure?" popup on activity screens: what they do, which screens use them, how to add them to a new screen, and how they're tested.

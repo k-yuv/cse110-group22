@@ -13,8 +13,8 @@ import { IMAGES_DIR } from '../../../utils/images';
 const AI_IMAGES_FILE = path.join(process.env.DATA_DIR!, 'aiImages.json');
 
 const SAVED: StoredAiImage[] = [
-  { id: 'img-1', fileName: 'placeholder-1.svg', alt: 'first', isAi: true },
-  { id: 'img-2', fileName: 'placeholder-2.svg', alt: 'second', isAi: false },
+  { id: 'img-1', fileName: 'cat-1.jpg', alt: 'first', isAi: true },
+  { id: 'img-2', fileName: 'cat-2.jpg', alt: 'second', isAi: false },
 ];
 
 async function writeAiImagesFile(contents: string) {
@@ -33,8 +33,8 @@ describe('AI Images API', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual([
-        { id: 'img-1', src: '/api/images/placeholder-1.svg', alt: 'first' },
-        { id: 'img-2', src: '/api/images/placeholder-2.svg', alt: 'second' },
+        { id: 'img-1', src: '/api/images/cat-1.jpg', alt: 'first' },
+        { id: 'img-2', src: '/api/images/cat-2.jpg', alt: 'second' },
       ]);
     });
 

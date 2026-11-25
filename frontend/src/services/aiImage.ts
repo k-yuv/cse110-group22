@@ -1,5 +1,5 @@
 // Talks to the AI minigame routes on the backend (see backend/openapi.yaml and
-// internal-docs/AI-Minigame.md). The backend never says which images are AI:
+// internal-docs/AI-Image-Minigame.md). The backend never says which images are AI:
 // each guess is sent on its own and the backend only says if it was right.
 
 export interface AiImage {
