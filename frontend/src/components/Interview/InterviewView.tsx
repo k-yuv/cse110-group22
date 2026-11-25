@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import type Konva from 'konva';
 import { COLORS } from '../../theme';
 import { URLImage } from '../URLImage/URLImage';
-import cat from '../../assets/whistleblower_cat.png';
+import cat from '../../assets/ceo_cat.png';
 import SettingsButton from '../SettingsButton/SettingsButton';
 import TitleButton from '../TitleScreen/titleButton';
 import { useInterviewModel } from './interviewScreenModel';
