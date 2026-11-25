@@ -19,18 +19,24 @@ function evidence(id : string, toolName : string, toolDescription : string) : Ev
 }
 
 export const STORY_EVIDENCE : Record<StoryEventId, readonly EvidenceModel[]> = {
-    "inciting-letter": [
+    "inciting-letter": [ 
+            // Note from Nigel, I don't think the inciting letter is needed in the journal as evidence, its more for leads.
+            // But if it helps with the article writing you can do whatever.
         evidence("ev-letter", "Anonymous letter", "Claims Big Drug Inc. uses its ownership of local media to make itself look better."),
         evidence("ev-letter-addiction", "Letter's addiction claim", "Says cats are more addicted to catnip than the company admits."),
         evidence("ev-letter-newproduct", "New product tip", "Warns that a new version of the catnip is coming soon."),
     ],
     "cnn-article": [
-        evidence("ev-cnn-article", "CNN catnip article", "Says catnip helps workers relax after a long day. Published by a Big Drug Inc.-owned paper."),
+            // I will add this CNN Article to the journal as evidence
+        evidence("ev-cnn-article", "CNN Article Claim", "Says catnip helps Cats relax after a long day. Citing a UC Cat City study where over 90% of new users feel much happier."),
         evidence("ev-cnn-testimonials", "\"Local worker\" quotes", "Unnamed workers praising catnip. No way to check who they are."),
-        evidence("ev-cnn-owner", "CNN ownership", "CNN (Cat News Network) is owned by Big Drug Inc."),
-        evidence("ev-ucc-study", "UC Cat City study", "92% of cats are much happier in week 1, but by week 4 are less happy than cats who never took it."),
-        evidence("ev-cnn-omission", "What CNN left out", "The article only reports short-term effects and never mentions week 4 onward."),
-        evidence("ev-nicotine", "Nicotine", "A dangerous chemical found in Big Drug Inc.'s catnip by the research paper."),
+            // I will add this CNN Ownership to the journal as evidence
+        evidence("ev-cnn-owner", "CNN Ownership", "CNN (Cat News Network) is owned by Big Drug Inc."),
+            // I will add this UC Cat City Study to the journal as evidence.
+        evidence("ev-ucc-study", "UC Cat City Study", "92% of cats are much happier in week 1, but by week 4 are less happy than cats who never took it."),
+            // I will add this CNN Omission to the journal as evidence. This should be the Strongest evidence of this section
+        evidence("ev-cnn-omission", "CNN Claim Vs. Study", "The article only reports short-term effects and never mentions week 4 onward."),
+        evidence("ev-nicotine", "Addictive Chemical", "An Addictive chemical found in Big Drug Inc.'s catnip by the research paper."),
     ],
     "public-opinion": [
         evidence("ev-avogato-post", "Avogato Fisher's review", "A regular buyer describes being addicted and having bad withdrawals."),

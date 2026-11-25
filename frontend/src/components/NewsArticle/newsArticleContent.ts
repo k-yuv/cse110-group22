@@ -1,7 +1,16 @@
-export const TODO_TEXT = 'TO DO: highlight misinformation';
-export const TRANSCRIPT_TITLE = 'Trusted transcript';
+export const TODO_TEXT = 'TO DO: Highlight sentences that are misleading or contain misinformation';
+export const ADD_EVIDENCE_TODO_TEXT = 'TO DO: Add evidence to journal';
+export const TRANSCRIPT_TITLE = 'UC Cat City Catnip Research Study';
 export const SUBMIT_LABEL = 'Submit';
+export const ADD_EVIDENCE_LABEL = 'Add Evidence to Journal';
 export const CONTINUE_LABEL = 'Continue';
+export const HINT_TEXT =
+  'Compare each sentence in the newspaper to the research study. Pick up the highlighter and highlight the ' +
+  'sentences that are misleading or misinformation.';
+export const ADD_EVIDENCE_FIRST_MESSAGE = 'I need to add the evidence to my journal first';
+
+// How long that message stays before it has faded away.
+export const MESSAGE_SECONDS = 3;
 // Named in the back confirmation's message.
 export const ACTIVITY_NAME = 'Online Articles';
 
@@ -36,4 +45,12 @@ export const NEWSPAPER_LAYOUT = { centerX: 0.7, y: 0.1, maxWidth: 0.42, maxHeigh
 
 // The blank column under "BREAKING NEWS" where the sentences go, as fractions
 // of the newspaper image's size.
-export const ARTICLE_COLUMN = { x: 0.09, y: 0.525, width: 0.34, height: 0.31 };
+export const ARTICLE_COLUMN = { x: 0.09, y: 0.5, width: 0.34, height: 0.34 };
+
+// How many times taller the column's last row (s4) is than the others, since
+// its sentence is the longest.
+export const LAST_ROW_SCALE = 1.5;
+
+// The blank space under the photo, where the last sentence goes, as fractions
+// of the newspaper image's size.
+export const UNDER_PHOTO = { x: 0.47, y: 0.785, width: 0.45, height: 0.14 };

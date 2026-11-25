@@ -2,12 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { getResultMessage, gradeHighlights, toggleHighlight } from '../newsArticleRules';
 import type { AnswerKeyEntry } from '../../../services/articles';
 
-// Sentences s2 and s4 are the misinformation. Grading only looks at ids, so
-// the evidence is left blank.
-const ANSWER_KEY: AnswerKeyEntry[] = ['s2', 's4'].map((segmentId) => ({
-  segmentId,
-  evidence: { id: segmentId, toolName: '', toolDescription: '' },
-}));
+// Sentences s2 and s4 are the misinformation.
+const ANSWER_KEY: AnswerKeyEntry[] = [{ segmentId: 's2' }, { segmentId: 's4' }];
 
 describe('gradeHighlights', () => {
   it.each([

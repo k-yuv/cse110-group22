@@ -1,14 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { ReactNode } from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../../App';
 import { ROUTES } from '../../../routes';
 import { getArticleActivity } from '../../../services/articles';
 import { getEvidence } from '../../../services/journal';
-import { CONTINUE_LABEL, SUBMIT_LABEL } from '../../NewsArticle/newsArticleContent';
+import { ADD_EVIDENCE_LABEL, CONTINUE_LABEL, SUBMIT_LABEL } from '../../NewsArticle/newsArticleContent';
+import { ALL_STORY_EVIDENCE } from '../storyEvidence';
 import { JournalController } from '../JournalController';
-import { LOAD_ERROR_TEXT, OPEN_LABEL, RETRY_LABEL } from '../journalContent';
+import { LOAD_ERROR_TEXT, OPEN_LABEL, PREVIOUS_LABEL, RETRY_LABEL } from '../journalContent';
 
 // Integration: runs the real App, screens and (mock) services together, from
 // collecting evidence in Online Articles to reading it on the desk after a
@@ -75,7 +76,7 @@ function reload(app: ReturnType<typeof render>, route: string) {
 
 async function passOnlineArticles(user: ReturnType<typeof userEvent.setup>) {
   const app = renderGame(ROUTES.onlineArticle);
-  const { segments, answerKey } = await getArticleActivity();
+  const { segments, answerKey, evidenceIds } = await getArticleActivity();
 
   await screen.findByRole('button', { name: SUBMIT_LABEL });
   await user.click(screen.getAllByTestId('image')[HIGHLIGHTER_IMAGE]);
@@ -84,10 +85,23 @@ async function passOnlineArticles(user: ReturnType<typeof userEvent.setup>) {
     await user.click(screen.getByText(sentence.text));
   }
   await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
-  await user.click(await screen.findByRole('button', { name: CONTINUE_LABEL }));
+  await user.click(await screen.findByRole('button', { name: ADD_EVIDENCE_LABEL }));
+  await user.click(screen.getByRole('button', { name: CONTINUE_LABEL }));
   await findOpenButton();
 
-  return { app, answerKey };
+  return { app, evidenceIds };
+}
+
+// Everything written in the open journal. It opens on the last pages, so this
+// reads every spread back to the first.
+async function readWholeJournal(user: ReturnType<typeof userEvent.setup>) {
+  let text = '';
+  for (;;) {
+    text += screen.getByRole('list', { name: 'Evidence on these pages' }).textContent;
+    const previous = screen.getByRole('button', { name: PREVIOUS_LABEL });
+    if ((previous as HTMLButtonElement).disabled) return text;
+    await user.click(previous);
+  }
 }
 
 describe('Journal flow', () => {
@@ -98,30 +112,30 @@ describe('Journal flow', () => {
 
   it('shows evidence from Online Articles in the journal on the desk, and after a reload', async () => {
     const user = userEvent.setup();
-    const { app, answerKey } = await passOnlineArticles(user);
-    const titles = answerKey.map((entry) => entry.evidence.toolName);
+    const { app, evidenceIds } = await passOnlineArticles(user);
+    const titles = evidenceIds.map((id) => ALL_STORY_EVIDENCE.find((item) => item.id === id)!.toolName);
 
     await user.click(screen.getByRole('button', { name: OPEN_LABEL }));
-    const pages = within(screen.getByRole('list', { name: 'Evidence on these pages' }));
-    for (const title of titles) expect(pages.getByText(new RegExp(title))).toBeInTheDocument();
+    const journal = await readWholeJournal(user);
+    for (const title of titles) expect(journal).toContain(title);
 
     reload(app, ROUTES.desk);
 
     await user.click(await findOpenButton());
-    const reloaded = within(screen.getByRole('list', { name: 'Evidence on these pages' }));
-    for (const title of titles) expect(reloaded.getByText(new RegExp(title))).toBeInTheDocument();
+    const reloaded = await readWholeJournal(user);
+    for (const title of titles) expect(reloaded).toContain(title);
   });
 
   it('does not collect the same evidence twice when the activity is replayed', async () => {
     const user = userEvent.setup();
-    const { app, answerKey } = await passOnlineArticles(user);
+    const { app, evidenceIds } = await passOnlineArticles(user);
     app.unmount();
 
     await passOnlineArticles(user);
 
     const ids = JournalController.getInstance().read().map((item) => item.id);
     expect(new Set(ids).size).toBe(ids.length);
-    for (const { evidence } of answerKey) expect(ids).toContain(evidence.id);
+    for (const id of evidenceIds) expect(ids).toContain(id);
   });
 
   it('does not seed the mock evidence twice across a reload', async () => {

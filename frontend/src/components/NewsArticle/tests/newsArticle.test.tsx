@@ -6,7 +6,7 @@ import { ROUTES } from '../../../routes';
 import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
 import { GO_BACK_LABEL, STAY_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 import NewsArticle from '../newsArticleView';
-import { ACTIVITY_NAME, SUBMIT_LABEL, TODO_TEXT } from '../newsArticleContent';
+import { ACTIVITY_NAME, HINT_TEXT, SUBMIT_LABEL, TODO_TEXT } from '../newsArticleContent';
 import { getResultMessage, gradeHighlights } from '../newsArticleRules';
 import { getArticleActivity } from '../../../services/articles';
 import { CLOSE_LABEL, DIALOG_LABEL, OPEN_LABEL } from '../../Journal/journalContent';
@@ -49,6 +49,21 @@ describe('NewsArticle', () => {
     renderNewsArticle();
 
     expect(await screen.findByRole('heading', { name: TODO_TEXT })).toBeInTheDocument();
+  });
+
+  it('has the settings button', async () => {
+    renderNewsArticle();
+
+    expect(await screen.findByRole('button', { name: 'Open settings' })).toBeInTheDocument();
+  });
+
+  it('opens the hint from the hint button', async () => {
+    const user = userEvent.setup();
+    renderNewsArticle();
+
+    await user.click(await screen.findByRole('button', { name: 'Open hint' }));
+
+    expect(screen.getByRole('dialog', { name: 'Hint' })).toHaveTextContent(HINT_TEXT);
   });
 
   it('has the journal in the corner, which opens and closes', async () => {
