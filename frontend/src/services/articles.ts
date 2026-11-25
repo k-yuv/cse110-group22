@@ -44,7 +44,7 @@ const MOCK_ACTIVITY: ArticleActivity = {
     { id: 's5', text: "As Catnip becomes more popular, we're very happy to hear of these positive benefits." },
   ],
   answerKey: [{ segmentId: 's2' }, { segmentId: 's4' }],
-  evidenceIds: ['ev-cnn-article', 'ev-cnn-owner', 'ev-ucc-study'],
+  evidenceIds: ['ev-cnn-article', 'ev-cnn-owner', 'ev-ucc-study', 'ev-cnn-omission', 'ev-nicotine'],
 };
 
 // Async like a real fetch would be, so the model already handles loading and
