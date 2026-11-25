@@ -13,8 +13,11 @@ build/
 *.log
 npm-debug.log*
 
-# Local data saved by the backend (notes.json, and test data in data/test/)
-backend/data/
+# Local data saved by the backend (notes.json, and test data in data/test/).
+# The AI minigame's image files in data/images/ are the exception: they're
+# committed so everyone has them.
+backend/data/*
+!backend/data/images/
 
 # Operating system and editor files
 .DS_Store

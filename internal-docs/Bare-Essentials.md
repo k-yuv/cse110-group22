@@ -107,6 +107,7 @@ cd ../backend && npm run typecheck && npm test
 The backend saves each feature's data to its own JSON file in `backend/data/` (e.g. `notes.json`, `questions.json`). You can open these in VS Code to see exactly what's stored.
 
 - `backend/data/` is in `.gitignore`, so everyone's local data stays on their own computer and never gets committed.
+  - **Exception:** `backend/data/images/` holds the AI minigame's picture files and **is** committed (see [AI-Image-Minigame.md](AI-Image-Minigame.md)).
 - Tests use a separate folder, `backend/data/test/`, so running tests never touches your data.
 
 ### Starter data (`backend/seed/`)
@@ -124,7 +125,7 @@ To add starter data for a feature, put a JSON file in `backend/seed/` with the s
 >
 > **If you're the one changing a data shape:** update the seed file in the same PR, and say in the PR description which `backend/data/` file everyone needs to delete.
 
-- **Start fresh:** stop the backend, delete the file in `backend/data/` (or the whole folder), and start it again. Files with seed data are refilled from `backend/seed/`; the rest start empty.
+- **Start fresh:** stop the backend, delete the file in `backend/data/` (or every file there except `images/`), and start it again. Files with seed data are refilled from `backend/seed/`; the rest start empty.
 
 ## Where your code goes
 
@@ -196,6 +197,8 @@ These are generated automatically. Changes are overwritten and should never be c
 
 - [Desk-View.md](Desk-View.md): the hub desk (level selector): what it does, where its code is, how it's tested, and how to hook an activity screen up to it.
 - [Online-Articles.md](Online-Articles.md): the first activity, where the player highlights misinformation in a news article: how it plays and grades, where its code is, and how it's tested.
+- [AI-Image-Minigame.md](AI-Image-Minigame.md): the AI image guessing minigame: how it plays and keeps score, its two backend routes, where the images and their answers live, how to add images, where its code is, and how it's tested.
+- [Route-Guard.md](Route-Guard.md): stops players reaching locked screens by typing their URL: which routes are guarded, how to guard a new screen, and the placeholder Social Media screen.
 - [Route-Guard.md](Route-Guard.md): stops players reaching locked screens by typing their URL: which routes are guarded and how to guard a new screen.
 - [Back-Confirmation.md](Back-Confirmation.md): the shared back button and "Are You Sure?" popup on activity screens: what they do, which screens use them, how to add them to a new screen, and how they're tested.
 - [Social-Media.md](Social-Media.md): the second activity, where the player reacts to an influencer's post: how picking a thought and finishing work, where its code is, and how it's tested.
