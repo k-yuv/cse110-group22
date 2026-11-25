@@ -4,7 +4,7 @@ import path from 'node:path';
 import request from 'supertest';
 import app from '../../../app';
 import type { ArticleAnswers, StoredSubjectRatings } from '../../../app';
-import { GOOD_ENDING_THRESHOLD, scoreArticle } from '../article.service';
+import { endingFor, scoreArticle } from '../article.service';
 
 // During tests, ratings are read from backend/data/test/articleRatings.json
 // (DATA_DIR is set in vitest.config.mts). Each route test starts with the ratings below.
@@ -52,6 +52,19 @@ describe('scoreArticle', () => {
   });
 });
 
+describe('endingFor', () => {
+  it('is good once the score reaches half the picks', () => {
+    expect(endingFor(4, 8)).toBe('good');
+    expect(endingFor(3, 8)).toBe('bad');
+    expect(endingFor(3, 5)).toBe('good');
+    expect(endingFor(2, 5)).toBe('bad');
+  });
+
+  it('is bad for an empty article', () => {
+    expect(endingFor(0, 0)).toBe('bad');
+  });
+});
+
 describe('POST /api/article/answers', () => {
   beforeEach(async () => {
     await writeRatingsFile(JSON.stringify(RATINGS));
@@ -71,11 +84,11 @@ describe('POST /api/article/answers', () => {
     expect(response.body).toEqual({ ending: 'bad' });
   });
 
-  it(`gives the good ending at exactly the threshold (${GOOD_ENDING_THRESHOLD}) and the bad ending just below it`, async () => {
-    // 1 + 1 + 0 = 2
-    expect((await submit({ answers: { q1: ['s1'], q2: ['s3'], q3: [] } })).body).toEqual({ ending: 'good' });
-    // 1 + 1 - 1 = 1
-    expect((await submit({ answers: { q1: ['s1'], q2: ['s3'], q3: ['w3'] } })).body).toEqual({ ending: 'bad' });
+  it('gives the good ending at exactly half the picks and the bad ending just below it', async () => {
+    // 4 picks, score 1 + 1 + 1 - 1 = 2
+    expect((await submit({ answers: { q1: ['s1', 's2'], q2: ['s3'], q3: ['w3'] } })).body).toEqual({ ending: 'good' });
+    // 4 picks, score 1 + 0 + 1 - 1 = 1
+    expect((await submit({ answers: { q1: ['s1', 'i1'], q2: ['s3'], q3: ['w3'] } })).body).toEqual({ ending: 'bad' });
   });
 
   it('gives the bad ending for no answers', async () => {
@@ -151,28 +164,52 @@ describe('seed/articleRatings.json', () => {
     const seed: StoredSubjectRatings[] = JSON.parse(
       await fs.readFile(path.join(__dirname, '../../../../seed/articleRatings.json'), 'utf8')
     );
-    return scoreArticle(seed, answers) >= GOOD_ENDING_THRESHOLD ? 'good' : 'bad';
+    const pickCount = Object.values(answers).reduce((count, ids) => count + ids.length, 0);
+    return endingFor(scoreArticle(seed, answers), pickCount);
   }
 
+  // The same picks as frontend/src/components/Article-Writing/tests/articleWritingFlow.test.tsx.
+  const STRONG: ArticleAnswers = {
+    'subject-what-happens': ['ev-ucc-study', 'ev-avogato-post'],
+    'subject-quitting': ['ev-avogato-post', 'ev-withdrawal-posts'],
+    'subject-how-many': ['ev-ucc-study'],
+    'subject-ingredient': ['ev-nicotine'],
+    'subject-deluxe': ['ev-wb-internal-docs', 'ev-catthew-week2'],
+    'subject-company-knows': ['ev-wb-internal-docs', 'ev-wb-testimony'],
+    'subject-motive': ['ev-ceo-values'],
+    'subject-why-trusted': ['ev-cnn-owner', 'ev-rentfreecat-post'],
+    'subject-left-out': ['ev-cnn-omission', 'ev-deluxe-cut-question'],
+    'subject-online-praise': ['ev-fan-reposts', 'ev-before-after'],
+    'subject-rebuttal': ['ev-ucc-study'],
+  };
+  const WEAK: ArticleAnswers = {
+    'subject-what-happens': ['ev-catthew-week1', 'ev-letter-addiction'],
+    'subject-quitting': ['ev-letter-addiction', 'ev-deluxe-rumor'],
+    'subject-how-many': ['ev-avogato-post'],
+    'subject-ingredient': ['ev-ceo-pr-claims'],
+    'subject-deluxe': ['ev-wb-warning', 'ev-deluxe-hype'],
+    'subject-company-knows': ['ev-letter-addiction', 'ev-ceo-request'],
+    'subject-motive': ['ev-letter'],
+    'subject-why-trusted': ['ev-cnn-article', 'ev-ceo-pr-claims'],
+    'subject-left-out': ['ev-cnn-article', 'ev-deluxe-article'],
+    'subject-online-praise': ['ev-catthew-week1', 'ev-cnn-testimonials'],
+    'subject-rebuttal': ['ev-ceo-pr-claims'],
+  };
+
   it('gives the good ending for strong evidence', async () => {
-    expect(
-      await seedEnding({
-        'subject-catnip': ['ev-marshal'],
-        'subject-arson': ['ev-cctv'],
-        'subject-warnings': ['ev-inspection'],
-        'subject-cause': ['ev-marshal', 'ev-foreman'],
-      })
-    ).toBe('good');
+    expect(await seedEnding(STRONG)).toBe('good');
   });
 
   it('gives the bad ending for weak evidence', async () => {
-    expect(
-      await seedEnding({
-        'subject-catnip': ['ev-forum'],
-        'subject-arson': ['ev-neighbor'],
-        'subject-warnings': ['ev-weather'],
-        'subject-cause': ['ev-forum', 'ev-neighbor'],
-      })
-    ).toBe('bad');
+    expect(await seedEnding(WEAK)).toBe('bad');
+  });
+
+  it('gives the bad ending for an article that mixes in too many rumors', async () => {
+    // Swap the strong picks for weak ones in 5 questions: 13 strong, 5 weak.
+    const swapped = ['subject-how-many', 'subject-ingredient', 'subject-motive', 'subject-rebuttal'];
+    const mixed: ArticleAnswers = { ...STRONG };
+    for (const id of swapped) mixed[id] = WEAK[id];
+    mixed['subject-what-happens'] = [STRONG['subject-what-happens'][0], WEAK['subject-what-happens'][0]];
+    expect(await seedEnding(mixed)).toBe('bad');
   });
 });

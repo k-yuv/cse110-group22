@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { completeActivity } from '../../services/progress';
 import {
-    getSocialLevel, getSocialPost, LAYOUT, SCENE,
+    getSocialLevel, getSocialPost, LAYOUT, SAVE_ERROR, SCENE,
     type SocialLevelId,
 } from './socialMediaContent.tsx';
 import {
@@ -28,6 +29,8 @@ export function useSocialMediaModel(
     const [size, setSize] = useState(viewport);
     const [thoughtsOpen, setThoughtsOpen] = useState(false);
     const [savedSelection, setSavedSelection] = useState<SocialThoughtSelection | null>(null);
+    const [finishing, setFinishing] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -68,6 +71,22 @@ export function useSocialMediaModel(
         setThoughtsOpen(previous => !previous);
     }
 
+    // Picking any thought is enough to finish for now; grading the pick will come from the backend.
+    async function finish() {
+        if (!selection || finishing) return;
+        setError('');
+        setFinishing(true);
+
+        try {
+            await completeActivity('social');
+            navigate(ROUTES.desk);
+        } catch {
+            setError(SAVE_ERROR);
+        } finally {
+            setFinishing(false);
+        }
+    }
+
     const { onBack, confirmation } = useBackConfirmationModel({
         onLeave: () => navigate(ROUTES.desk),
     });
@@ -75,5 +94,6 @@ export function useSocialMediaModel(
     return {
         ...size, scale, originX, originY, level, post, sizeUnit,
         thoughtsOpen, selection, selectThought, toggleThoughts, onBackToDesk: onBack, backConfirmation: confirmation,
+        canFinish: selection !== null, finishing, error, onFinish: finish,
     };
 }

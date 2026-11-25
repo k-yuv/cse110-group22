@@ -119,6 +119,18 @@ describe('ArticleWriting canvas cards', () => {
     expect(konva.stageContainer?.style.cursor).toBe('default');
   });
 
+  it('shows a hovered card in full until the mouse leaves', async () => {
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
+    await screen.findByText('What happened?');
+    expect(screen.getAllByText('About A')).toHaveLength(1);
+
+    fireEvent.mouseEnter(cards()[0]);
+    expect(screen.getAllByText('About A')).toHaveLength(2);
+
+    fireEvent.mouseLeave(cards()[0]);
+    expect(screen.getAllByText('About A')).toHaveLength(1);
+  });
+
   it('does nothing on hover when the card is not on a stage', async () => {
     konva.stageContainer = null;
     render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);

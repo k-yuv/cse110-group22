@@ -11,7 +11,7 @@ describe('article service', () => {
   describe('submitArticle', () => {
     it('posts every answer at once and returns the ending', async () => {
       fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ ending: 'good' }) });
-      const answers = { 'subject-cause': ['ev-marshal', 'ev-foreman'], 'subject-arson': ['ev-cctv'] };
+      const answers = { 'subject-quitting': ['ev-avogato-post', 'ev-withdrawal-posts'], 'subject-ingredient': ['ev-nicotine'] };
 
       expect(await submitArticle(answers)).toEqual({ ending: 'good' });
       expect(fetchMock).toHaveBeenCalledWith('/api/article/answers', {

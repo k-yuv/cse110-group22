@@ -198,6 +198,7 @@ These are generated automatically. Changes are overwritten and should never be c
 - [Online-Articles.md](Online-Articles.md): the first activity, where the player highlights misinformation in a news article: how it plays and grades, where its code is, and how it's tested.
 - [Route-Guard.md](Route-Guard.md): stops players reaching locked screens by typing their URL: which routes are guarded and how to guard a new screen.
 - [Back-Confirmation.md](Back-Confirmation.md): the shared back button and "Are You Sure?" popup on activity screens: what they do, which screens use them, how to add them to a new screen, and how they're tested.
+- [Social-Media.md](Social-Media.md): the second activity, where the player reacts to an influencer's post: how picking a thought and finishing work, where its code is, and how it's tested.
 
 ## Other docs
 

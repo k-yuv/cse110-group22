@@ -33,6 +33,30 @@ export const COLORS = {
   progressTodo: '#fff7dd',
   error: '#b00020',
 
+  // Endings
+  endingPanel: '#fffdf6',
+  endingHeadline: '#4c2100',
+  endingFloor: '#c9a27e',
+  endingWood: '#8a5a3b',
+  endingWoodDark: '#5e3a22',
+  endingNight: '#22305a',
+  catFur: '#8d939c',
+  catFurDark: '#5f646c',
+  catInnerEar: '#f2b8c6',
+  catEye: '#fff7c2',
+  shirt: '#ffffff',
+  tie: '#c0392b',
+  nameplate: '#e3b341',
+  handcuffs: '#c7ccd4',
+  sirenRed: '#ff3b3b',
+  sirenBlue: '#3b8bff',
+  streetWall: '#b9c0cc',
+  // Edge colour of GoodEnding.png, shown around the image if it doesn't fill the screen.
+  goodEndingBackdrop: '#32313b',
+  streetBrick: '#a3abb8',
+  sidewalk: '#8f96a3',
+  titleButtonFill: '#F7FCFD',
+  titleButtonStroke: '#6FB3F3',
   // Back button
   backButton: '#6e4440',
   backButtonArrow: '#ffffff',
@@ -50,6 +74,9 @@ export const COLORS = {
   goBackButtonHover: '#d98b81',
   stayButtonHover: '#6fb07a',
 };
+
+// Display font used by the title screen and endings (loaded in index.html).
+export const DISPLAY_FONT = 'Coiny, Arial, sans-serif';
 
 // Konva's default font, which the desk uses for all its text.
 export const FONT = 'Arial, sans-serif';

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EvidenceModel } from '../EvidenceModel';
 import { JournalController } from '../JournalController';
-import { seedMockEvidence } from '../mockEvidence';
+import { ALL_STORY_EVIDENCE, STORY_EVIDENCE, seedStoryEvidence } from '../storyEvidence';
 import { addEvidence, clearEvidence, getEvidence } from '../../../services/journal';
 
 // The real (mock) service, except each call can be made to fail in a single
@@ -214,15 +214,21 @@ describe('JournalController', () => {
   });
 });
 
-describe('seedMockEvidence', () => {
+describe('seedStoryEvidence', () => {
   beforeEach(resetJournal);
 
-  it('fills an empty journal with the mock evidence', () => {
-    seedMockEvidence();
+  it('fills an empty journal with every piece of story evidence', () => {
+    seedStoryEvidence();
 
     const evidence = JournalController.getInstance().read();
-    expect(evidence.length).toBeGreaterThan(0);
+    expect(evidence.map((item) => item.id)).toEqual(ALL_STORY_EVIDENCE.map((item) => item.id));
     expect(new Set(evidence.map((item) => item.id)).size).toBe(evidence.length);
+  });
+
+  it('gives every story event at least one piece of evidence', () => {
+    for (const items of Object.values(STORY_EVIDENCE)) {
+      expect(items.length).toBeGreaterThan(0);
+    }
   });
 
   it('leaves a journal that already has evidence alone', () => {
@@ -230,16 +236,16 @@ describe('seedMockEvidence', () => {
     const collected = new EvidenceModel('real', 'Collected', '', '');
     journal.add(collected);
 
-    seedMockEvidence();
+    seedStoryEvidence();
 
     expect(journal.read()).toEqual([collected]);
   });
 
-  it('does not add the mock evidence twice', () => {
-    seedMockEvidence();
+  it('does not add the story evidence twice', () => {
+    seedStoryEvidence();
     const count = JournalController.getInstance().read().length;
 
-    seedMockEvidence();
+    seedStoryEvidence();
 
     expect(JournalController.getInstance().read()).toHaveLength(count);
   });

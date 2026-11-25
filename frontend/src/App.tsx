@@ -5,20 +5,19 @@ import ArticleWriting from './components/Article-Writing/articleWritingView';
 import GoodEnding from './components/Endings/goodEndingView';
 import BadEnding from './components/Endings/badEndingView';
 import NotFound from './components/Not-Found/notFoundView';
+import { LOADING_TEXT, LOAD_ERROR_TEXT, RETRY_LABEL } from './components/Journal/journalContent';
+import { useJournalLoader } from './components/Journal/journalViewModel';
 import TitleScreen from './components/TitleScreen/titleScreenView';
 import NewsArticle from './components/NewsArticle/newsArticleView';
+import SocialMedia from './components/Social-Media/socialMediaView';
+import Interview from './components/Interview/InterviewView';
+import DeskCleanup from './components/Desk-Cleanup-Minigame/deskCleanupView';
 import { ROUTES } from './routes';
-import {seedMockEvidence} from "./components/Journal/mockEvidence.ts";
 import RouteGuard from './components/Route-Guard/routeGuardView';
-import {useJournalLoader} from "./components/Journal/journalViewModel.tsx";
-import SocialMedia from "./components/Social-Media/socialMediaView.tsx";
-import {LOAD_ERROR_TEXT, RETRY_LABEL} from "./components/Journal/journalContent.ts";
-import {LOADING_TEXT} from "./components/Desk/deskContent.ts";
-import type {EndingState} from "./components/Route-Guard/routeGuardModel.tsx";
-import DeskCleanup from "./components/Desk-Cleanup-Minigame/deskCleanupView.tsx";
-import Interview from "./components/Interview/InterviewView.tsx";
+import type { EndingState } from './components/Route-Guard/routeGuardModel';
+import { seedStoryEvidence } from './components/Journal/storyEvidence';
 
-seedMockEvidence();
+seedStoryEvidence();
 
 const SUBMITTED: EndingState = { articleSubmitted: true };
 

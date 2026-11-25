@@ -181,7 +181,7 @@ components:
       additionalProperties: false
       properties:
         answers:
-          description: 'Subject (question) id → the evidence ids picked for it, e.g. {"subject-cause": ["ev-marshal", "ev-foreman"]}'
+          description: 'Subject (question) id → the evidence ids picked for it, e.g. {"subject-quitting": ["ev-avogato-post", "ev-withdrawal-posts"]}'
           type: object
           additionalProperties:
             type: array

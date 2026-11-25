@@ -1,4 +1,6 @@
 export const PAGE_TITLE = 'Social Media';
+export const FINISH_LABEL = 'Finish';
+export const SAVE_ERROR = 'Could not save social media progress';
 
 export const SCENE = { width: 1280, height: 854 } as const;
 
