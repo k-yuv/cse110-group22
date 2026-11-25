@@ -4,7 +4,6 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { useDeskModel } from '../deskModel';
 import { ROUTES } from '../../../routes';
-import { EvidenceModel } from '../../Journal/EvidenceModel';
 import { JournalController } from '../../Journal/JournalController';
 import { completeActivity, getProgress, STORAGE_KEY, type ActivityId } from '../../../services/progress';
 
@@ -42,19 +41,6 @@ describe('useDeskModel', () => {
   beforeEach(() => {
     localStorage.clear();
     JournalController.resetInstance();
-  });
-
-  it('dev reset clears progress and collected evidence, and reloads the mock evidence', async () => {
-    const collected = new EvidenceModel('collected', 'Collected', '', '');
-    await JournalController.getInstance().add(collected);
-    const result = await renderDeskModel(['articles']);
-
-    await act(() => result.current.desk.onResetProgress());
-
-    const evidence = JournalController.getInstance().read();
-    expect(await getProgress()).toEqual([]);
-    expect(evidence.length).toBeGreaterThan(0);
-    expect(evidence).not.toContainEqual(collected);
   });
 
   // The three progress states in Figma, plus the empty desk.
@@ -138,17 +124,6 @@ describe('useDeskModel', () => {
 
     window.innerWidth = width;
     window.innerHeight = height;
-  });
-
-  // TEMPORARY: remove with the dev buttons in deskView and deskModel.
-  it('does nothing when asked to complete the next level with none left', async () => {
-    const result = await renderDeskModel(['articles', 'social', 'interviews']);
-
-    expect(result.current.desk.hasNextLevel).toBe(false);
-    await act(() => result.current.desk.onCompleteNextLevel());
-
-    expect(result.current.desk.error).toBe('');
-    expect(await getProgress()).toEqual(['articles', 'social', 'interviews']);
   });
 
   it('starts fresh if saved progress is unreadable', async () => {
