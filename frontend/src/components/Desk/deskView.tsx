@@ -8,6 +8,7 @@ import CreateArticleButton from './parts/CreateArticleButton';
 import SettingsButton from '../SettingsButton/SettingsButton';
 import HintButton from '../HintButton/HintButton';
 import Journal from '../Journal/journalView';
+import Letter from '../Letter/letterView';
 
 const FOLDERS = ['articles', 'social', 'interviews'] as const;
 
@@ -75,6 +76,9 @@ export default function Desk() {
 
       <SettingsButton />
       <HintButton hint={HINT_TEXT} />
+
+      {/* Opens over everything the first time the player reaches the desk. */}
+      <Letter />
     </main>
   );
 }

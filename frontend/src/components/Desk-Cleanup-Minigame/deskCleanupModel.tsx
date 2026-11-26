@@ -2,17 +2,39 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { completeActivity } from '../../services/progress';
 import { ROUTES } from '../../routes';
-import { canClean, isDeskClean, needsScrubbing, scrub, startingDirtiness, type Mess, type ToolId } from './deskCleanupRules';
-import { MESSAGE_SECONDS, MESSES, STILL_DIRTY_MESSAGE } from './deskCleanupContent';
+import {
+  canClean,
+  isDeskClean,
+  needsScrubbing,
+  placeMesses,
+  scrub,
+  startingDirtiness,
+  type Mess,
+  type ToolId,
+} from './deskCleanupRules';
+import { BLOCKED_AREAS, CORNER_BUTTONS, MESSAGE_SECONDS, MESSES, STILL_DIRTY_MESSAGE } from './deskCleanupContent';
+import { useBackConfirmationModel } from '../Back-Confirmation/backConfirmationModel';
 
 function getWindowSize() {
   return { width: window.innerWidth, height: window.innerHeight };
 }
 
-// Owns which tool is held, how dirty each mess is, and finishing the minigame.
+// Owns where the messes are, which tool is held, how dirty each mess is, and
+// finishing the minigame.
 export function useDeskCleanupModel() {
   const navigate = useNavigate();
   const [size, setSize] = useState(getWindowSize);
+  // Picked once when the minigame opens, so the messes stay put while playing.
+  // They also stay out of the corner with the settings, hint and back buttons.
+  const [placements] = useState(() => {
+    const corner = {
+      left: 0,
+      top: 0,
+      right: CORNER_BUTTONS.width / window.innerWidth,
+      bottom: CORNER_BUTTONS.height / window.innerHeight,
+    };
+    return placeMesses(MESSES, window.innerWidth / window.innerHeight, [...BLOCKED_AREAS, corner], Math.random);
+  });
   const [heldTool, setHeldTool] = useState<ToolId | null>(null);
   const [dirtiness, setDirtiness] = useState(() => startingDirtiness(MESSES));
   const [message, setMessage] = useState('');
@@ -66,16 +88,24 @@ export function useDeskCleanupModel() {
     }
   }
 
+  // Nothing is saved until Continue, so leaving always loses the cleaning
+  // done so far: ask first.
+  const { onBack, confirmation } = useBackConfirmationModel({ onLeave: () => navigate(ROUTES.desk) });
+
   return {
     width: size.width,
     height: size.height,
+    placements,
     heldTool,
     dirtiness,
+    isClean: isDeskClean(dirtiness),
     message,
     error,
     onToolClick: handleToolClick,
     onMessClick: handleMessClick,
     onScrub: handleScrub,
     onContinue: handleContinue,
+    onBack,
+    backConfirmation: confirmation,
   };
 }

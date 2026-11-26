@@ -9,6 +9,8 @@ import { ROUTES } from '../../../routes';
 import { completeActivity, getProgress, type ActivityId } from '../../../services/progress';
 import { ACTIVITY_LABELS, CREATE_ARTICLE_LABEL, DONE_TEXT, HINT_TEXT, LOADING_TEXT, LOCKED_TEXT } from '../deskContent';
 import { CLOSE_LABEL, DIALOG_LABEL, JOURNAL_PLACEMENTS } from '../../Journal/journalContent';
+import { LETTER_LABEL } from '../../Letter/letterContent';
+import { markLetterSeen } from '../../../services/letter';
 
 // The real progress service, except getProgress can be made to fail in a
 // single test with mockRejectedValueOnce.
@@ -114,8 +116,18 @@ function itemLabel(label: string) {
 }
 
 describe('Desk view', () => {
+  // Most tests are for a player who has already read the whistleblower's
+  // letter, so it doesn't cover the desk.
   beforeEach(() => {
     localStorage.clear();
+    markLetterSeen();
+  });
+
+  it("opens the whistleblower's letter over the desk on the first visit", async () => {
+    localStorage.clear();
+    await renderDesk();
+
+    expect(screen.getByRole('dialog', { name: LETTER_LABEL })).toBeInTheDocument();
   });
 
   it('docks the journal, which opens and closes', async () => {
