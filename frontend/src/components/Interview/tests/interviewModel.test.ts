@@ -7,9 +7,10 @@ describe('InterviewModel', () => {
 
     expect(model.getState()).toMatchObject({
       questions: [
-        { id: 'q1', label: 'Q1' },
-        { id: 'q2', label: 'Q2' },
-        { id: 'q3', label: 'Q3' },
+        { id: 'q1', label: "How do you respond to concerns that Big Drug Inc.'s catnip may be unsafe?" },
+        { id: 'q2', label: 'How does Big Drug Inc. define a good customer?' },
+        { id: 'q3', label: "Did you ask the journalist not to publish negative claims about Big Drug Inc.?" },
+        { id: 'q4', label: "What can you tell us about Big Drug Inc.'s next catnip product?" },
       ],
     });
   });
@@ -18,13 +19,19 @@ describe('InterviewModel', () => {
     const model = new InterviewModel();
 
     model.selectQuestion('q1');
-    expect(model.getState().question?.answer).toBe('Q1 answer');
+    expect(model.getState().question?.answer).toBe('Our catnip is perfectly safe.');
     expect(model.getState().choice).toBeUndefined();
 
     model.selectChoice('q1-1');
     expect(model.getState().choice).toMatchObject({
       id: 'q1-1',
-      answer: 'Q1.1 Answer',
+      answer: "I haven't shared any data to support that claim.",
+    });
+
+    model.selectChoice('q1-2');
+    expect(model.getState().choice).toMatchObject({
+      id: 'q1-2',
+      answer: 'Like I said before, our catnip is perfectly safe.',
     });
   });
 
@@ -32,12 +39,12 @@ describe('InterviewModel', () => {
     const model = new InterviewModel();
 
     model.selectQuestion('q1');
-    model.selectChoice('q1-2');
+    model.selectChoice('q1-1');
     model.completeCurrentQuestion();
 
     expect(model.getState().question).toBeUndefined();
     expect(model.getState().choice).toBeUndefined();
-    expect(model.getState().questions.map((question) => question.id)).toEqual(['q2', 'q3']);
+    expect(model.getState().questions.map((question) => question.id)).toEqual(['q2', 'q3', 'q4']);
   });
 
   it('ignores invalid question and choice selections', () => {
@@ -58,6 +65,6 @@ describe('InterviewModel', () => {
     model.selectQuestion('q3');
     model.completeCurrentQuestion();
 
-    expect(model.getState().questions.map((question) => question.id)).toEqual(['q1', 'q2']);
+    expect(model.getState().questions.map((question) => question.id)).toEqual(['q1', 'q2', 'q4']);
   });
 });

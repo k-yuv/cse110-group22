@@ -3,11 +3,14 @@ import { useEffect, useRef } from 'react';
 import type Konva from 'konva';
 import { COLORS } from '../../theme';
 import { URLImage } from '../URLImage/URLImage';
-import cat from '../../assets/whistleblower_cat.png';
+import cat from '../../assets/ceo_cat.png';
 import SettingsButton from '../SettingsButton/SettingsButton';
 import HintButton from '../HintButton/HintButton';
 import TitleButton from '../TitleScreen/titleButton';
 import { useInterviewModel } from './interviewScreenModel';
+import Journal from '../Journal/journalView';
+import BackButton from '../Back-Button/backButtonView';
+import BackConfirmation from '../Back-Confirmation/backConfirmationView';
 
 export const HINT_TEXT =
   'Ask questions to gather more evidence. Pick the questions you think will reveal the most information.';
@@ -15,6 +18,7 @@ export const HINT_TEXT =
 const WIDTH = 1280;
 const HEIGHT = 832;
 const DESK_Y = 622;
+const ACTIVITY_NAME = 'the interview';
 
 function PromptBox({ text, y }: { text: string; y: number }) {
   return (
@@ -23,7 +27,7 @@ function PromptBox({ text, y }: { text: string; y: number }) {
         x={700}
         y={y}
         width={500}
-        height={100}
+        height={120}
         fill="#b0a295"
         stroke="#4C2100"
         strokeWidth={8}
@@ -31,8 +35,8 @@ function PromptBox({ text, y }: { text: string; y: number }) {
       />
       <Text
         x={700}
-        y={y}
-        width={500}
+        y={y + 10}
+        width={480}
         height={100}
         text={text}
         align="center"
@@ -120,7 +124,7 @@ function AdvicePopup() {
         y={430}
         width={460}
         height={80}
-        text="Choose your question wisely! You can only ask one."
+        text="Choose your follow-up wisely! You can only ask one."
         align="center"
         verticalAlign="middle"
         fontSize={24}
@@ -144,6 +148,8 @@ export default function Interview() {
     onSelectChoice,
     onAddToJournal,
     onFinishInterview,
+    onBack,
+    backConfirmation,
   } = useInterviewModel();
   const catRef = useRef<Konva.Group>(null);
   const questionId = question?.id;
@@ -176,6 +182,9 @@ export default function Interview() {
         overflow: 'hidden',
       }}
     >
+      <Journal placement="corner" />
+      <BackButton onClick={onBack} style={{ left: 22, top: 162 }} />
+      <BackConfirmation activityName={ACTIVITY_NAME} {...backConfirmation} />
       <SettingsButton />
       <HintButton hint={HINT_TEXT} />
       {error && <p role="alert">{error}</p>}
@@ -199,16 +208,16 @@ export default function Interview() {
 
             {!complete && !question && (
               <>
-                <PromptBox text="Select a question to ask" y={80} />
+                <PromptBox text="Let's interview the CEO of Big Drug Inc! Select a question to ask." y={80} />
                 {questions.map((item, index) => (
                   <TitleButton
                     key={item.id}
                     text={item.label}
                     x={700}
-                    y={210 + index * 90}
+                    y={220 + index * 96}
                     width={500}
-                    height={70}
-                    fontSize={30}
+                    height={80}
+                    fontSize={24}
                     onClick={() => onSelectQuestion(item.id)}
                   />
                 ))}

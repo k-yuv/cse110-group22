@@ -5,7 +5,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import Interview, { HINT_TEXT } from '../InterviewView';
+import { INTERVIEW_QUESTIONS } from '../InterviewModel';
 import * as progress from '../../../services/progress';
+import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
+import { GO_BACK_LABEL, STAY_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 
 vi.mock('react-konva', () => {
   const Group = forwardRef<
@@ -29,8 +32,18 @@ vi.mock('react-konva', () => {
 });
 
 vi.mock('../../TitleScreen/titleButton', () => ({
-  default: ({ text, onClick }: { text: string; onClick?: () => void }) => (
-    <button type="button" onClick={onClick}>{text}</button>
+  default: ({
+    text,
+    y,
+    height,
+    onClick,
+  }: {
+    text: string;
+    y: number;
+    height: number;
+    onClick?: () => void;
+  }) => (
+    <button type="button" data-y={y} data-height={height} onClick={onClick}>{text}</button>
   ),
 }));
 
@@ -75,53 +88,83 @@ describe('Interview view', () => {
   it('shows the opening prompt and all questions', () => {
     renderInterview();
 
-    expect(screen.getByText('Select a question to ask')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Q1' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Q2' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Q3' })).toBeInTheDocument();
+    expect(screen.getByText('Let\'s interview the CEO of Big Drug Inc! Select a question to ask.')).toBeInTheDocument();
+    for (const question of INTERVIEW_QUESTIONS) {
+      expect(screen.getByRole('button', { name: question.label })).toBeInTheDocument();
+    }
+
+    const buttons = INTERVIEW_QUESTIONS.map((question) =>
+      screen.getByRole('button', { name: question.label }),
+    );
+    const bounds = buttons.map((button) => {
+      const top = Number(button.getAttribute('data-y'));
+      return { top, bottom: top + Number(button.getAttribute('data-height')) };
+    });
+
+    expect(bounds.at(-1)?.bottom).toBeLessThan(622);
+    for (let index = 1; index < bounds.length; index += 1) {
+      expect(bounds[index].top - bounds[index - 1].bottom).toBeGreaterThanOrEqual(12);
+    }
   });
 
-  it('shows Q1 guidance and its choices after Q1 is selected', async () => {
+  it('confirms before returning to the desk', async () => {
     const user = userEvent.setup();
     renderInterview();
 
-    await user.click(screen.getByRole('button', { name: 'Q1' }));
+    await user.click(screen.getByRole('button', { name: BACK_BUTTON_LABEL }));
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('You will lose all your progress on the interview');
 
-    expect(screen.getByText('Q1 answer')).toBeInTheDocument();
-    expect(screen.getByText('Choose your question wisely! You can only ask one.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Q1.1' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Q1.2' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: STAY_LABEL }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.getByText('Let\'s interview the CEO of Big Drug Inc! Select a question to ask.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: BACK_BUTTON_LABEL }));
+    await user.click(screen.getByRole('button', { name: GO_BACK_LABEL }));
+
+    expect(await screen.findByText('Desk view')).toBeInTheDocument();
   });
 
-  it('shows the selected answer and returns to the list after Add to Journal', async () => {
+  it('shows the CEO safety claim and follow-up after the question is selected', async () => {
     const user = userEvent.setup();
     renderInterview();
 
-    await user.click(screen.getByRole('button', { name: 'Q1' }));
-    await user.click(screen.getByRole('button', { name: 'Q1.1' }));
+    await user.click(screen.getByRole('button', { name: INTERVIEW_QUESTIONS[0].label }));
 
-    expect(screen.getByText('Q1.1 Answer')).toBeInTheDocument();
-    expect(screen.queryByText('Choose your question wisely! You can only ask one.')).not.toBeInTheDocument();
+    expect(screen.getByText('Our catnip is perfectly safe.')).toBeInTheDocument();
+    expect(screen.getByText('Choose your follow-up wisely! You can only ask one.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: INTERVIEW_QUESTIONS[0].choices[0].label })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: INTERVIEW_QUESTIONS[0].choices[1].label })).toBeInTheDocument();
+  });
+
+  it('shows the selected follow-up answer and returns to the list after Add to Journal', async () => {
+    const user = userEvent.setup();
+    renderInterview();
+
+    await user.click(screen.getByRole('button', { name: INTERVIEW_QUESTIONS[0].label }));
+    await user.click(screen.getByRole('button', { name: INTERVIEW_QUESTIONS[0].choices[0].label }));
+
+    expect(screen.getByText("I haven't shared any data to support that claim.")).toBeInTheDocument();
+    expect(screen.queryByText('Choose your follow-up wisely! You can only ask one.')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Add to Journal' }));
 
-    expect(screen.getByText('Select a question to ask')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Q1' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Q2' })).toBeInTheDocument();
+    expect(screen.getByText('Let\'s interview the CEO of Big Drug Inc! Select a question to ask.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: INTERVIEW_QUESTIONS[0].label })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: INTERVIEW_QUESTIONS[1].label })).toBeInTheDocument();
   });
 
   it('returns to the desk and marks the interview complete', async () => {
     const user = userEvent.setup();
     renderInterview();
 
-    for (const [question, choice] of [['Q1', 'Q1.1'], ['Q2', 'Q2.1']] as const) {
-      await user.click(screen.getByRole('button', { name: question }));
-      await user.click(screen.getByRole('button', { name: choice }));
+    for (const question of INTERVIEW_QUESTIONS) {
+      await user.click(screen.getByRole('button', { name: question.label }));
+      if (question.choices.length > 0) {
+        await user.click(screen.getByRole('button', { name: question.choices[0].label }));
+      }
       await user.click(screen.getByRole('button', { name: 'Add to Journal' }));
     }
 
-    await user.click(screen.getByRole('button', { name: 'Q3' }));
-    await user.click(screen.getByRole('button', { name: 'Add to Journal' }));
     await user.click(screen.getByRole('button', { name: 'Finish Interview' }));
 
     expect(progress.completeActivity).toHaveBeenCalledWith('interviews');

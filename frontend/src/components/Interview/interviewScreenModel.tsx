@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { completeActivity } from '../../services/progress';
 import { ROUTES } from '../../routes';
 import { InterviewController } from './InterviewController';
+import { useBackConfirmationModel } from '../Back-Confirmation/backConfirmationModel';
 
 function getWindowSize() {
   return { width: window.innerWidth, height: window.innerHeight };
@@ -43,6 +44,10 @@ export function useInterviewModel() {
     }
   }
 
+  const { onBack, confirmation } = useBackConfirmationModel({
+    onLeave: () => navigate(ROUTES.desk),
+  });
+
   return {
     questions: state.questions,
     question: state.question,
@@ -56,5 +61,7 @@ export function useInterviewModel() {
     onSelectChoice: (id: string) => update(() => controller.selectChoice(id)),
     onAddToJournal: () => update(() => controller.completeCurrentQuestion()), // placeholder for now, will add to Journal once backend is built.
     onFinishInterview: finishInterview,
+    onBack,
+    backConfirmation: confirmation,
   };
 }
