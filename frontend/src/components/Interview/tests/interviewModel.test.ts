@@ -31,7 +31,7 @@ describe('InterviewModel', () => {
     model.selectChoice('q1-2');
     expect(model.getState().choice).toMatchObject({
       id: 'q1-2',
-      answer: 'Our catnip is perfectly safe.',
+      answer: 'Like I said before, our catnip is perfectly safe.',
     });
   });
 
