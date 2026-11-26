@@ -5,8 +5,12 @@ import { COLORS } from '../../theme';
 import { URLImage } from '../URLImage/URLImage';
 import cat from '../../assets/whistleblower_cat.png';
 import SettingsButton from '../SettingsButton/SettingsButton';
+import HintButton from '../HintButton/HintButton';
 import TitleButton from '../TitleScreen/titleButton';
 import { useInterviewModel } from './interviewScreenModel';
+
+export const HINT_TEXT =
+  'Ask questions to gather more evidence. Pick the questions you think will reveal the most information.';
 
 const WIDTH = 1280;
 const HEIGHT = 832;
@@ -173,6 +177,7 @@ export default function Interview() {
       }}
     >
       <SettingsButton />
+      <HintButton hint={HINT_TEXT} />
       {error && <p role="alert">{error}</p>}
       <section
         style={{

@@ -13,6 +13,7 @@ export const CREATE_ARTICLE_LABEL = 'Create Article';
 export const LOADING_TEXT = 'Loading...';
 
 export const LOCKED_TEXT = 'Must gather more evidence';
+export const HINT_TEXT = 'Hint';
 export const DONE_TEXT = 'Done!';
 
 // Where an item sits on the desk, relative to the desk's size so the layout
