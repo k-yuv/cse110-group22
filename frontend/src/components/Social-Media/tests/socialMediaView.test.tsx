@@ -1,16 +1,16 @@
-
 import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('../../SettingsButton/SettingsButton', () => ({ default: () => null }));
-vi.mock('../../URLImage/URLImage', () => ({ URLImage: () => null }));
 vi.mock('../../Back-Button/backButtonView', () => ({ default: () => null }));
 vi.mock('../../Back-Confirmation/backConfirmationView', () => ({ default: () => null }));
-vi.mock('../../../assets/Journal-Corner-View.png', () => ({ default: '/journal.png' }));
-vi.mock('../../../theme', () => ({ FONT: 'Arial', COLORS: { hoverGlow: '#ffbc00' } }));
+vi.mock('../../Journal/journalView', () => ({
+    default: ({ placement }: { placement?: string }) => <div data-testid="journal" data-placement={placement} />,
+}));
+vi.mock('../../../theme', () => ({ FONT: 'Arial', COLORS: {} }));
 
 // Konva mock only for animation.
 vi.mock('konva', () => ({
@@ -18,6 +18,10 @@ vi.mock('konva', () => ({
         Tween: class {
             play() {}
             destroy() {}
+        },
+        Animation: class {
+            start() {}
+            stop() {}
         },
         Easings: { EaseInOut: (value: number) => value },
     },
@@ -31,6 +35,8 @@ vi.mock('react-konva', async () => {
         name?: string;
         text?: string;
         ref?: React.Ref<unknown>;
+        fill?: string;
+        shadowColor?: string;
         shadowBlur?: number;
         shadowOpacity?: number;
         onClick?: () => void;
@@ -47,7 +53,11 @@ vi.mock('react-konva', async () => {
         Stage: ({ children }: P) => <div>{children}</div>,
         Layer: ({ children }: P) => <div>{children}</div>,
         Group: ({ children, name, onClick, onTap, onMouseEnter, onMouseLeave, ref }: P) => {
-            useImperativeHandle(ref, () => ({}));
+            useImperativeHandle(ref, () => ({
+                opacity() {},
+                offsetX() {},
+                getLayer: () => ({}),
+            }));
             return (
                 <div
                     role={name ? 'group' : undefined}
@@ -63,10 +73,12 @@ vi.mock('react-konva', async () => {
         },
         Rect: () => null,
         Line: () => null,
-        // Retained for the Konva test mock.
-        Path: ({ shadowBlur, shadowOpacity }: P) => (
+        Circle: () => null,
+        Path: ({ fill, shadowColor, shadowBlur, shadowOpacity }: P) => (
             <span
                 data-testid="cloud-path"
+                data-fill={fill}
+                data-shadow-color={shadowColor}
                 data-shadow-blur={shadowBlur}
                 data-shadow-opacity={shadowOpacity}
             />
@@ -76,27 +88,34 @@ vi.mock('react-konva', async () => {
 });
 
 import SocialMedia from '../socialMediaView.tsx';
-import { FINISH_LABEL, HINT_TEXT } from '../socialMediaContent.tsx';
+import { COLORS, DONE_LABEL, HINT_TEXT, NEXT_LABEL, SOCIAL_LEVELS } from '../socialMediaContent.tsx';
+
+const POSTS = SOCIAL_LEVELS.catnip.posts;
+const correctId = (index: number) => POSTS[index].thoughts.find((t) => t.correct)!.id;
+const wrongIds = (index: number) => POSTS[index].thoughts.filter((t) => !t.correct).map((t) => t.id);
 
 // Provide routing context without changing browser history.
 function renderSocialMedia(ui: ReactElement) {
-    return render(
-        <MemoryRouter>
-            {ui}
-        </MemoryRouter>,
-    );
+    return render(<MemoryRouter>{ui}</MemoryRouter>);
 }
 
-function thought(id: string) {
-    return screen.getByRole('group', { name: `thought-${id}` });
+function cloud(name: string) {
+    return screen.getByRole('group', { name });
 }
 
-function shadow(id: string) {
-    const path = within(thought(id)).getByTestId('cloud-path');
+const thought = (id: string) => cloud(`thought-${id}`);
+
+function look(group: HTMLElement) {
+    const path = within(group).getByTestId('cloud-path');
     return {
+        fill: path.getAttribute('data-fill'),
+        color: path.getAttribute('data-shadow-color'),
         blur: Number(path.getAttribute('data-shadow-blur')),
-        opacity: Number(path.getAttribute('data-shadow-opacity')),
     };
+}
+
+function progress() {
+    return screen.getByText(/^\d+\/\d+$/).textContent;
 }
 
 describe('SocialMedia view', () => {
@@ -109,96 +128,95 @@ describe('SocialMedia view', () => {
         expect(screen.getByRole('dialog', { name: 'Hint' })).toHaveTextContent(HINT_TEXT);
     });
 
-    it('keeps the selected cloud glowing after hover ends and notifies the consumer', async () => {
-        const user = userEvent.setup();
-        const onSelectionChange = vi.fn();
-        renderSocialMedia(<SocialMedia onSelectionChange={onSelectionChange} />);
-
-        await user.click(screen.getByText('Gather Thoughts'));
-        await user.click(thought('catnip-question-1'));
-        await user.unhover(thought('catnip-question-1'));
-
-        expect(onSelectionChange).toHaveBeenLastCalledWith({
-            levelId: 'catnip', postId: 'catnip-influencer',
-            thoughtId: 'catnip-question-1', stance: 'questioning',
-        });
-        expect(shadow('catnip-question-1').blur).toBeGreaterThan(0);
-        expect(shadow('catnip-question-1').opacity).toBeGreaterThan(0);
-        expect(shadow('catnip-support-1').blur).toBe(0);
+    it('shows the corner journal used by the other activities', () => {
+        renderSocialMedia(<SocialMedia />);
+        expect(screen.getByTestId('journal')).toHaveAttribute('data-placement', 'corner');
     });
 
-    it('switches the glow to the latest choice instead of leaving multiple selected', async () => {
-        const user = userEvent.setup();
-        const changed = vi.fn();
-        renderSocialMedia(<SocialMedia onSelectionChange={changed} />);
+    it('shows all four thoughts and a three-slot progress bar right away', () => {
+        renderSocialMedia(<SocialMedia />);
 
-        await user.click(screen.getByText('Gather Thoughts'));
-        await user.click(thought('catnip-support-1'));
-        await user.click(thought('catnip-question-2'));
-        await user.unhover(thought('catnip-question-2'));
-
-        expect(changed).toHaveBeenCalledTimes(2);
-        expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({
-            thoughtId: 'catnip-question-2',
-        }));
-        expect(shadow('catnip-support-1').blur).toBe(0);
-        expect(shadow('catnip-question-2').blur).toBeGreaterThan(0);
-    });
-
-    it('restores the chosen cloud after Clear Mind, without erasing or re-emitting it', async () => {
-        const user = userEvent.setup();
-        const changed = vi.fn();
-        renderSocialMedia(<SocialMedia onSelectionChange={changed} />);
-
-        await user.click(screen.getByText('Gather Thoughts'));
-        await user.click(thought('catnip-support-2'));
-        await user.click(screen.getByText('Clear Mind'));
-        expect(screen.queryAllByRole('group', { name: /^thought-/ })).toHaveLength(0);
-
-        await user.click(screen.getByText('Gather Thoughts'));
-        expect(shadow('catnip-support-2').blur).toBeGreaterThan(0);
-        expect(changed).toHaveBeenCalledTimes(1);
-    });
-
-    it('wires canvas tap events for opening and selecting a thought', () => {
-        const changed = vi.fn();
-        renderSocialMedia(<SocialMedia onSelectionChange={changed} />);
-
-        fireEvent.touchEnd(screen.getByText('Gather Thoughts'));
         expect(screen.getAllByRole('group', { name: /^thought-/ })).toHaveLength(4);
-
-        fireEvent.touchEnd(thought('catnip-question-2'));
-        expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({
-            thoughtId: 'catnip-question-2',
-        }));
+        expect(progress()).toBe('0/3');
+        expect(within(cloud('next-button')).getByText(NEXT_LABEL)).toBeInTheDocument();
     });
 
-    it('turns the glow off and emits null when the current choice is clicked twice', async () => {
-        const user = userEvent.setup();
-        const changed = vi.fn();
-        renderSocialMedia(<SocialMedia onSelectionChange={changed} />);
-
-        await user.click(screen.getByText('Gather Thoughts'));
-        await user.click(thought('catnip-support-1'));
-        await user.click(thought('catnip-support-1'));
-        await user.unhover(thought('catnip-support-1'));
-
-        expect(shadow('catnip-support-1').blur).toBe(0);
-        expect(changed).toHaveBeenCalledTimes(2);
-        expect(changed).toHaveBeenLastCalledWith(null);
-    });
-
-    it('shows Finish only while a thought is picked', async () => {
+    it('glows blue on hover', async () => {
         const user = userEvent.setup();
         renderSocialMedia(<SocialMedia />);
 
-        expect(screen.queryByRole('button', { name: FINISH_LABEL })).not.toBeInTheDocument();
+        await user.hover(thought(correctId(0)));
+        expect(look(thought(correctId(0)))).toMatchObject({ color: COLORS.hoverGlow });
+        expect(look(thought(correctId(0))).blur).toBeGreaterThan(0);
+    });
 
-        await user.click(screen.getByText('Gather Thoughts'));
-        await user.click(thought('catnip-support-1'));
-        expect(screen.getByRole('button', { name: FINISH_LABEL })).toBeInTheDocument();
+    it('shakes every thought red and explains why on a wrong pick', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        try {
+            const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+            renderSocialMedia(<SocialMedia />);
+            const wrong = POSTS[0].thoughts.find((t) => !t.correct)!;
 
-        await user.click(thought('catnip-support-1'));
-        expect(screen.queryByRole('button', { name: FINISH_LABEL })).not.toBeInTheDocument();
+            await user.click(thought(wrong.id));
+            await user.unhover(thought(wrong.id));
+
+            for (const item of POSTS[0].thoughts) {
+                expect(look(thought(item.id)).color).toBe(COLORS.wrongGlow);
+            }
+            expect(within(cloud('feedback')).getByText(wrong.feedback)).toBeInTheDocument();
+            expect(progress()).toBe('0/3');
+
+            // The red glow clears after the shake.
+            act(() => { vi.advanceTimersByTime(1000); });
+            expect(look(thought(wrong.id)).blur).toBe(0);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('turns the right thought green and unlocks Next', async () => {
+        const user = userEvent.setup();
+        const changed = vi.fn();
+        renderSocialMedia(<SocialMedia onSelectionChange={changed} />);
+
+        await user.click(thought(correctId(0)));
+        await user.unhover(thought(correctId(0)));
+
+        expect(look(thought(correctId(0)))).toMatchObject({
+            fill: COLORS.correctFill, color: COLORS.correctGlow,
+        });
+        expect(look(thought(wrongIds(0)[0])).blur).toBe(0);
+        expect(progress()).toBe('1/3');
+        expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({ correct: true }));
+    });
+
+    it('wires canvas tap events for picking a thought and pressing Next', () => {
+        renderSocialMedia(<SocialMedia />);
+
+        fireEvent.touchEnd(thought(correctId(0)));
+        fireEvent.touchEnd(cloud('next-button'));
+
+        expect(thought(correctId(1))).toBeInTheDocument();
+    });
+
+    it('does nothing when Next is pressed before the right answer', async () => {
+        const user = userEvent.setup();
+        renderSocialMedia(<SocialMedia />);
+
+        await user.click(cloud('next-button'));
+        expect(thought(correctId(0))).toBeInTheDocument();
+    });
+
+    it('walks through all three posts and changes Next to Done', async () => {
+        const user = userEvent.setup();
+        renderSocialMedia(<SocialMedia />);
+
+        for (let index = 0; index < POSTS.length; index += 1) {
+            await user.click(thought(correctId(index)));
+            if (index < POSTS.length - 1) await user.click(cloud('next-button'));
+        }
+
+        expect(progress()).toBe('3/3');
+        expect(within(cloud('next-button')).getByText(DONE_LABEL)).toBeInTheDocument();
     });
 });

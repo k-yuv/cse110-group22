@@ -1,36 +1,49 @@
+import type { CSSProperties } from 'react';
 import { Group, Layer, Rect, Stage } from 'react-konva';
 import SettingsButton from '../SettingsButton/SettingsButton';
 import HintButton from '../HintButton/HintButton';
-import { URLImage } from '../URLImage/URLImage';
-import journalImage from '../../assets/Journal-Corner-View.png';
+import ProgressBar from '../Progress-Bar/ProgressBar';
+import Journal from '../Journal/journalView';
+import { visuallyHidden } from '../../helpers';
 import {
-    COLORS, DEFAULT_LEVEL, LAYOUT, SCENE,
+    BACK_BUTTON_SIZE, COLORS, DEFAULT_LEVEL, DONE_LABEL, HINT_TEXT, LAYOUT, NEXT_LABEL,
+    PAGE_TITLE, PROGRESS_LABEL, SCENE,
     type SocialLevelId,
 } from './socialMediaContent.tsx';
 import type { SocialThoughtSelection } from './socialMediaSelection.ts';
 import { useSocialMediaModel } from './socialMediaModel.tsx';
 import SocialMediaLaptop from './parts/SocialMediaLaptop.tsx';
-import ThinkButton, { ThoughtBubble } from './parts/ThinkButton.tsx';
+import ThinkButton, { FeedbackBubble, ThoughtBubble } from './parts/ThinkButton.tsx';
 import BackButton from '../Back-Button/backButtonView';
 import BackConfirmation from '../Back-Confirmation/backConfirmationView';
-import {BACK_BUTTON_SIZE, FINISH_LABEL, HINT_TEXT, PAGE_TITLE} from "./socialMediaContent.tsx";
+
+const THOUGHT_STAGGER = 0.12;
+
+const progressStyle: CSSProperties = {
+    position: 'absolute',
+    zIndex: 1,
+    right: 24,
+    top: 16,
+};
 
 interface Props {
     levelId?: SocialLevelId;
-    postIndex?: number;
-    onSelectionChange?: (selection: SocialThoughtSelection | null) => void;
+    onSelectionChange?: (selection: SocialThoughtSelection) => void;
 }
 
-export default function SocialMedia({ levelId = DEFAULT_LEVEL, postIndex = 0, onSelectionChange }: Props) {
+export default function SocialMedia({ levelId = DEFAULT_LEVEL, onSelectionChange }: Props) {
     const {
         width, height, scale, originX, originY, sizeUnit,
-        post, thoughtsOpen, toggleThoughts, selection, selectThought, onBackToDesk, backConfirmation,
-        canFinish, finishing, error, onFinish,
-    } = useSocialMediaModel(levelId, postIndex, onSelectionChange);
+        post, selection, selectThought, feedback, wrongCount,
+        completedPosts, totalPosts, canAdvance, isDone, onAdvance, error,
+        onBackToDesk, backConfirmation,
+    } = useSocialMediaModel(levelId, onSelectionChange);
 
     const sceneTransform = {
         x: originX, y: originY, scaleX: scale, scaleY: scale,
     };
+    const advanceLabel = isDone ? DONE_LABEL : NEXT_LABEL;
+    const solvedId = selection?.correct ? selection.thoughtId : undefined;
 
     return (
         <main aria-label="Social media chapter"
@@ -46,43 +59,50 @@ export default function SocialMedia({ levelId = DEFAULT_LEVEL, postIndex = 0, on
                         <Group x={LAYOUT.laptopOffset.x} y={LAYOUT.laptopOffset.y}>
                             <SocialMediaLaptop post={post} />
                         </Group>
-                        <URLImage src={journalImage} {...LAYOUT.journal} />
                     </Group>
                 </Layer>
                 <Layer>
                     <Group {...sceneTransform}>
-                        {thoughtsOpen && (
-                            <>
-                                {post.thoughts.map((thought, index) => {
-                                    // Two positions are defined per stance; map indices 0-1 and 2-3 to those slots.
-                                    const sideIndex = index < 2 ? index : index - 2;
-                                    const position = LAYOUT.thoughts[thought.stance][sideIndex];
-                                    return position && (
-                                        <ThoughtBubble
-                                            key={thought.id}
-                                            id={thought.id}
-                                            {...position}
-                                            text={thought.text}
-                                            selected={selection?.thoughtId === thought.id}
-                                            onSelect={() => selectThought(thought.id)}
-                                        />
-                                    );
-                                })}
-                            </>
+                        {post.thoughts.map((thought, index) => (
+                            <ThoughtBubble
+                                key={thought.id}
+                                id={thought.id}
+                                {...LAYOUT.thoughts.slots[index]}
+                                text={thought.text}
+                                correct={solvedId === thought.id}
+                                shakeKey={wrongCount}
+                                fadeInDelay={index * THOUGHT_STAGGER}
+                                onSelect={() => selectThought(thought.id)}
+                            />
+                        ))}
+                        {feedback && (
+                            <FeedbackBubble key={feedback.key} text={feedback.text} correct={feedback.correct} />
                         )}
-                        <ThinkButton
-                            open={thoughtsOpen} onToggle={toggleThoughts} />
+                        <ThinkButton label={advanceLabel} enabled={canAdvance} onClick={onAdvance} />
                     </Group>
                 </Layer>
             </Stage>
 
-            {/* An offscreen native button exposes the Konva-only action to keyboard users. */}
-            <button type="button" onClick={toggleThoughts}
-                    aria-pressed={thoughtsOpen}
-                    style={{ position: 'absolute', left: -10000, top: 0 }}>
-                {thoughtsOpen ? 'Clear thoughts' : 'Gather thoughts'}
-            </button>
+            {/* Offscreen native controls expose the Konva-only actions to keyboard and screen-reader users. */}
+            <div style={visuallyHidden}>
+                <fieldset>
+                    <legend>Is this post reliable?</legend>
+                    {post.thoughts.map((thought) => (
+                        <button key={thought.id} type="button" onClick={() => selectThought(thought.id)}
+                                aria-pressed={selection?.thoughtId === thought.id}>
+                            {thought.text}
+                        </button>
+                    ))}
+                </fieldset>
+                {feedback && <p role="status">{feedback.text}</p>}
+                <button type="button" onClick={onAdvance} disabled={!canAdvance}>
+                    {advanceLabel}
+                </button>
+            </div>
 
+            {/* Same corner journal as Interview: click it to review evidence collected so far. */}
+            <Journal placement="corner" />
+            <ProgressBar completed={completedPosts} total={totalPosts} label={PROGRESS_LABEL} style={progressStyle} />
             <SettingsButton />
             <HintButton hint={HINT_TEXT} />
             <BackButton
@@ -91,16 +111,10 @@ export default function SocialMedia({ levelId = DEFAULT_LEVEL, postIndex = 0, on
                 style={{ left: 22, top: 162 }}
             />
 
-            {/* Shown once a thought is picked: marks Social Media done and returns to the desk. */}
-            {(canFinish || error) && (
-                <div style={{ position: 'absolute', right: 24, bottom: 24, zIndex: 10, textAlign: 'right' }}>
-                    {error && <p role="alert">{error}</p>}
-                    {canFinish && (
-                        <button type="button" onClick={onFinish} disabled={finishing}>
-                            {FINISH_LABEL}
-                        </button>
-                    )}
-                </div>
+            {error && (
+                <p role="alert" style={{ position: 'absolute', right: 24, bottom: 24, zIndex: 10 }}>
+                    {error}
+                </p>
             )}
 
             <BackConfirmation activityName={PAGE_TITLE} {...backConfirmation} />
