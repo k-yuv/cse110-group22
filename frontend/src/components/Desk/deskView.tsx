@@ -7,6 +7,7 @@ import MinigameEntry from './parts/MinigameEntry';
 import CreateArticleButton from './parts/CreateArticleButton';
 import SettingsButton from '../SettingsButton/SettingsButton';
 import Journal from '../Journal/journalView';
+import Letter from '../Letter/letterView';
 
 const FOLDERS = ['articles', 'social', 'interviews'] as const;
 
@@ -73,6 +74,9 @@ export default function Desk() {
       <Journal placement="desk" />
 
       <SettingsButton />
+
+      {/* Opens over everything the first time the player reaches the desk. */}
+      <Letter />
     </main>
   );
 }
