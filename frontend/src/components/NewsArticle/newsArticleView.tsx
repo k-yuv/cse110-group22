@@ -6,30 +6,39 @@ import { useNewsArticleModel } from './newsArticleModel';
 import { getResultMessage } from './newsArticleRules';
 import {
   ACTIVITY_NAME,
+  ADD_EVIDENCE_LABEL,
+  ADD_EVIDENCE_TODO_TEXT,
   ARTICLE_COLUMN,
   COLORS,
   CONTINUE_LABEL,
   FONT,
   HIGHLIGHTER_LAYOUT,
   HIGHLIGHTER_TIP,
+  HINT_TEXT,
+  LAST_ROW_SCALE,
+  MESSAGE_SECONDS,
   NEWSPAPER_LAYOUT,
   OUTLINE_OPACITY,
   SUBMIT_LABEL,
   TODO_TEXT,
   TRANSCRIPT_LAYOUT,
   TRANSCRIPT_TITLE,
+  UNDER_PHOTO,
 } from './newsArticleContent';
+import { BUTTON_STYLE } from '../../theme';
 import { URLImage } from '../URLImage/URLImage';
 import HoverSpotlight from '../Desk/parts/HoverSpotlight';
 import Journal from '../Journal/journalView';
 import BackButton from '../Back-Button/backButtonView';
+import SettingsButton from '../SettingsButton/SettingsButton';
+import HintButton from '../HintButton/HintButton';
 import BackConfirmation from '../Back-Confirmation/backConfirmationView';
 import newspaperImage from '../../assets/Newspaper-Template-2.png';
 import highlighterImage from '../../assets/Highlighter.png';
 import highlighterOutline from '../../assets/Highlighter-Outline.png';
 
-// The Online Articles activity: the player compares the newspaper on the
-// right to the trusted transcript on the left and highlights the false
+// The News Article activity: the player compares the newspaper on the
+// right to the research study on the left and highlights the false
 // sentences. Display only: what's highlighted and the result come from
 // useNewsArticleModel.
 export default function NewsArticle() {
@@ -42,9 +51,13 @@ export default function NewsArticle() {
     holdingHighlighter,
     highlightedIds,
     result,
+    evidenceAdded,
+    message,
+    canGoBack,
     onToggleHighlighter,
     onSentenceClick,
     onSubmit,
+    onAddEvidence,
     onContinue,
     onBack,
     backConfirmation,
@@ -75,6 +88,9 @@ export default function NewsArticle() {
 
   if (loading) return <p>Loading...</p>;
 
+  // Find the misinformation, then add the evidence, then nothing left to do.
+  const todo = !result?.passed ? TODO_TEXT : evidenceAdded ? '' : ADD_EVIDENCE_TODO_TEXT;
+
   // Window fractions to pixels.
   const card = {
     x: TRANSCRIPT_LAYOUT.x * width,
@@ -92,11 +108,29 @@ export default function NewsArticle() {
   const paperX = NEWSPAPER_LAYOUT.centerX * width - paperWidth / 2;
   const paperY = NEWSPAPER_LAYOUT.y * height;
 
-  // The column is split into one equal row per sentence.
-  const columnX = paperX + ARTICLE_COLUMN.x * paperWidth;
-  const columnY = paperY + ARTICLE_COLUMN.y * paperHeight;
+  // The last sentence goes in the space under the photo, and the rest split
+  // the column into rows. The column's last row is LAST_ROW_SCALE times as
+  // tall as the others, so its longer sentence fits.
+  const segments = activity?.segments ?? [];
+  const columnRows = Math.max(1, segments.length - 1);
   const columnWidth = ARTICLE_COLUMN.width * paperWidth;
-  const rowHeight = (ARTICLE_COLUMN.height * paperHeight) / (activity?.segments.length ?? 1);
+  const rowHeight = (ARTICLE_COLUMN.height * paperHeight) / (columnRows - 1 + LAST_ROW_SCALE);
+  function sentenceBox(index: number) {
+    if (index === segments.length - 1 && segments.length > 1) {
+      return {
+        x: paperX + UNDER_PHOTO.x * paperWidth,
+        y: paperY + UNDER_PHOTO.y * paperHeight,
+        width: UNDER_PHOTO.width * paperWidth,
+        height: UNDER_PHOTO.height * paperHeight,
+      };
+    }
+    return {
+      x: paperX + ARTICLE_COLUMN.x * paperWidth,
+      y: paperY + ARTICLE_COLUMN.y * paperHeight + index * rowHeight,
+      width: columnWidth,
+      height: index === columnRows - 1 ? rowHeight * LAST_ROW_SCALE : rowHeight,
+    };
+  }
 
   const highlighterSize = HIGHLIGHTER_LAYOUT.size * height;
   const restX = HIGHLIGHTER_LAYOUT.centerX * width - highlighterSize / 2;
@@ -107,21 +141,23 @@ export default function NewsArticle() {
       {error && <p role="alert">{error}</p>}
 
       {/* On top of the canvas, but clicks pass through it. */}
-      <h1
-        style={{
-          position: 'absolute',
-          top: '2%',
-          width: '100%',
-          margin: 0,
-          textAlign: 'center',
-          fontFamily: FONT,
-          color: COLORS.card,
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      >
-        {TODO_TEXT}
-      </h1>
+      {todo && (
+        <h1
+          style={{
+            position: 'absolute',
+            top: '2%',
+            width: '100%',
+            margin: 0,
+            textAlign: 'center',
+            fontFamily: FONT,
+            color: COLORS.card,
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        >
+          {todo}
+        </h1>
+      )}
 
       {activity && (
         <Stage width={width} height={height} onMouseMove={handleMouseMove}>
@@ -140,10 +176,10 @@ export default function NewsArticle() {
             />
             <Text
               x={card.x + cardPadding}
-              y={card.y + cardPadding + card.width * 0.14}
+              y={card.y + cardPadding + card.width * 0.2}
               width={card.width - cardPadding * 2}
-              text={`${activity.transcript.speaker}: "${activity.transcript.text}"`}
-              fontSize={card.width * 0.055}
+              text={activity.transcript.text}
+              fontSize={card.width * 0.044}
               lineHeight={1.4}
               fontFamily={FONT}
               fill={COLORS.text}
@@ -151,33 +187,40 @@ export default function NewsArticle() {
 
             {/* Newspaper, with one clickable row per sentence */}
             <URLImage src={newspaperImage} x={paperX} y={paperY} width={paperWidth} height={paperHeight} />
-            {activity.segments.map((segment, index) => (
-              <Group
-                key={segment.id}
-                x={columnX}
-                y={columnY + index * rowHeight}
-                onClick={() => onSentenceClick(segment.id)}
-                onTap={() => onSentenceClick(segment.id)}
-              >
-                <HoverSpotlight width={columnWidth} height={rowHeight} disabled={!holdingHighlighter || result?.passed}>
-                  <Rect
-                    width={columnWidth}
-                    height={rowHeight}
-                    fill={COLORS.highlight}
-                    opacity={highlightedIds.includes(segment.id) ? 1 : 0}
-                  />
-                  <Text
-                    width={columnWidth}
-                    height={rowHeight}
-                    text={segment.text}
-                    fontSize={paperWidth * 0.028}
-                    verticalAlign="middle"
-                    fontFamily={FONT}
-                    fill={COLORS.text}
-                  />
-                </HoverSpotlight>
-              </Group>
-            ))}
+            {segments.map((segment, index) => {
+              const box = sentenceBox(index);
+              return (
+                <Group
+                  key={segment.id}
+                  x={box.x}
+                  y={box.y}
+                  onClick={() => onSentenceClick(segment.id)}
+                  onTap={() => onSentenceClick(segment.id)}
+                >
+                  <HoverSpotlight
+                    width={box.width}
+                    height={box.height}
+                    disabled={!holdingHighlighter || result?.passed}
+                  >
+                    <Rect
+                      width={box.width}
+                      height={box.height}
+                      fill={COLORS.highlight}
+                      opacity={highlightedIds.includes(segment.id) ? 1 : 0}
+                    />
+                    <Text
+                      width={box.width}
+                      height={box.height}
+                      text={segment.text}
+                      fontSize={paperWidth * 0.028}
+                      verticalAlign="middle"
+                      fontFamily={FONT}
+                      fill={COLORS.text}
+                    />
+                  </HoverSpotlight>
+                </Group>
+              );
+            })}
 
             {/* Where the highlighter rests: the highlighter itself, or its
                 dark outline while it's held. Clicking either picks it up or
@@ -215,27 +258,64 @@ export default function NewsArticle() {
 
       <Journal placement="corner" />
 
-      {/* Submitting and the result are plain HTML, so tests can see them. */}
+      {/* Submitting, the result and the buttons are plain HTML, so tests can
+          see them. The "add the evidence first" message takes the result's
+          place, stays for most of its time, then fades out before the model
+          removes it. */}
+      <style>{'@keyframes news-article-fade { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }'}</style>
       {activity && (
-        <div style={{ position: 'absolute', right: 16, bottom: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
-          {result && (
-            <p role="status" style={{ margin: 0, color: COLORS.card }}>
-              {getResultMessage(result)}
+        <div
+          style={{
+            position: 'absolute',
+            right: 16,
+            bottom: 16,
+            display: 'flex',
+            gap: 16,
+            alignItems: 'center',
+          }}
+        >
+          {message ? (
+            <p
+              role="status"
+              style={{
+                margin: 0,
+                color: COLORS.card,
+                animation: `news-article-fade ${MESSAGE_SECONDS}s forwards`,
+              }}
+            >
+              {message}
             </p>
-          )}
-          {result?.passed ? (
-            <button type="button" onClick={onContinue}>
-              {CONTINUE_LABEL}
-            </button>
           ) : (
-            <button type="button" onClick={onSubmit}>
-              {SUBMIT_LABEL}
-            </button>
+            result && (
+              <p role="status" style={{ margin: 0, color: COLORS.card }}>
+                {getResultMessage(result)}
+              </p>
+            )
           )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {!result?.passed && (
+              <button type="button" onClick={onSubmit} style={BUTTON_STYLE}>
+                {SUBMIT_LABEL}
+              </button>
+            )}
+            {result?.passed && !evidenceAdded && (
+              <button type="button" onClick={onAddEvidence} style={BUTTON_STYLE}>
+                {ADD_EVIDENCE_LABEL}
+              </button>
+            )}
+            {result?.passed && (
+              <button type="button" onClick={onContinue} style={BUTTON_STYLE}>
+                {CONTINUE_LABEL}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
-      <BackButton onClick={onBack} />
+      {/* Down the top left: settings (like the desk), the hint, then Back. */}
+      <SettingsButton />
+      <HintButton hint={HINT_TEXT} />
+      {canGoBack && <BackButton onClick={onBack} style={{ left: 22, top: 162 }} />}
       <BackConfirmation activityName={ACTIVITY_NAME} {...backConfirmation} />
     </main>
   );

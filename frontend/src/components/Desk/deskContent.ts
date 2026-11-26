@@ -1,7 +1,7 @@
 import type { ActivityId } from '../../services/progress';
 
 export const ACTIVITY_LABELS: Record<ActivityId, string> = {
-  articles: 'Online Articles',
+  articles: 'News Article',
   social: 'Social Media Posts',
   interviews: 'Interviews',
   aiMinigame: 'AI Images',
