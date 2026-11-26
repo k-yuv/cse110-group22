@@ -16,8 +16,9 @@ export const TODO_TEXT = 'TO DO: Cleanup desk';
 export const CONTINUE_LABEL = 'Continue';
 export const STILL_DIRTY_MESSAGE = 'I still have stuff to clean';
 export const HINT_TEXT =
-  'Pick up a tool from the bar at the bottom and use it on the mess it cleans. Scrub stains with the sponge by ' +
-  'holding the mouse button down and moving over them. Click trash with the trash can and mail with the shredder.';
+  "Pick up a tool from the bar at the bottom. Scrub stains with the sponge: hold the mouse button down and move over them." + 
+  "Throw away trash with the trash can and shred mail with the shredder. Both click with the arrow at their top-left corner." + 
+  "Click a tool's slot to put it back.";
 // Named in the back confirmation's message.
 export const ACTIVITY_NAME = 'Desk Cleanup';
 

@@ -31,20 +31,10 @@ import SettingsButton from '../SettingsButton/SettingsButton';
 import HintButton from '../HintButton/HintButton';
 import BackButton from '../Back-Button/backButtonView';
 import BackConfirmation from '../Back-Confirmation/backConfirmationView';
+import { BUTTON_STYLE } from '../../theme';
 
 type Point = { x: number; y: number };
 
-// The same look as News Article's buttons (and the letter's "Put away").
-const BUTTON_STYLE = {
-  padding: '14px 48px',
-  border: 'none',
-  borderRadius: 10,
-  background: COLORS.journalButton,
-  color: COLORS.journalText,
-  fontFamily: FONT,
-  fontSize: 22,
-  cursor: 'pointer',
-};
 type Box = { x: number; y: number; width: number; height: number };
 
 // A mess's image file, or its Konva drawing, filling its box.
