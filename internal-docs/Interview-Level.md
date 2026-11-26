@@ -1,6 +1,6 @@
 # Interview Level
 
-The Interview level is the third main activity in the story. The player talks to the whistleblower cat, chooses questions, reviews the answers, and then returns to the desk when every question is finished. This doc explains what the screen does, where its code lives, and how it's tested.
+The Interview level is the third main activity in the story. The player talks to the CEO cat, chooses questions, reviews the answers, and then returns to the desk when every question is finished. This doc explains what the screen does, where its code lives, and how it's tested.
 
 ## What it does
 
@@ -8,32 +8,33 @@ The interview is the page at `/interview`, opened from the **Interviews** folder
 
 | Part of the screen | What it is |
 | --- | --- |
-| Whistleblower cat | The character giving the answers |
+| CEO cat | The character giving the answers |
 | Question buttons | The questions still available to ask |
 | Speech bubbles | The answer to the selected question and, when applicable, its selected choice |
-| Advice popup | A reminder shown for Q1 |
+| Advice popup | A reminder to choose one follow-up |
 | **Add to Journal** | Finishes the current question and returns to the question list |
 | **Finish Interview** | Appears after all questions are finished and returns to the desk |
 
 ### Asking questions
 
-The current interview data is mock data in `InterviewModel.ts`:
+The interview copy lives in `InterviewModel.ts` and is based on the CEO coffee-chat evidence in `Journal/storyEvidence.ts`:
 
-| Question | Choices |
+| Interview topic | Evidence reflected in the dialogue |
 | --- | --- |
-| Q1 | Q1.1 or Q1.2 |
-| Q2 | Q2.1 |
-| Q3 | None |
+| The CEO's safety claim | The CEO says the catnip is perfectly safe, but provides no data. |
+| The company's view of customers | The CEO says, "Repeat customers are good customers." |
+| Pressure on the journalist | The CEO asked the journalist not to post bad claims about the company. |
+| The next product | The CEO teases a "better" catnip coming soon. |
 
 The flow is:
 
-1. The player starts at **Select a question to ask**.
+1. The player starts at **Let's interview the CEO of Big Drug Inc! Select a question to ask.**.
 2. Selecting a question displays its answer.
 3. If the question has choices, the player selects one to display its answer.
 4. The player presses **Add to Journal**. The question is removed from the available list.
 5. Once no questions remain, the player presses **Finish Interview**.
 
-The model rejects question ids that are not still available and choice ids that do not belong to the selected question. Q3 can be completed without selecting a choice.
+The model rejects question ids that are not still available and choice ids that do not belong to the selected question. Questions without follow-ups can be completed without selecting a choice.
 
 > **Current implementation note:** `Add to Journal` currently advances the interview by removing the question, but it does not yet create an `EvidenceModel` or call `JournalController`. The label describes the intended feature; connecting the selected answer to the shared Journal is future work.
 
@@ -53,7 +54,7 @@ When a question or choice is selected, the cat bounces upward briefly. Speech bu
 
 ### Not built yet
 
-- Real interview questions and answers from the backend.
+- Loading interview questions and answers from the backend.
 - Adding selected answers as evidence in the shared Journal.
 - Persisting interview state if the player leaves before finishing.
 - A loading state for interview data.
@@ -117,15 +118,17 @@ Run the tests from `frontend/` with `npm test`.
 | Test file | What it checks |
 | --- | --- |
 | `Interview/tests/interviewModel.test.ts` | The initial question list, valid question and choice selection, invalid selections, removing a completed question, and completing a question with no choice |
-| `Interview/tests/interviewView.test.tsx` | The opening prompt, Q1 guidance and choices, displaying a selected answer, returning to the question list, saving interview progress, and navigating back to the desk |
+| `Interview/tests/interviewView.test.tsx` | The opening prompt, CEO questions and follow-ups, displaying selected answers, returning to the question list, saving interview progress, and navigating back to the desk |
 
 ### How the tests see the interview
 
 The interview is drawn on a canvas, and tests cannot inspect real Konva shapes directly (see [Konva-Testing.md](Konva-Testing.md)). The view test replaces Konva components and `TitleButton` with simple DOM elements. It then clicks the same visible button labels a player uses:
 
 ```tsx
-await user.click(screen.getByRole('button', { name: 'Q1' }));
-await user.click(screen.getByRole('button', { name: 'Q1.1' }));
+await user.click(screen.getByRole('button', {
+  name: "How do you respond to concerns that Big Drug Inc.'s catnip may be unsafe?",
+}));
+await user.click(screen.getByRole('button', { name: 'What evidence supports that safety claim?' }));
 await user.click(screen.getByRole('button', { name: 'Add to Journal' }));
 ```
 

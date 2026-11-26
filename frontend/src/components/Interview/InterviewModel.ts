@@ -20,23 +20,43 @@ export interface InterviewState {
 export const INTERVIEW_QUESTIONS: readonly InterviewQuestion[] = [
   {
     id: 'q1',
-    label: 'There are claims that Big Drug Incs\'s catnip is extremely addictive. Is this the truth?',
-    answer: 'Our catnip is the best catnip on the market.',
+    label: "How do you respond to concerns that Big Drug Inc.'s catnip may be unsafe?",
+    answer: 'Our catnip is perfectly safe.',
     choices: [
-      { id: 'q1-1', label: 'Q1.1', answer: 'Q1.1 Answer' },
-      { id: 'q1-2', label: 'Q1.2', answer: 'Q1.2 Answer' },
+      {
+        id: 'q1-1',
+        label: 'What evidence supports that safety claim?',
+        answer: "I haven't shared any data to support that claim.",
+      },
+      {
+        id: 'q1-2',
+        label: 'Without data, can you still say it is perfectly safe?',
+        answer: 'Like I said before, our catnip is perfectly safe.',
+      },
     ],
   },
   {
     id: 'q2',
-    label: 'Q2',
-    answer: 'Q2 answer',
-    choices: [{ id: 'q2-1', label: 'Q2.1', answer: 'Q2.1 Answer' }],
+    label: 'How does Big Drug Inc. define a good customer?',
+    answer: 'Repeat customers are good customers.',
+    choices: [
+      {
+        id: 'q2-1',
+        label: "Should customers' health come before repeat business?",
+        answer: 'Big Drug Inc prides itself in good quality catnip.',
+      },
+    ],
   },
   {
     id: 'q3',
-    label: 'Q3',
-    answer: 'Q3 answer',
+    label: "Did you ask the journalist not to publish negative claims about Big Drug Inc.?",
+    answer: 'I asked the journalist not to post bad claims about my company.',
+    choices: [],
+  },
+  {
+    id: 'q4',
+    label: "What can you tell us about Big Drug Inc.'s next catnip product?",
+    answer: "We're working on a 'better' catnip, coming soon.",
     choices: [],
   },
 ];
