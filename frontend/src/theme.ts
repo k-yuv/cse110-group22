@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 // Colors and fonts shared by every screen. Add new colors here rather than
 // defining them inside a component, so screens stay consistent.
 export const COLORS = {
@@ -14,6 +16,35 @@ export const COLORS = {
   pen: '#2b2b2b',
   hoverGlow: '#fff2a8',
   text: '#000000',
+
+  // Desk cleanup
+  envelopeGreen: '#b5d985',
+  envelopeRed: '#e89a9a',
+  envelopeBlue: '#9cc3e6',
+  envelopeLine: '#111111',
+  donutDough: '#ff8a6b',
+  donutIcing: '#f78fc4',
+  donutOutline: '#d42a1f',
+  sprinkleTeal: '#14d9d0',
+  sprinkleRed: '#e8255a',
+  sprinkleBlue: '#7fbfe0',
+  sprinklePink: '#f0359e',
+  sprinklePurple: '#a56bd1',
+  sprinkleYellow: '#e8c74a',
+  cupRim: '#7a4a26',
+  cupLid: '#f5ead8',
+  cupLine: '#4a2c16',
+  stainLight: '#e8cfa6',
+  stainMid: '#d2a96c',
+  stainDark: '#a8733a',
+  ketchup: '#c8221b',
+  ketchupShine: '#f07a70',
+  fry: '#f4c54f',
+  fryOutline: '#c98a1d',
+  pointerTip: '#2b2b2b',
+  pointerTipOutline: '#ffffff',
+  star: '#ffd43b',
+  starOutline: '#000000',
 
   // Article writing
   wall: '#fff6df',
@@ -80,3 +111,15 @@ export const DISPLAY_FONT = 'Coiny, Arial, sans-serif';
 
 // Konva's default font, which the desk uses for all its text.
 export const FONT = 'Arial, sans-serif';
+
+// The large brown button: Continue, News Article's buttons.
+export const BUTTON_STYLE: CSSProperties = {
+    padding: '14px 48px',
+    border: 'none',
+    borderRadius: 10,
+    background: COLORS.journalButton,
+    color: COLORS.journalText,
+    fontFamily: FONT,
+    fontSize: 22,
+    cursor: 'pointer',
+};

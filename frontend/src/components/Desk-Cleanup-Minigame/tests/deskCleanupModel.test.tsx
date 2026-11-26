@@ -163,6 +163,15 @@ describe('useDeskCleanupModel', () => {
     expect(result.current.cleanup.message).toBe('');
   });
 
+  it('only counts the desk as clean once every mess is gone', () => {
+    const result = renderCleanupModel();
+    expect(result.current.cleanup.isClean).toBe(false);
+
+    cleanDesk(result);
+
+    expect(result.current.cleanup.isClean).toBe(true);
+  });
+
   it('saves progress and goes back to the desk once the whole desk is clean', async () => {
     const result = renderCleanupModel();
     cleanDesk(result);
@@ -182,6 +191,54 @@ describe('useDeskCleanupModel', () => {
     await act(() => result.current.cleanup.onContinue());
 
     expect(result.current.cleanup.error).toBe('Could not save progress');
+    expect(result.current.path).toBe(ROUTES.cleanDesk);
+  });
+
+  it('places every mess fully inside the window, with each stain under its mess', () => {
+    const result = renderCleanupModel();
+    const { placements } = result.current.cleanup;
+
+    for (const mess of MESSES) {
+      const spot = placements[mess.id];
+      expect(spot.x, mess.id).toBeGreaterThan(0);
+      expect(spot.x, mess.id).toBeLessThan(1);
+      expect(spot.y, mess.id).toBeGreaterThan(0);
+      expect(spot.y, mess.id).toBeLessThan(1);
+      if (mess.under) expect(spot, mess.id).toMatchObject({ x: placements[mess.under].x, y: placements[mess.under].y });
+      if (mess.maxTurn !== undefined) expect(Math.abs(spot.rotation), mess.id).toBeLessThanOrEqual(mess.maxTurn);
+    }
+  });
+
+  it('keeps the messes in place while playing', () => {
+    const result = renderCleanupModel();
+    const before = result.current.cleanup.placements;
+
+    holdTool(result, clickMess.tool);
+    act(() => result.current.cleanup.onMessClick(clickMess));
+
+    expect(result.current.cleanup.placements).toBe(before);
+  });
+
+  it('asks before going back, then goes to the desk on Go Back without saving', async () => {
+    const result = renderCleanupModel();
+
+    act(() => result.current.cleanup.onBack());
+    expect(result.current.cleanup.backConfirmation.isOpen).toBe(true);
+    expect(result.current.path).toBe(ROUTES.cleanDesk);
+
+    act(() => result.current.cleanup.backConfirmation.onGoBack());
+
+    expect(result.current.path).toBe(ROUTES.desk);
+    expect(await getProgress()).toEqual([]);
+  });
+
+  it('stays on the minigame on Stay', () => {
+    const result = renderCleanupModel();
+
+    act(() => result.current.cleanup.onBack());
+    act(() => result.current.cleanup.backConfirmation.onStay());
+
+    expect(result.current.cleanup.backConfirmation.isOpen).toBe(false);
     expect(result.current.path).toBe(ROUTES.cleanDesk);
   });
 
