@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 // Colors and fonts shared by every screen. Add new colors here rather than
 // defining them inside a component, so screens stay consistent.
 export const COLORS = {
@@ -80,3 +82,15 @@ export const DISPLAY_FONT = 'Coiny, Arial, sans-serif';
 
 // Konva's default font, which the desk uses for all its text.
 export const FONT = 'Arial, sans-serif';
+
+// The large brown button: Continue, News Article's buttons.
+export const BUTTON_STYLE: CSSProperties = {
+    padding: '14px 48px',
+    border: 'none',
+    borderRadius: 10,
+    background: COLORS.journalButton,
+    color: COLORS.journalText,
+    fontFamily: FONT,
+    fontSize: 22,
+    cursor: 'pointer',
+};

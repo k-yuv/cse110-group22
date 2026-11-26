@@ -25,7 +25,7 @@ import {
   TRANSCRIPT_TITLE,
   UNDER_PHOTO,
 } from './newsArticleContent';
-import { COLORS as THEME_COLORS, FONT as THEME_FONT } from '../../theme';
+import { BUTTON_STYLE } from '../../theme';
 import { URLImage } from '../URLImage/URLImage';
 import HoverSpotlight from '../Desk/parts/HoverSpotlight';
 import Journal from '../Journal/journalView';
@@ -36,18 +36,6 @@ import BackConfirmation from '../Back-Confirmation/backConfirmationView';
 import newspaperImage from '../../assets/Newspaper-Template-2.png';
 import highlighterImage from '../../assets/Highlighter.png';
 import highlighterOutline from '../../assets/Highlighter-Outline.png';
-
-// The same look as the letter's "Put away" button, only bigger.
-const BUTTON_STYLE = {
-  padding: '14px 48px',
-  border: 'none',
-  borderRadius: 10,
-  background: THEME_COLORS.journalButton,
-  color: THEME_COLORS.journalText,
-  fontFamily: THEME_FONT,
-  fontSize: 22,
-  cursor: 'pointer',
-};
 
 // The News Article activity: the player compares the newspaper on the
 // right to the research study on the left and highlights the false
