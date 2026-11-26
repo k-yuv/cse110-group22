@@ -7,7 +7,7 @@ import Desk from '../deskView';
 import HoverSpotlight from '../parts/HoverSpotlight';
 import { ROUTES } from '../../../routes';
 import { completeActivity, getProgress, type ActivityId } from '../../../services/progress';
-import { ACTIVITY_LABELS, CREATE_ARTICLE_LABEL, DONE_TEXT, LOADING_TEXT, LOCKED_TEXT } from '../deskContent';
+import { ACTIVITY_LABELS, CREATE_ARTICLE_LABEL, DONE_TEXT, HINT_TEXT, LOADING_TEXT, LOCKED_TEXT } from '../deskContent';
 import { CLOSE_LABEL, DIALOG_LABEL, JOURNAL_PLACEMENTS } from '../../Journal/journalContent';
 
 // The real progress service, except getProgress can be made to fail in a
@@ -209,6 +209,21 @@ describe('Desk view', () => {
     await renderDesk();
 
     expect(screen.queryByText(DONE_TEXT)).not.toBeInTheDocument();
+  });
+
+  it('has the settings button', async () => {
+    await renderDesk();
+
+    expect(await screen.findByRole('button', { name: 'Open settings' })).toBeInTheDocument();
+  });
+
+  it('opens the hint from the hint button', async () => {
+    const user = userEvent.setup();
+    await renderDesk();
+
+    await user.click(await screen.findByRole('button', { name: 'Open hint' }));
+
+    expect(screen.getByRole('dialog', { name: 'Hint' })).toHaveTextContent(HINT_TEXT);
   });
 
   describe('hover', () => {

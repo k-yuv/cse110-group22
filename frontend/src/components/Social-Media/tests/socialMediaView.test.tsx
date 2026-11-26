@@ -76,7 +76,7 @@ vi.mock('react-konva', async () => {
 });
 
 import SocialMedia from '../socialMediaView.tsx';
-import { FINISH_LABEL } from '../socialMediaContent.tsx';
+import { FINISH_LABEL, HINT_TEXT } from '../socialMediaContent.tsx';
 
 // Provide routing context without changing browser history.
 function renderSocialMedia(ui: ReactElement) {
@@ -100,6 +100,15 @@ function shadow(id: string) {
 }
 
 describe('SocialMedia view', () => {
+    it('opens the hint from the hint button', async () => {
+        const user = userEvent.setup();
+        renderSocialMedia(<SocialMedia />);
+
+        await user.click(await screen.findByRole('button', { name: 'Open hint' }));
+
+        expect(screen.getByRole('dialog', { name: 'Hint' })).toHaveTextContent(HINT_TEXT);
+    });
+
     it('keeps the selected cloud glowing after hover ends and notifies the consumer', async () => {
         const user = userEvent.setup();
         const onSelectionChange = vi.fn();
