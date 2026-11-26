@@ -7,6 +7,9 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import Interview, { HINT_TEXT } from '../InterviewView';
 import { INTERVIEW_QUESTIONS } from '../InterviewModel';
 import * as progress from '../../../services/progress';
+import { addEvidence } from '../../NewsArticle/journalAdapter';
+import { ADD_EVIDENCE_ERROR } from '../interviewScreenModel';
+import { ALL_STORY_EVIDENCE } from '../../Journal/storyEvidence';
 import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
 import { GO_BACK_LABEL, STAY_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 
@@ -59,6 +62,8 @@ vi.mock('../../../services/progress', () => ({
   completeActivity: vi.fn(),
 }));
 
+vi.mock('../../NewsArticle/journalAdapter', () => ({ addEvidence: vi.fn() }));
+
 function renderInterview() {
   return render(
     <MemoryRouter initialEntries={['/interview']}>
@@ -74,6 +79,7 @@ describe('Interview view', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(progress.completeActivity).mockResolvedValue(['interviews']);
+    vi.mocked(addEvidence).mockResolvedValue(true);
   });
 
   it('opens the hint from the hint button', async () => {
@@ -169,5 +175,36 @@ describe('Interview view', () => {
 
     expect(progress.completeActivity).toHaveBeenCalledWith('interviews');
     expect(await screen.findByText('Desk view')).toBeInTheDocument();
+  });
+
+  it('gives every question evidence that exists in the story evidence', () => {
+    const ids = new Set(ALL_STORY_EVIDENCE.map((item) => item.id));
+    for (const question of INTERVIEW_QUESTIONS) {
+      expect(ids.has(question.evidenceId)).toBe(true);
+    }
+  });
+
+  it("adds the question's evidence to the journal on Add to Journal", async () => {
+    const user = userEvent.setup();
+    renderInterview();
+
+    await user.click(screen.getByRole('button', { name: INTERVIEW_QUESTIONS[1].label }));
+    await user.click(screen.getByRole('button', { name: INTERVIEW_QUESTIONS[1].choices[0].label }));
+    await user.click(screen.getByRole('button', { name: 'Add to Journal' }));
+
+    expect(addEvidence).toHaveBeenCalledWith('ev-ceo-values');
+  });
+
+  it('keeps the question open and shows an error if the evidence cannot be saved', async () => {
+    vi.mocked(addEvidence).mockResolvedValueOnce(false);
+    const user = userEvent.setup();
+    renderInterview();
+
+    await user.click(screen.getByRole('button', { name: INTERVIEW_QUESTIONS[2].label }));
+    await user.click(screen.getByRole('button', { name: 'Add to Journal' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(ADD_EVIDENCE_ERROR);
+    expect(screen.getByText(INTERVIEW_QUESTIONS[2].answer)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add to Journal' })).toBeInTheDocument();
   });
 });

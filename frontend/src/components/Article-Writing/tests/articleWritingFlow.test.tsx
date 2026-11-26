@@ -7,6 +7,8 @@ import { completeActivity } from '../../../services/progress';
 import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
 import { GO_BACK_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 import { pickArticleSubjects, submitArticle } from '../../../services/article';
+import { addEvidence } from '../../../services/journal';
+import { ALL_STORY_EVIDENCE } from '../../Journal/storyEvidence';
 
 // Integration: runs the real (mock) journal evidence and questions, from
 // entering the screen to landing on an ending page. Scoring happens on the
@@ -32,7 +34,7 @@ vi.mock('react-konva', () => ({
 }));
 
 // Clicks the evidence with this title, turning the journal's pages to find it:
-// only the open spread is shown, and there's more evidence than fits on one.
+// only the open spread is shown, and the evidence may not fit on one.
 async function pickEvidence(user: ReturnType<typeof userEvent.setup>, title: string) {
   const previous = () => screen.getByRole('button', { name: '‹ Previous' });
   const next = () => screen.getByRole('button', { name: 'Next ›' });
@@ -63,46 +65,34 @@ async function writeArticle(answers: string[][]) {
 // A pick for every question in the bank in services/article.ts. Each test only
 // uses the ones for the questions its article asks. The backend test
 // (backend/src/features/article/tests/article.test.ts) scores these same picks
-// against the real ratings.
+// against the real ratings. STRONG is the best the player can do: strong
+// evidence where the question has enough, unrated evidence to fill the rest.
 const STRONG: [string, string, string][] = [
   ['subject-what-happens', 'ev-ucc-study', 'UC Cat City Study'],
-  ['subject-what-happens', 'ev-avogato-post', "Avogato Fisher's review"],
-  ['subject-quitting', 'ev-avogato-post', "Avogato Fisher's review"],
-  ['subject-quitting', 'ev-withdrawal-posts', 'Withdrawal posts'],
   ['subject-how-many', 'ev-ucc-study', 'UC Cat City Study'],
   ['subject-ingredient', 'ev-nicotine', 'Addictive Chemical'],
-  ['subject-deluxe', 'ev-wb-internal-docs', 'Leaked internal memo'],
-  ['subject-deluxe', 'ev-catthew-week2', 'Catthew Myers, a week later'],
-  ['subject-company-knows', 'ev-wb-internal-docs', 'Leaked internal memo'],
-  ['subject-company-knows', 'ev-wb-testimony', 'Whistleblower testimony'],
+  ['subject-company-knows', 'ev-ceo-values', "CEO's view on catnip"],
   ['subject-motive', 'ev-ceo-values', "CEO's view on catnip"],
   ['subject-why-trusted', 'ev-cnn-owner', 'CNN Ownership'],
   ['subject-why-trusted', 'ev-rentfreecat-post', 'RentFreeCat wellness post'],
   ['subject-left-out', 'ev-cnn-omission', 'CNN Claim Vs. Study'],
-  ['subject-left-out', 'ev-deluxe-cut-question', 'Dodged question'],
-  ['subject-online-praise', 'ev-fan-reposts', 'Fan reposts'],
-  ['subject-online-praise', 'ev-before-after', '"Before & after" photo'],
+  ['subject-left-out', 'ev-ucc-study', 'UC Cat City Study'],
+  ['subject-online-praise', 'ev-rentfreecat-post', 'RentFreeCat wellness post'],
   ['subject-rebuttal', 'ev-ucc-study', 'UC Cat City Study'],
 ];
 
+// Weak evidence where the question has it, unrated evidence to fill the rest.
 const WEAK: [string, string, string][] = [
-  ['subject-what-happens', 'ev-catthew-week1', 'Catthew Myers, first try'],
-  ['subject-what-happens', 'ev-letter-addiction', "Letter's addiction claim"],
-  ['subject-quitting', 'ev-letter-addiction', "Letter's addiction claim"],
-  ['subject-quitting', 'ev-deluxe-rumor', 'Viral rumor'],
-  ['subject-how-many', 'ev-avogato-post', "Avogato Fisher's review"],
+  ['subject-what-happens', 'ev-cnn-article', 'CNN Article Claim'],
+  ['subject-how-many', 'ev-cnn-owner', 'CNN Ownership'],
   ['subject-ingredient', 'ev-ceo-pr-claims', "CEO's safety claims"],
-  ['subject-deluxe', 'ev-wb-warning', "Whistleblower's warning"],
-  ['subject-deluxe', 'ev-deluxe-hype', 'Hype posts'],
-  ['subject-company-knows', 'ev-letter-addiction', "Letter's addiction claim"],
   ['subject-company-knows', 'ev-ceo-request', "CEO's request"],
-  ['subject-motive', 'ev-letter', 'Anonymous letter'],
+  ['subject-motive', 'ev-ceo-request', "CEO's request"],
   ['subject-why-trusted', 'ev-cnn-article', 'CNN Article Claim'],
   ['subject-why-trusted', 'ev-ceo-pr-claims', "CEO's safety claims"],
   ['subject-left-out', 'ev-cnn-article', 'CNN Article Claim'],
-  ['subject-left-out', 'ev-deluxe-article', 'Catnip Deluxe launch article'],
-  ['subject-online-praise', 'ev-catthew-week1', 'Catthew Myers, first try'],
-  ['subject-online-praise', 'ev-cnn-testimonials', '"Local worker" quotes'],
+  ['subject-left-out', 'ev-cnn-owner', 'CNN Ownership'],
+  ['subject-online-praise', 'ev-cnn-article', 'CNN Article Claim'],
   ['subject-rebuttal', 'ev-ceo-pr-claims', "CEO's safety claims"],
 ];
 
@@ -134,6 +124,8 @@ describe('Article writing flow', () => {
   beforeEach(async () => {
     localStorage.clear();
     for (const id of ['articles', 'social', 'interviews'] as const) await completeActivity(id);
+    // Finishing those activities is what puts their evidence in the journal.
+    for (const item of ALL_STORY_EVIDENCE) await addEvidence(item);
   });
 
   it('sends strong evidence and goes to the good ending', async () => {
