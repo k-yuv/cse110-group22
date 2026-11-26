@@ -11,10 +11,15 @@ import { COLORS, FONT } from '../../theme';
 import { useArticleWritingModel } from './articleWritingModel';
 import ProgressBar from '../Progress-Bar/ProgressBar';
 import BackButton from '../Back-Button/backButtonView';
+import SettingsButton from '../SettingsButton/SettingsButton';
+import HintButton from '../HintButton/HintButton';
 import BackConfirmation from '../Back-Confirmation/backConfirmationView';
 
 // Named in the back confirmation's message.
 export const ACTIVITY_NAME = 'your article';
+export const HINT_TEXT =
+  'Gather your evidence to write an article to expose the catnip industry. For each question, pick the piece ' +
+  'of evidence that most supports your claim.';
 
 // Layout follows the "Creating Article" Figma frame (1280 × 832), scaled to
 // fit the window.
@@ -288,9 +293,6 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish, onBack }
       >
         <h1 style={visuallyHidden}>Write your article</h1>
 
-        {/* Top left of the frame, beside the progress bar. */}
-        <BackButton onClick={handleBack} size={64} style={{ left: 48, top: 28 }} />
-
         <ProgressBar completed={answeredCount} total={questionCount} style={progressStyle} />
 
         {error && <p role="alert" style={errorStyle}>{error}</p>}
@@ -434,6 +436,10 @@ export default function ArticleWriting({ levelId = 'level-1', onFinish, onBack }
           {isLastQuestion ? 'Submit article' : 'Submit answer'}
         </button>
       </section>
+
+      <SettingsButton />
+      <HintButton hint={HINT_TEXT} />
+      <BackButton onClick={handleBack} size={64} style={{ left: 22, top: 162 }} />
 
       {/* Outside the scaled section, so its fixed overlay covers the window. */}
       <BackConfirmation activityName={ACTIVITY_NAME} {...backConfirmation} />

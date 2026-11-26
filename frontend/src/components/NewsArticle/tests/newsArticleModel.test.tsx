@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { useNewsArticleModel } from '../newsArticleModel';
+import { ADD_EVIDENCE_FIRST_MESSAGE, MESSAGE_SECONDS } from '../newsArticleContent';
 import { addEvidence } from '../journalAdapter';
 import { ROUTES } from '../../../routes';
 import { getArticleActivity } from '../../../services/articles';
@@ -38,17 +39,25 @@ async function renderArticleModel() {
   });
   await waitFor(() => expect(result.current.article.loading).toBe(false));
 
-  const { segments, answerKey } = result.current.article.activity!;
+  const { segments, answerKey, evidenceIds } = result.current.article.activity!;
   const answerIds = answerKey.map((entry) => entry.segmentId);
   const wrongId = segments.find((segment) => !answerIds.includes(segment.id))!.id;
 
-  return { result, answerKey, answerIds, wrongId };
+  return { result, answerIds, wrongId, evidenceIds };
 }
 
 type ArticleResult = Awaited<ReturnType<typeof renderArticleModel>>['result'];
 
 function clickSentences(result: ArticleResult, ids: string[]) {
   for (const id of ids) act(() => result.current.article.onSentenceClick(id));
+}
+
+// Highlights exactly the misinformation and submits it.
+async function passArticle(result: ArticleResult) {
+  const { answerKey } = result.current.article.activity!;
+  act(() => result.current.article.onToggleHighlighter());
+  clickSentences(result, answerKey.map((entry) => entry.segmentId));
+  await act(async () => result.current.article.onSubmit());
 }
 
 describe('useNewsArticleModel', () => {
@@ -71,7 +80,7 @@ describe('useNewsArticleModel', () => {
     const { result } = renderHook(() => useNewsArticleModel(), { wrapper: Router });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    await act(() => result.current.onSubmit());
+    await act(async () => result.current.onSubmit());
 
     expect(result.current.error).not.toBe('');
     expect(result.current.result).toBeNull();
@@ -111,7 +120,7 @@ describe('useNewsArticleModel', () => {
     act(() => result.current.article.onToggleHighlighter());
     clickSentences(result, [answerIds[0], wrongId]);
 
-    await act(() => result.current.article.onSubmit());
+    await act(async () => result.current.article.onSubmit());
 
     expect(result.current.article.result?.passed).toBe(false);
     expect(result.current.article.highlightedIds).toEqual([answerIds[0], wrongId]);
@@ -123,54 +132,27 @@ describe('useNewsArticleModel', () => {
     const { result, wrongId } = await renderArticleModel();
     act(() => result.current.article.onToggleHighlighter());
     clickSentences(result, [wrongId]);
-    await act(() => result.current.article.onSubmit());
+    await act(async () => result.current.article.onSubmit());
 
     clickSentences(result, [wrongId]);
 
     expect(result.current.article.result).toBeNull();
   });
 
-  // The integration path: highlight the misinformation, submit, pass, and
-  // the evidence and progress are both saved.
-  it('passes when exactly the misinformation is highlighted, and saves the evidence and progress', async () => {
-    const { result, answerKey, answerIds } = await renderArticleModel();
-    act(() => result.current.article.onToggleHighlighter());
-    clickSentences(result, answerIds);
+  it('passes when exactly the misinformation is highlighted, without saving anything yet', async () => {
+    const { result } = await renderArticleModel();
 
-    await act(() => result.current.article.onSubmit());
+    await passArticle(result);
 
     expect(result.current.article.result?.passed).toBe(true);
-    expect(result.current.article.error).toBe('');
-    for (const entry of answerKey) expect(addEvidence).toHaveBeenCalledWith(entry.evidence);
-    expect(addEvidence).toHaveBeenCalledTimes(answerKey.length);
-    expect(await getProgress()).toEqual(['articles']);
-  });
-
-  it('lets the player submit again if the evidence could not be saved', async () => {
-    const { result, answerKey, answerIds } = await renderArticleModel();
-    act(() => result.current.article.onToggleHighlighter());
-    clickSentences(result, answerIds);
-    vi.mocked(addEvidence).mockResolvedValueOnce(false);
-
-    await act(() => result.current.article.onSubmit());
-
-    expect(result.current.article.error).toBe('Could not save evidence');
-    expect(result.current.article.result).toBeNull();
+    expect(result.current.article.evidenceAdded).toBe(false);
+    expect(addEvidence).not.toHaveBeenCalled();
     expect(await getProgress()).toEqual([]);
-
-    await act(() => result.current.article.onSubmit());
-
-    expect(result.current.article.error).toBe('');
-    expect(result.current.article.result?.passed).toBe(true);
-    expect(addEvidence).toHaveBeenCalledTimes(answerKey.length * 2);
-    expect(await getProgress()).toEqual(['articles']);
   });
 
   it('puts the highlighter down and locks the sentences after passing', async () => {
     const { result, answerIds, wrongId } = await renderArticleModel();
-    act(() => result.current.article.onToggleHighlighter());
-    clickSentences(result, answerIds);
-    await act(() => result.current.article.onSubmit());
+    await passArticle(result);
 
     expect(result.current.article.holdingHighlighter).toBe(false);
 
@@ -180,15 +162,89 @@ describe('useNewsArticleModel', () => {
     expect(result.current.article.result?.passed).toBe(true);
   });
 
-  it('shows an error if progress fails to save after passing', async () => {
+  it('does not let the player leave after passing until the evidence is added', async () => {
+    const { result } = await renderArticleModel();
+    expect(result.current.article.canGoBack).toBe(true);
+
+    await passArticle(result);
+    expect(result.current.article.canGoBack).toBe(false);
+
+    act(() => result.current.article.onContinue());
+
+    expect(result.current.article.message).toBe(ADD_EVIDENCE_FIRST_MESSAGE);
+    expect(result.current.path).toBe(ROUTES.onlineArticle);
+  });
+
+  it('clears the message on its own after a few seconds', async () => {
+    const { result } = await renderArticleModel();
+    await passArticle(result);
+    vi.useFakeTimers();
+    act(() => result.current.article.onContinue());
+
+    act(() => vi.advanceTimersByTime(MESSAGE_SECONDS * 1000));
+
+    expect(result.current.article.message).toBe('');
+    vi.useRealTimers();
+  });
+
+  // The integration path: highlight the misinformation, submit, add the
+  // evidence, and the evidence and progress are both saved.
+  it('adds the evidence and saves progress, then lets the player continue to the desk', async () => {
+    const { result, evidenceIds } = await renderArticleModel();
+    await passArticle(result);
+    act(() => result.current.article.onContinue());
+
+    await act(() => result.current.article.onAddEvidence());
+
+    for (const id of evidenceIds) expect(addEvidence).toHaveBeenCalledWith(id);
+    expect(addEvidence).toHaveBeenCalledTimes(evidenceIds.length);
+    expect(await getProgress()).toEqual(['articles']);
+    expect(result.current.article.evidenceAdded).toBe(true);
+    expect(result.current.article.message).toBe('');
+    expect(result.current.article.canGoBack).toBe(true);
+
+    act(() => result.current.article.onContinue());
+
+    expect(result.current.path).toBe(ROUTES.desk);
+  });
+
+  it('does nothing if evidence is added before passing', async () => {
+    const { result } = await renderArticleModel();
+
+    await act(() => result.current.article.onAddEvidence());
+
+    expect(addEvidence).not.toHaveBeenCalled();
+    expect(result.current.article.evidenceAdded).toBe(false);
+  });
+
+  it('lets the player try again if the evidence could not be saved', async () => {
+    const { result, evidenceIds } = await renderArticleModel();
+    await passArticle(result);
+    vi.mocked(addEvidence).mockResolvedValueOnce(false);
+
+    await act(() => result.current.article.onAddEvidence());
+
+    expect(result.current.article.error).toBe('Could not save evidence');
+    expect(result.current.article.evidenceAdded).toBe(false);
+    expect(await getProgress()).toEqual([]);
+
+    await act(() => result.current.article.onAddEvidence());
+
+    expect(result.current.article.error).toBe('');
+    expect(result.current.article.evidenceAdded).toBe(true);
+    expect(addEvidence).toHaveBeenCalledTimes(evidenceIds.length * 2);
+    expect(await getProgress()).toEqual(['articles']);
+  });
+
+  it('shows an error and lets the player try again if progress fails to save', async () => {
     vi.mocked(completeActivity).mockRejectedValueOnce(new Error('full'));
-    const { result, answerIds } = await renderArticleModel();
-    act(() => result.current.article.onToggleHighlighter());
-    clickSentences(result, answerIds);
+    const { result } = await renderArticleModel();
+    await passArticle(result);
 
-    await act(() => result.current.article.onSubmit());
+    await act(() => result.current.article.onAddEvidence());
 
-    expect(result.current.article.error).not.toBe('');
+    expect(result.current.article.error).toBe('Could not save progress');
+    expect(result.current.article.evidenceAdded).toBe(false);
   });
 
   it('follows the window size when the window is resized', async () => {
@@ -204,11 +260,4 @@ describe('useNewsArticleModel', () => {
     expect(result.current.article.height).toBe(600);
   });
 
-  it('goes back to the desk on continue', async () => {
-    const { result } = await renderArticleModel();
-
-    act(() => result.current.article.onContinue());
-
-    expect(result.current.path).toBe(ROUTES.desk);
-  });
 });

@@ -2,6 +2,8 @@ import type { CSSProperties } from 'react';
 import { Group, Image, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { visuallyHidden } from '../../helpers';
 import { useAiMinigameModel } from './aiMinigameModel';
+import SettingsButton from '../SettingsButton/SettingsButton';
+import HintButton from '../HintButton/HintButton';
 import BackButton from '../Back-Button/backButtonView';
 import BackConfirmation from '../Back-Confirmation/backConfirmationView';
 import {
@@ -11,6 +13,7 @@ import {
   BUBBLE_LAYOUT,
   COLORS,
   FRAME_LAYOUT,
+  HINT_TEXT,
   JOURNAL_LABEL,
   JOURNAL_LAYOUT,
   NOT_AI_LABEL,
@@ -288,7 +291,9 @@ export default function AiMinigame() {
         </>
       )}
 
-      <BackButton onClick={onBackToDesk} size={BACK_BUTTON_SIZE * sizeUnit} />
+      <SettingsButton />
+      <HintButton hint={HINT_TEXT} />
+      <BackButton onClick={onBackToDesk} size={BACK_BUTTON_SIZE * sizeUnit} style={{ left: 22, top: 162 }} />
 
       <BackConfirmation activityName={PAGE_TITLE} {...backConfirmation} />
     </main>

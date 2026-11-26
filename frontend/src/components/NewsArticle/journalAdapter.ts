@@ -1,12 +1,10 @@
-import type { AnswerKeyEntry } from '../../services/articles';
-import { EvidenceModel } from '../Journal/EvidenceModel';
 import { JournalController } from '../Journal/JournalController';
+import { ALL_STORY_EVIDENCE } from '../Journal/storyEvidence';
 
-type Evidence = AnswerKeyEntry['evidence'];
-
-// Article evidence has no icon. Resolves to false if it couldn't be saved.
-export function addEvidence(evidence: Evidence): Promise<boolean> {
-  return JournalController.getInstance().add(
-    new EvidenceModel(evidence.id, evidence.toolName, evidence.toolDescription, ''),
-  );
+// Adds one piece of story evidence to the journal by its id, so its title and
+// description come from storyEvidence.ts. Resolves to false if there's no
+// evidence with that id or it couldn't be saved.
+export function addEvidence(id: string): Promise<boolean> {
+  const evidence = ALL_STORY_EVIDENCE.find((item) => item.id === id);
+  return evidence ? JournalController.getInstance().add(evidence) : Promise.resolve(false);
 }

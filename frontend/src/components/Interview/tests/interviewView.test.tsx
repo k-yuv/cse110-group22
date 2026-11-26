@@ -4,7 +4,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
-import Interview from '../InterviewView';
+import Interview, { HINT_TEXT } from '../InterviewView';
 import { INTERVIEW_QUESTIONS } from '../InterviewModel';
 import * as progress from '../../../services/progress';
 import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
@@ -74,6 +74,15 @@ describe('Interview view', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(progress.completeActivity).mockResolvedValue(['interviews']);
+  });
+
+  it('opens the hint from the hint button', async () => {
+    const user = userEvent.setup();
+    renderInterview();
+
+    await user.click(await screen.findByRole('button', { name: 'Open hint' }));
+
+    expect(screen.getByRole('dialog', { name: 'Hint' })).toHaveTextContent(HINT_TEXT);
   });
 
   it('shows the opening prompt and all questions', () => {

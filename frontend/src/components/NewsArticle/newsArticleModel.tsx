@@ -6,6 +6,7 @@ import { ROUTES } from '../../routes';
 import { gradeHighlights, toggleHighlight, type GradeResult } from './newsArticleRules';
 import { addEvidence } from './journalAdapter';
 import { useBackConfirmationModel } from '../Back-Confirmation/backConfirmationModel';
+import { ADD_EVIDENCE_FIRST_MESSAGE, MESSAGE_SECONDS } from './newsArticleContent';
 
 function getWindowSize() {
   return { width: window.innerWidth, height: window.innerHeight };
@@ -21,6 +22,8 @@ export function useNewsArticleModel() {
   const [holdingHighlighter, setHoldingHighlighter] = useState(false);
   const [highlightedIds, setHighlightedIds] = useState<string[]>([]);
   const [result, setResult] = useState<GradeResult | null>(null);
+  const [evidenceAdded, setEvidenceAdded] = useState(false);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     getArticleActivity()
@@ -47,44 +50,62 @@ export function useNewsArticleModel() {
     setResult(null);
   }
 
-  async function handleSubmit() {
+  // The message clears itself after a few seconds.
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(''), MESSAGE_SECONDS * 1000);
+    return () => clearTimeout(timer);
+  }, [message]);
+
+  // Once passed, the highlighter is put away for good. Nothing is saved yet:
+  // the player still has to add the evidence to the journal.
+  function handleSubmit() {
     if (!activity) return;
 
     const graded = gradeHighlights(highlightedIds, activity.answerKey);
-    if (!graded.passed) {
-      setResult(graded);
-      return;
-    }
+    setResult(graded);
+    if (graded.passed) setHoldingHighlighter(false);
+  }
 
-    // Stays unsubmitted if the evidence can't be saved, so the player can try
-    // again rather than losing it. Evidence already saved isn't added twice.
+  // Saves the evidence, then the progress. If either fails, the button stays
+  // so the player can try again. Evidence already saved isn't added twice.
+  async function handleAddEvidence() {
+    if (!activity || !result?.passed) return;
     setError('');
-    const saved = await Promise.all(activity.answerKey.map((entry) => addEvidence(entry.evidence)));
+
+    const saved = await Promise.all(activity.evidenceIds.map((id) => addEvidence(id)));
     if (saved.includes(false)) {
       setError('Could not save evidence');
       return;
     }
 
-    // The level is done, so the highlighter is put away for good.
-    setResult(graded);
-    setHoldingHighlighter(false);
     try {
       await completeActivity('articles');
     } catch {
       setError('Could not save progress');
+      return;
     }
+
+    setEvidenceAdded(true);
+    setMessage('');
   }
 
+  // Continue only leaves once the evidence is in the journal.
   function handleContinue() {
+    if (!evidenceAdded) {
+      setMessage(ADD_EVIDENCE_FIRST_MESSAGE);
+      return;
+    }
     navigate(ROUTES.desk);
   }
 
-  // Leaving loses the highlights, so ask first, until the level is passed
-  // and saved.
+  // Leaving loses the highlights, so ask first. Once passed, the player can't
+  // leave at all until the evidence is added.
   const { onBack, confirmation } = useBackConfirmationModel({
     onLeave: () => navigate(ROUTES.desk),
     hasProgressToLose: !result?.passed,
   });
+  const canGoBack = !result?.passed || evidenceAdded;
 
   return {
     activity,
@@ -95,9 +116,13 @@ export function useNewsArticleModel() {
     holdingHighlighter,
     highlightedIds,
     result,
+    evidenceAdded,
+    message,
+    canGoBack,
     onToggleHighlighter: handleToggleHighlighter,
     onSentenceClick: handleSentenceClick,
     onSubmit: handleSubmit,
+    onAddEvidence: handleAddEvidence,
     onContinue: handleContinue,
     onBack,
     backConfirmation: confirmation,

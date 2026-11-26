@@ -9,6 +9,7 @@ import { getProgress } from '../../../services/progress';
 import {
   AI_LABEL,
   ANSWER_ERROR,
+  HINT_TEXT,
   LOAD_ERROR,
   NOT_AI_LABEL,
   PLAY_AGAIN_LABEL,
@@ -125,6 +126,20 @@ describe('AI minigame', () => {
     vi.stubGlobal('Image', FakeImage);
     vi.mocked(getAiImages).mockResolvedValue(IMAGES);
     vi.mocked(submitAiAnswer).mockImplementation(fakeSubmitAiAnswer);
+  });
+
+  it('has the settings button', async () => {
+    renderGame();
+
+    expect(await screen.findByRole('button', { name: 'Open settings' })).toBeInTheDocument();
+  });
+
+  it('opens the hint from the hint button', async () => {
+    const user = renderGame();
+
+    await user.click(await screen.findByRole('button', { name: 'Open hint' }));
+
+    expect(screen.getByRole('dialog', { name: 'Hint' })).toHaveTextContent(HINT_TEXT);
   });
 
   describe('playing', () => {

@@ -3,7 +3,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import DeskCleanup from '../deskCleanupView';
-import { CONTINUE_LABEL, STILL_DIRTY_MESSAGE, TODO_TEXT } from '../deskCleanupContent';
+import { ACTIVITY_NAME, CONTINUE_LABEL, HINT_TEXT, STILL_DIRTY_MESSAGE, TODO_TEXT } from '../deskCleanupContent';
+import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
 
 // Tests can't draw the canvas (see internal-docs/Konva-Testing.md), so the
 // Konva parts render nothing here. Cleaning is tested through the model in
@@ -39,5 +40,29 @@ describe('DeskCleanup', () => {
     await user.click(screen.getByRole('button', { name: CONTINUE_LABEL }));
 
     expect(await screen.findByRole('status')).toHaveTextContent(STILL_DIRTY_MESSAGE);
+  });
+
+  it('has the settings button', () => {
+    renderDeskCleanup();
+
+    expect(screen.getByRole('button', { name: 'Open settings' })).toBeInTheDocument();
+  });
+
+  it('opens the hint from the hint button', async () => {
+    const user = userEvent.setup();
+    renderDeskCleanup();
+
+    await user.click(screen.getByRole('button', { name: 'Open hint' }));
+
+    expect(screen.getByRole('dialog', { name: 'Hint' })).toHaveTextContent(HINT_TEXT);
+  });
+
+  it('asks before leaving with the back button, naming the minigame', async () => {
+    const user = userEvent.setup();
+    renderDeskCleanup();
+
+    await user.click(screen.getByRole('button', { name: BACK_BUTTON_LABEL }));
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(ACTIVITY_NAME);
   });
 });

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ArticleWriting, { ACTIVITY_NAME } from '../articleWritingView';
+import ArticleWriting, { ACTIVITY_NAME, HINT_TEXT } from '../articleWritingView';
 import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
 import { GO_BACK_LABEL, STAY_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 import { EvidenceModel } from '../../Journal/EvidenceModel';
@@ -210,6 +210,21 @@ describe('ArticleWriting component', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not submit article');
     expect(onFinish).not.toHaveBeenCalled();
+  });
+
+  it('has the settings button', async () => {
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
+
+    expect(await screen.findByRole('button', { name: 'Open settings' })).toBeInTheDocument();
+  });
+
+  it('opens the hint from the hint button', async () => {
+    const user = userEvent.setup();
+    render(<ArticleWriting onFinish={vi.fn()} onBack={vi.fn()} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Open hint' }));
+
+    expect(screen.getByRole('dialog', { name: 'Hint' })).toHaveTextContent(HINT_TEXT);
   });
 
   describe('back button', () => {

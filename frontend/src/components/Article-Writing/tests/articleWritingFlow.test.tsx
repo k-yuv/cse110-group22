@@ -65,24 +65,24 @@ async function writeArticle(answers: string[][]) {
 // (backend/src/features/article/tests/article.test.ts) scores these same picks
 // against the real ratings.
 const STRONG: [string, string, string][] = [
-  ['subject-what-happens', 'ev-ucc-study', 'UC Cat City study'],
+  ['subject-what-happens', 'ev-ucc-study', 'UC Cat City Study'],
   ['subject-what-happens', 'ev-avogato-post', "Avogato Fisher's review"],
   ['subject-quitting', 'ev-avogato-post', "Avogato Fisher's review"],
   ['subject-quitting', 'ev-withdrawal-posts', 'Withdrawal posts'],
-  ['subject-how-many', 'ev-ucc-study', 'UC Cat City study'],
-  ['subject-ingredient', 'ev-nicotine', 'Nicotine'],
+  ['subject-how-many', 'ev-ucc-study', 'UC Cat City Study'],
+  ['subject-ingredient', 'ev-nicotine', 'Addictive Chemical'],
   ['subject-deluxe', 'ev-wb-internal-docs', 'Leaked internal memo'],
   ['subject-deluxe', 'ev-catthew-week2', 'Catthew Myers, a week later'],
   ['subject-company-knows', 'ev-wb-internal-docs', 'Leaked internal memo'],
   ['subject-company-knows', 'ev-wb-testimony', 'Whistleblower testimony'],
   ['subject-motive', 'ev-ceo-values', "CEO's view on catnip"],
-  ['subject-why-trusted', 'ev-cnn-owner', 'CNN ownership'],
+  ['subject-why-trusted', 'ev-cnn-owner', 'CNN Ownership'],
   ['subject-why-trusted', 'ev-rentfreecat-post', 'RentFreeCat wellness post'],
-  ['subject-left-out', 'ev-cnn-omission', 'What CNN left out'],
+  ['subject-left-out', 'ev-cnn-omission', 'CNN Claim Vs. Study'],
   ['subject-left-out', 'ev-deluxe-cut-question', 'Dodged question'],
   ['subject-online-praise', 'ev-fan-reposts', 'Fan reposts'],
   ['subject-online-praise', 'ev-before-after', '"Before & after" photo'],
-  ['subject-rebuttal', 'ev-ucc-study', 'UC Cat City study'],
+  ['subject-rebuttal', 'ev-ucc-study', 'UC Cat City Study'],
 ];
 
 const WEAK: [string, string, string][] = [
@@ -97,9 +97,9 @@ const WEAK: [string, string, string][] = [
   ['subject-company-knows', 'ev-letter-addiction', "Letter's addiction claim"],
   ['subject-company-knows', 'ev-ceo-request', "CEO's request"],
   ['subject-motive', 'ev-letter', 'Anonymous letter'],
-  ['subject-why-trusted', 'ev-cnn-article', 'CNN catnip article'],
+  ['subject-why-trusted', 'ev-cnn-article', 'CNN Article Claim'],
   ['subject-why-trusted', 'ev-ceo-pr-claims', "CEO's safety claims"],
-  ['subject-left-out', 'ev-cnn-article', 'CNN catnip article'],
+  ['subject-left-out', 'ev-cnn-article', 'CNN Article Claim'],
   ['subject-left-out', 'ev-deluxe-article', 'Catnip Deluxe launch article'],
   ['subject-online-praise', 'ev-catthew-week1', 'Catthew Myers, first try'],
   ['subject-online-praise', 'ev-cnn-testimonials', '"Local worker" quotes'],
