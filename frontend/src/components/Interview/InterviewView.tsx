@@ -9,7 +9,8 @@ import HintButton from '../HintButton/HintButton';
 import TitleButton from '../TitleScreen/titleButton';
 import { useInterviewModel } from './interviewScreenModel';
 
-export const HINT_TEXT = 'Hint';
+export const HINT_TEXT =
+  'Ask questions to gather more evidence. Pick the questions you think will reveal the most information.';
 
 const WIDTH = 1280;
 const HEIGHT = 832;

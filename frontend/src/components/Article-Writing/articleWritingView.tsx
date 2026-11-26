@@ -17,7 +17,9 @@ import BackConfirmation from '../Back-Confirmation/backConfirmationView';
 
 // Named in the back confirmation's message.
 export const ACTIVITY_NAME = 'your article';
-export const HINT_TEXT = 'Hint';
+export const HINT_TEXT =
+  'Gather your evidence to write an article to expose the catnip industry. For each question, pick the piece ' +
+  'of evidence that most supports your claim.';
 
 // Layout follows the "Creating Article" Figma frame (1280 × 832), scaled to
 // fit the window.
