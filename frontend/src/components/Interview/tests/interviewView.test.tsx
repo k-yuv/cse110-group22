@@ -79,7 +79,7 @@ describe('Interview view', () => {
   it('shows the opening prompt and all questions', () => {
     renderInterview();
 
-    expect(screen.getByText('Let's interview the CEO of Big Drug Inc! Select a question to ask.')).toBeInTheDocument();
+    expect(screen.getByText('Let\'s interview the CEO of Big Drug Inc! Select a question to ask.')).toBeInTheDocument();
     for (const question of INTERVIEW_QUESTIONS) {
       expect(screen.getByRole('button', { name: question.label })).toBeInTheDocument();
     }
@@ -107,7 +107,7 @@ describe('Interview view', () => {
 
     await user.click(screen.getByRole('button', { name: STAY_LABEL }));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-    expect(screen.getByText('Let's interview the CEO of Big Drug Inc! Select a question to ask.')).toBeInTheDocument();
+    expect(screen.getByText('Let\'s interview the CEO of Big Drug Inc! Select a question to ask.')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: BACK_BUTTON_LABEL }));
     await user.click(screen.getByRole('button', { name: GO_BACK_LABEL }));
@@ -139,7 +139,7 @@ describe('Interview view', () => {
 
     await user.click(screen.getByRole('button', { name: 'Add to Journal' }));
 
-    expect(screen.getByText('Let's interview the CEO of Big Drug Inc! Select a question to ask.')).toBeInTheDocument();
+    expect(screen.getByText('Let\'s interview the CEO of Big Drug Inc! Select a question to ask.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: INTERVIEW_QUESTIONS[0].label })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: INTERVIEW_QUESTIONS[1].label })).toBeInTheDocument();
   });
