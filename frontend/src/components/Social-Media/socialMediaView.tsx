@@ -1,5 +1,6 @@
 import { Group, Layer, Rect, Stage } from 'react-konva';
 import SettingsButton from '../SettingsButton/SettingsButton';
+import HintButton from '../HintButton/HintButton';
 import { URLImage } from '../URLImage/URLImage';
 import journalImage from '../../assets/Journal-Corner-View.png';
 import {
@@ -12,7 +13,7 @@ import SocialMediaLaptop from './parts/SocialMediaLaptop.tsx';
 import ThinkButton, { ThoughtBubble } from './parts/ThinkButton.tsx';
 import BackButton from '../Back-Button/backButtonView';
 import BackConfirmation from '../Back-Confirmation/backConfirmationView';
-import {BACK_BUTTON_SIZE, FINISH_LABEL, PAGE_TITLE} from "./socialMediaContent.tsx";
+import {BACK_BUTTON_SIZE, FINISH_LABEL, HINT_TEXT, PAGE_TITLE} from "./socialMediaContent.tsx";
 
 interface Props {
     levelId?: SocialLevelId;
@@ -82,42 +83,13 @@ export default function SocialMedia({ levelId = DEFAULT_LEVEL, postIndex = 0, on
                 {thoughtsOpen ? 'Clear thoughts' : 'Gather thoughts'}
             </button>
 
-            {/* TEMPORARY NAVBAR*/}
-            {/* TODO FIX IT GLOBALLY */}
-
-            <div
-                style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    zIndex: 10,
-                }}
-            >
-                {/* Settings */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                    }}
-                >
-                    <SettingsButton />
-                </div>
-
-                {/* Back */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: 90,
-                        left: 0,
-                    }}
-                >
-                    <BackButton
-                        onClick={onBackToDesk}
-                        size={BACK_BUTTON_SIZE * sizeUnit}
-                    />
-                </div>
-            </div>
+            <SettingsButton />
+            <HintButton hint={HINT_TEXT} />
+            <BackButton
+                onClick={onBackToDesk}
+                size={BACK_BUTTON_SIZE * sizeUnit}
+                style={{ left: 22, top: 162 }}
+            />
 
             {/* Shown once a thought is picked: marks Social Media done and returns to the desk. */}
             {(canFinish || error) && (

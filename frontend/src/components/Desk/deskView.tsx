@@ -1,11 +1,12 @@
 import { Layer, Rect, Stage } from 'react-konva';
 import { useDeskModel } from './deskModel';        
 import { COLORS } from '../../theme';
-import { ACTIVITY_LABELS, CREATE_ARTICLE_LAYOUT, FOLDER_LAYOUT, LOADING_TEXT, MINIGAME_LAYOUT } from './deskContent';
+import { ACTIVITY_LABELS, CREATE_ARTICLE_LAYOUT, FOLDER_LAYOUT, HINT_TEXT, LOADING_TEXT, MINIGAME_LAYOUT } from './deskContent';
 import Folder from './parts/Folder';
 import MinigameEntry from './parts/MinigameEntry';
 import CreateArticleButton from './parts/CreateArticleButton';
 import SettingsButton from '../SettingsButton/SettingsButton';
+import HintButton from '../HintButton/HintButton';
 import Journal from '../Journal/journalView';
 
 const FOLDERS = ['articles', 'social', 'interviews'] as const;
@@ -73,6 +74,7 @@ export default function Desk() {
       <Journal placement="desk" />
 
       <SettingsButton />
+      <HintButton hint={HINT_TEXT} />
     </main>
   );
 }
