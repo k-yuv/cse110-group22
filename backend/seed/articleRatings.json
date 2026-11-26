@@ -3,88 +3,33 @@
     "subjectId": "subject-what-happens",
     "ratings": {
       "ev-ucc-study": "strong",
-      "ev-catthew-week2": "strong",
-      "ev-avogato-post": "strong",
-      "ev-clinic-data": "strong",
-      "ev-catthew-week1": "weak",
-      "ev-letter-addiction": "weak",
-      "ev-deluxe-rumor": "weak",
-      "ev-cnn-article": "weak",
-      "ev-cnn-testimonials": "weak",
-      "ev-before-after": "weak"
-    }
-  },
-  {
-    "subjectId": "subject-quitting",
-    "ratings": {
-      "ev-avogato-post": "strong",
-      "ev-withdrawal-posts": "strong",
-      "ev-clinic-data": "strong",
-      "ev-letter-addiction": "weak",
-      "ev-deluxe-rumor": "weak",
-      "ev-fan-reposts": "weak",
-      "ev-catthew-week1": "weak"
+      "ev-cnn-article": "weak"
     }
   },
   {
     "subjectId": "subject-how-many",
     "ratings": {
-      "ev-ucc-study": "strong",
-      "ev-withdrawal-posts": "strong",
-      "ev-clinic-data": "strong",
-      "ev-avogato-post": "weak",
-      "ev-catthew-week2": "weak",
-      "ev-deluxe-hype": "weak",
-      "ev-fan-reposts": "weak",
-      "ev-letter-addiction": "weak"
+      "ev-ucc-study": "strong"
     }
   },
   {
     "subjectId": "subject-ingredient",
     "ratings": {
       "ev-nicotine": "strong",
-      "ev-wb-internal-docs": "strong",
-      "ev-letter-addiction": "weak",
-      "ev-ceo-pr-claims": "weak",
-      "ev-deluxe-rumor": "weak",
-      "ev-wb-warning": "weak"
-    }
-  },
-  {
-    "subjectId": "subject-deluxe",
-    "ratings": {
-      "ev-wb-internal-docs": "strong",
-      "ev-catthew-week2": "strong",
-      "ev-deluxe-cut-question": "strong",
-      "ev-wb-warning": "weak",
-      "ev-letter-newproduct": "weak",
-      "ev-ceo-deluxe-hint": "weak",
-      "ev-catthew-week1": "weak",
-      "ev-deluxe-hype": "weak",
-      "ev-deluxe-rumor": "weak",
-      "ev-deluxe-article": "weak"
+      "ev-ceo-pr-claims": "weak"
     }
   },
   {
     "subjectId": "subject-company-knows",
     "ratings": {
-      "ev-wb-internal-docs": "strong",
-      "ev-wb-testimony": "strong",
       "ev-ceo-values": "strong",
-      "ev-deluxe-cut-question": "strong",
-      "ev-letter-addiction": "weak",
-      "ev-ceo-request": "weak",
-      "ev-wb-warning": "weak",
-      "ev-chief-golf": "weak"
+      "ev-ceo-request": "weak"
     }
   },
   {
     "subjectId": "subject-motive",
     "ratings": {
       "ev-ceo-values": "strong",
-      "ev-burger-manual": "strong",
-      "ev-doctor-records": "strong",
-      "ev-letter": "weak",
       "ev-ceo-request": "weak",
       "ev-ceo-pr-claims": "weak"
     }
@@ -95,37 +40,22 @@
       "ev-cnn-owner": "strong",
       "ev-cnn-omission": "strong",
       "ev-rentfreecat-post": "strong",
-      "ev-wb-fired-staff": "strong",
-      "ev-deluxe-misquote": "strong",
-      "ev-letter": "weak",
       "ev-cnn-article": "weak",
-      "ev-ceo-pr-claims": "weak",
-      "ev-cnn-testimonials": "weak"
+      "ev-ceo-pr-claims": "weak"
     }
   },
   {
     "subjectId": "subject-left-out",
     "ratings": {
       "ev-cnn-omission": "strong",
-      "ev-deluxe-cut-question": "strong",
-      "ev-deluxe-transcript": "strong",
-      "ev-deluxe-misquote": "strong",
       "ev-ucc-study": "strong",
-      "ev-cnn-article": "weak",
-      "ev-deluxe-article": "weak",
-      "ev-letter": "weak"
+      "ev-cnn-article": "weak"
     }
   },
   {
     "subjectId": "subject-online-praise",
     "ratings": {
-      "ev-rentfreecat-post": "strong",
-      "ev-fan-reposts": "strong",
-      "ev-before-after": "strong",
-      "ev-deluxe-hype": "strong",
-      "ev-catthew-week1": "weak",
-      "ev-cnn-testimonials": "weak",
-      "ev-deluxe-rumor": "weak"
+      "ev-rentfreecat-post": "strong"
     }
   },
   {
@@ -133,14 +63,8 @@
     "ratings": {
       "ev-ucc-study": "strong",
       "ev-nicotine": "strong",
-      "ev-wb-internal-docs": "strong",
-      "ev-deluxe-cut-question": "strong",
-      "ev-clinic-data": "strong",
       "ev-ceo-pr-claims": "weak",
-      "ev-cnn-article": "weak",
-      "ev-deluxe-article": "weak",
-      "ev-deluxe-rumor": "weak",
-      "ev-letter-addiction": "weak"
+      "ev-cnn-article": "weak"
     }
   }
 ]

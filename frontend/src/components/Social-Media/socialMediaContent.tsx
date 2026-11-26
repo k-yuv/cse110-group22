@@ -65,6 +65,8 @@ export interface SocialPost {
     preview: string;
     transcript: readonly string[];
     thoughts: readonly [ThoughtOption, ThoughtOption, ThoughtOption, ThoughtOption];
+    // The story evidence (see Journal/storyEvidence.ts) saved to the journal on Finish.
+    evidenceIds: readonly string[];
 }
 
 export interface SocialLevel {
@@ -82,6 +84,7 @@ export const SOCIAL_LEVELS = {
             heading: 'Video goes in this box!',
             author: 'totallynotpaidinfluencer',
             preview: '@bigdruginc just dropped the most delicious...',
+            evidenceIds: ['ev-rentfreecat-post'],
             transcript: [
                 "Transcript:\nStop scrolling. Your doctor is NOT going to tell you this. This might be the best catnip I've ever tried. And I've tried them ALL.",
                 "Studies show 97% of cats prefer this brand. I can't say which studies, they got taken down, but they exist.",

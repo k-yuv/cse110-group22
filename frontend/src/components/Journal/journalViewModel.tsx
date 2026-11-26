@@ -2,7 +2,6 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { JournalController } from './JournalController';
 import { MAX_WIDTH_TO_HEIGHT, NOTES_PER_SPREAD } from './journalContent';
 import { paginate } from '../../helpers';
-import { seedStoryEvidence } from './storyEvidence';
 
 function getWindowSize() {
   return { width: window.innerWidth, height: window.innerHeight };
@@ -77,12 +76,7 @@ export function useJournalLoader() {
   useEffect(() => {
     JournalController.getInstance()
       .load()
-      .then(() => {
-        // Only after loading, or every reload would see an empty journal. Not
-        // after a failure either, which isn't the same as having no evidence.
-        seedStoryEvidence();
-        setFailed(false);
-      })
+      .then(() => setFailed(false))
       .catch(() => setFailed(true))
       .finally(() => setLoading(false));
   }, [attempt]);

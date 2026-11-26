@@ -8,6 +8,8 @@ export interface InterviewQuestion {
   id: string;
   label: string;
   answer: string;
+  // The story evidence (see Journal/storyEvidence.ts) that Add to Journal saves.
+  evidenceId: string;
   choices: InterviewChoice[];
 }
 
@@ -22,6 +24,7 @@ export const INTERVIEW_QUESTIONS: readonly InterviewQuestion[] = [
     id: 'q1',
     label: "How do you respond to concerns that Big Drug Inc.'s catnip may be unsafe?",
     answer: 'Our catnip is perfectly safe.',
+    evidenceId: 'ev-ceo-pr-claims',
     choices: [
       {
         id: 'q1-1',
@@ -39,6 +42,7 @@ export const INTERVIEW_QUESTIONS: readonly InterviewQuestion[] = [
     id: 'q2',
     label: 'How does Big Drug Inc. define a good customer?',
     answer: 'Repeat customers are good customers.',
+    evidenceId: 'ev-ceo-values',
     choices: [
       {
         id: 'q2-1',
@@ -51,12 +55,14 @@ export const INTERVIEW_QUESTIONS: readonly InterviewQuestion[] = [
     id: 'q3',
     label: "Did you ask the journalist not to publish negative claims about Big Drug Inc.?",
     answer: 'I asked the journalist not to post bad claims about my company.',
+    evidenceId: 'ev-ceo-request',
     choices: [],
   },
   {
     id: 'q4',
     label: "What can you tell us about Big Drug Inc.'s next catnip product?",
     answer: "We're working on a 'better' catnip, coming soon.",
+    evidenceId: 'ev-ceo-deluxe-hint',
     choices: [],
   },
 ];

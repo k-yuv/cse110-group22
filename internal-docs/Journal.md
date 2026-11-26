@@ -51,7 +51,7 @@ await journal.clear();
 ### Mocks and placeholders
 
 - **Saving:** `services/journal.ts` is a mock API that saves to localStorage. It's async like a real request, so connecting a backend route only changes its three functions.
-- **Evidence:** `App.tsx` loads the saved evidence, then `storyEvidence.ts` fills an empty journal with every piece of story evidence (grouped by story event in `STORY_EVIDENCE`), which gets saved too. Article Writing can't reach the good ending without it, because `backend/seed/articleRatings.json` rates these `ev-*` ids. Remove the seed once each activity adds its own event's evidence.
+- **Evidence:** `App.tsx` loads the saved evidence. A new game starts with an empty journal; each story activity adds its own evidence from `storyEvidence.ts` (grouped by story event in `STORY_EVIDENCE`) when the player finishes it, through `NewsArticle/journalAdapter.ts`. `backend/seed/articleRatings.json` rates these `ev-*` ids for Article Writing.
 - **Icons:** `iconPath` is stored but not drawn. Nothing has an icon yet.
 
 ## Where the code is
@@ -66,7 +66,7 @@ frontend/src/
     ├── EvidenceModel.ts         ← one piece of evidence
     ├── JournalModel.ts          ← the list of evidence
     ├── JournalController.ts     ← the one shared journal, kept in memory and saved through the service
-    ├── storyEvidence.ts         ← story evidence by event; seeded at startup for now
+    ├── storyEvidence.ts         ← story evidence by event; each activity adds its own
     ├── journalView.tsx          ← <Journal />: the docked and open journal together (display only)
     ├── journalViewModel.tsx     ← open/closed, page, window size; useJournalLoader for App
     ├── journalRules.ts          ← dockBounds (plain function, no React)
@@ -97,7 +97,7 @@ Run the tests from `frontend/` with `npm test`.
 | Test file | What it checks |
 | --- | --- |
 | `services/tests/journal.test.ts` | Saving, reading, clearing, no duplicate ids, and corrupt or wrongly shaped saved data |
-| `Journal/tests/journal.test.ts` | Add, read and clear. De-duplicating. Listeners. Coming back after a reload. Loading once and retrying. Undoing a change when saving fails. The mock seed. |
+| `Journal/tests/journal.test.ts` | Add, read and clear. De-duplicating. Listeners. Coming back after a reload. Loading once and retrying. Undoing a change when saving fails. The activities together give every piece of story evidence. |
 | `tests/helpers.test.ts` | Pagination at the page boundary |
 | `Journal/tests/journalRules.test.ts` | The docked canvas's size |
 | `Journal/tests/journalView.test.tsx` | Opening, the open journal updating live, Close and Escape, turning pages and stopping at each end |

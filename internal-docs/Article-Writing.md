@@ -54,7 +54,7 @@ The request and response look like this:
 
 ```
 POST /api/article/answers
-{ "answers": { "subject-quitting": ["ev-avogato-post", "ev-withdrawal-posts"], "subject-ingredient": ["ev-nicotine"], ... } }
+{ "answers": { "subject-left-out": ["ev-cnn-omission", "ev-ucc-study"], "subject-ingredient": ["ev-nicotine"], ... } }
 
 → 200 { "ending": "good" }
 ```
@@ -105,9 +105,9 @@ The layout uses the Figma frame's pixel positions (1280 × 832) and scales the w
 
 Scoring is real (on the backend), and the questions and evidence are the real story content, but some of it is still wired up temporarily:
 
-- **The questions** live at the bottom of `services/article.ts`, under the `MOCK` comment, until there is a backend route for them. The bank has 11, in 5 sections (`ARTICLE_SECTIONS`), which together argue that cats are addicted to Big Drug Inc.'s catnip, the company knows it, and it hides it. Each time the page loads, `pickArticleSubjects()` asks one random question from each section, in order, so an article has at most `MAX_ARTICLE_QUESTIONS` (5) questions.
-- **The evidence in the Journal** is listed in `Journal/storyEvidence.ts`, grouped by the story event that gives it (`STORY_EVIDENCE`, matching the E1–E7 badges on Figma's Page Story). For now `seedStoryEvidence()` puts all of it into an empty journal at once. Once each activity screen adds its own `STORY_EVIDENCE[event]` when the player finds it, remove the seeding. Evidence from Online Articles appears here too, but its ids aren't rated yet, so it counts as irrelevant.
-- **A journal saved before this change** still holds the old fire evidence, since seeding only fills an empty journal. Use the desk's reset button, or clear the `journal` key in localStorage.
+- **The questions** live at the bottom of `services/article.ts`, under the `MOCK` comment, until there is a backend route for them. The bank has 9, in 5 sections (`ARTICLE_SECTIONS`), which together argue that cats are addicted to Big Drug Inc.'s catnip, the company knows it, and it hides it. Each time the page loads, `pickArticleSubjects()` asks one random question from each section, in order, so an article has at most `MAX_ARTICLE_QUESTIONS` (5) questions.
+- **The evidence in the Journal** is listed in `Journal/storyEvidence.ts`, grouped by the story event that gives it (`STORY_EVIDENCE`, matching the badges on Figma's Page Story). Only evidence that a built activity gives is listed (the news article, the CEO interview, and social media); the ratings and question bank only use that evidence, and a question without enough of it was removed or asks for fewer picks. Nothing fills the journal up front: each activity adds its own evidence when the player finishes it (news article on Add Evidence, interview on each Add to Journal, social media on Finish), and Create Article only unlocks once all three are done. `Journal/tests/journal.test.ts` checks the activities together give every piece.
+- **A journal saved by an older version** can still hold evidence the game no longer gives (it was seeded at startup before). Use the desk's reset button, or clear the `journal` key in localStorage.
 
 ## Where the code is
 

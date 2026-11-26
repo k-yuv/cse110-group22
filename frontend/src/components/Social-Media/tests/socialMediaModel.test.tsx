@@ -9,6 +9,9 @@ import {
     type SocialPost,
 } from '../socialMediaContent.tsx';
 import { useSocialMediaModel } from '../socialMediaModel.tsx';
+import { JournalController } from '../../Journal/JournalController';
+import { ALL_STORY_EVIDENCE } from '../../Journal/storyEvidence';
+import * as journalAdapter from '../../NewsArticle/journalAdapter';
 
 // The real progress service, except completeActivity can be made to fail in a
 // single test with mockRejectedValueOnce.
@@ -218,5 +221,40 @@ describe('useSocialMediaModel finishing', () => {
         await waitFor(() => expect(result.current.model.error).not.toBe(''));
         expect(result.current.model.finishing).toBe(false);
         expect(result.current.path).toBe(ROUTES.socialMedia);
+    });
+
+    it("adds the post's evidence to the journal on Finish", async () => {
+        const result = renderModel();
+
+        act(() => result.current.model.selectThought('catnip-question-2'));
+        await act(() => result.current.model.onFinish());
+
+        const journalIds = JournalController.getInstance().read().map((item) => item.id);
+        expect(journalIds).toContain('ev-rentfreecat-post');
+    });
+
+    it('stays put without marking progress if the evidence cannot be saved', async () => {
+        const add = vi.spyOn(journalAdapter, 'addEvidence').mockResolvedValueOnce(false);
+        const result = renderModel();
+
+        act(() => result.current.model.selectThought('catnip-question-1'));
+        await act(() => result.current.model.onFinish());
+
+        expect(result.current.model.error).not.toBe('');
+        expect(await getProgress()).toEqual([]);
+        expect(result.current.path).toBe(ROUTES.socialMedia);
+        add.mockRestore();
+    });
+});
+
+describe('social media evidence', () => {
+    it('gives every post evidence that exists in the story evidence', () => {
+        const ids = new Set(ALL_STORY_EVIDENCE.map((item) => item.id));
+        for (const level of Object.values(SOCIAL_LEVELS)) {
+            for (const post of level.posts) {
+                expect(post.evidenceIds.length).toBeGreaterThan(0);
+                post.evidenceIds.forEach((id) => expect(ids.has(id)).toBe(true));
+            }
+        }
     });
 });

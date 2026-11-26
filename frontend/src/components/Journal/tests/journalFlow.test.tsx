@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import App from '../../../App';
 import { ROUTES } from '../../../routes';
 import { getArticleActivity } from '../../../services/articles';
-import { getEvidence } from '../../../services/journal';
+import { addEvidence, getEvidence } from '../../../services/journal';
 import { ADD_EVIDENCE_LABEL, CONTINUE_LABEL, SUBMIT_LABEL } from '../../NewsArticle/newsArticleContent';
 import { ALL_STORY_EVIDENCE } from '../storyEvidence';
 import { JournalController } from '../JournalController';
@@ -138,19 +138,20 @@ describe('Journal flow', () => {
     for (const id of evidenceIds) expect(ids).toContain(id);
   });
 
-  it('does not seed the mock evidence twice across a reload', async () => {
+  it('starts a new game with an empty journal, even after a reload', async () => {
     const app = renderGame(ROUTES.desk);
     await findOpenButton();
-    const count = JournalController.getInstance().read().length;
-    expect(count).toBeGreaterThan(0);
+    expect(JournalController.getInstance().read()).toEqual([]);
 
     reload(app, ROUTES.desk);
     await findOpenButton();
 
-    expect(JournalController.getInstance().read()).toHaveLength(count);
+    expect(JournalController.getInstance().read()).toEqual([]);
   });
 
-  it('shows an error and seeds nothing if loading fails, and can try again', async () => {
+  it('shows an error if loading fails, and loads the saved evidence on retry', async () => {
+    const saved = ALL_STORY_EVIDENCE[0];
+    await addEvidence(saved);
     vi.mocked(getEvidence).mockRejectedValueOnce(new Error('down'));
     const user = userEvent.setup();
     renderGame(ROUTES.desk);
@@ -162,6 +163,6 @@ describe('Journal flow', () => {
     await user.click(screen.getByRole('button', { name: RETRY_LABEL }));
 
     expect(await findOpenButton()).toBeInTheDocument();
-    expect(JournalController.getInstance().read().length).toBeGreaterThan(0);
+    expect(JournalController.getInstance().read().map((item) => item.id)).toEqual([saved.id]);
   });
 });

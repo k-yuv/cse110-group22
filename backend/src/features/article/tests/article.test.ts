@@ -170,29 +170,25 @@ describe('seed/articleRatings.json', () => {
 
   // The same picks as frontend/src/components/Article-Writing/tests/articleWritingFlow.test.tsx.
   const STRONG: ArticleAnswers = {
-    'subject-what-happens': ['ev-ucc-study', 'ev-avogato-post'],
-    'subject-quitting': ['ev-avogato-post', 'ev-withdrawal-posts'],
+    'subject-what-happens': ['ev-ucc-study'],
     'subject-how-many': ['ev-ucc-study'],
     'subject-ingredient': ['ev-nicotine'],
-    'subject-deluxe': ['ev-wb-internal-docs', 'ev-catthew-week2'],
-    'subject-company-knows': ['ev-wb-internal-docs', 'ev-wb-testimony'],
+    'subject-company-knows': ['ev-ceo-values'],
     'subject-motive': ['ev-ceo-values'],
     'subject-why-trusted': ['ev-cnn-owner', 'ev-rentfreecat-post'],
-    'subject-left-out': ['ev-cnn-omission', 'ev-deluxe-cut-question'],
-    'subject-online-praise': ['ev-fan-reposts', 'ev-before-after'],
+    'subject-left-out': ['ev-cnn-omission', 'ev-ucc-study'],
+    'subject-online-praise': ['ev-rentfreecat-post'],
     'subject-rebuttal': ['ev-ucc-study'],
   };
   const WEAK: ArticleAnswers = {
-    'subject-what-happens': ['ev-catthew-week1', 'ev-letter-addiction'],
-    'subject-quitting': ['ev-letter-addiction', 'ev-deluxe-rumor'],
-    'subject-how-many': ['ev-avogato-post'],
+    'subject-what-happens': ['ev-cnn-article'],
+    'subject-how-many': ['ev-cnn-owner'],
     'subject-ingredient': ['ev-ceo-pr-claims'],
-    'subject-deluxe': ['ev-wb-warning', 'ev-deluxe-hype'],
-    'subject-company-knows': ['ev-letter-addiction', 'ev-ceo-request'],
-    'subject-motive': ['ev-letter'],
+    'subject-company-knows': ['ev-ceo-request'],
+    'subject-motive': ['ev-ceo-request'],
     'subject-why-trusted': ['ev-cnn-article', 'ev-ceo-pr-claims'],
-    'subject-left-out': ['ev-cnn-article', 'ev-deluxe-article'],
-    'subject-online-praise': ['ev-catthew-week1', 'ev-cnn-testimonials'],
+    'subject-left-out': ['ev-cnn-article', 'ev-cnn-owner'],
+    'subject-online-praise': ['ev-cnn-article'],
     'subject-rebuttal': ['ev-ceo-pr-claims'],
   };
 
@@ -205,11 +201,10 @@ describe('seed/articleRatings.json', () => {
   });
 
   it('gives the bad ending for an article that mixes in too many rumors', async () => {
-    // Swap the strong picks for weak ones in 5 questions: 13 strong, 5 weak.
-    const swapped = ['subject-how-many', 'subject-ingredient', 'subject-motive', 'subject-rebuttal'];
+    // Swap the strong picks for weak ones in 5 questions: 6 strong, 4 weak, 1 unrated.
+    const swapped = ['subject-what-happens', 'subject-how-many', 'subject-ingredient', 'subject-motive', 'subject-rebuttal'];
     const mixed: ArticleAnswers = { ...STRONG };
     for (const id of swapped) mixed[id] = WEAK[id];
-    mixed['subject-what-happens'] = [STRONG['subject-what-happens'][0], WEAK['subject-what-happens'][0]];
     expect(await seedEnding(mixed)).toBe('bad');
   });
 });

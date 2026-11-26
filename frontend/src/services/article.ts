@@ -46,12 +46,7 @@ export const ARTICLE_SECTIONS: readonly (readonly ArticleSubject[])[] = [
     {
       id: 'subject-what-happens',
       prompt: "What happens to cats after they start using Big Drug Inc.'s catnip?",
-      requiredCount: 2,
-    },
-    {
-      id: 'subject-quitting',
-      prompt: 'What happens when cats try to stop using the catnip?',
-      requiredCount: 2,
+      requiredCount: 1,
     },
     {
       id: 'subject-how-many',
@@ -66,18 +61,13 @@ export const ARTICLE_SECTIONS: readonly (readonly ArticleSubject[])[] = [
       prompt: 'What is in the catnip that makes it addictive?',
       requiredCount: 1,
     },
-    {
-      id: 'subject-deluxe',
-      prompt: 'Is the new Catnip Deluxe even more addictive than the original?',
-      requiredCount: 2,
-    },
   ],
   // 3. The company knows
   [
     {
       id: 'subject-company-knows',
       prompt: 'Does Big Drug Inc. know its catnip is addictive?',
-      requiredCount: 2,
+      requiredCount: 1,
     },
     {
       id: 'subject-motive',
@@ -100,7 +90,7 @@ export const ARTICLE_SECTIONS: readonly (readonly ArticleSubject[])[] = [
     {
       id: 'subject-online-praise',
       prompt: 'Can the glowing reviews of the catnip online be trusted?',
-      requiredCount: 2,
+      requiredCount: 1,
     },
   ],
   // 5. Answering the company

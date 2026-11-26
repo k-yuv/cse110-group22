@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EvidenceModel } from '../EvidenceModel';
 import { JournalController } from '../JournalController';
-import { ALL_STORY_EVIDENCE, STORY_EVIDENCE, seedStoryEvidence } from '../storyEvidence';
+import { ALL_STORY_EVIDENCE, STORY_EVIDENCE } from '../storyEvidence';
+import { getArticleActivity } from '../../../services/articles';
+import { INTERVIEW_QUESTIONS } from '../../Interview/InterviewModel';
+import { SOCIAL_LEVELS } from '../../Social-Media/socialMediaContent';
 import { addEvidence, clearEvidence, getEvidence } from '../../../services/journal';
 
 // The real (mock) service, except each call can be made to fail in a single
@@ -214,39 +217,23 @@ describe('JournalController', () => {
   });
 });
 
-describe('seedStoryEvidence', () => {
-  beforeEach(resetJournal);
-
-  it('fills an empty journal with every piece of story evidence', () => {
-    seedStoryEvidence();
-
-    const evidence = JournalController.getInstance().read();
-    expect(evidence.map((item) => item.id)).toEqual(ALL_STORY_EVIDENCE.map((item) => item.id));
-    expect(new Set(evidence.map((item) => item.id)).size).toBe(evidence.length);
-  });
-
+// Nothing fills the journal for the player: each story activity adds its own
+// evidence as it's finished, and Create Article only unlocks after all of them.
+// So the activities together have to give every piece of story evidence.
+describe('story evidence', () => {
   it('gives every story event at least one piece of evidence', () => {
     for (const items of Object.values(STORY_EVIDENCE)) {
       expect(items.length).toBeGreaterThan(0);
     }
   });
 
-  it('leaves a journal that already has evidence alone', () => {
-    const journal = JournalController.getInstance();
-    const collected = new EvidenceModel('real', 'Collected', '', '');
-    journal.add(collected);
+  it('is all given by the activities, each piece by exactly one of them', async () => {
+    const given = [
+      ...(await getArticleActivity()).evidenceIds,
+      ...Object.values(SOCIAL_LEVELS).flatMap((level) => level.posts.flatMap((post) => post.evidenceIds)),
+      ...INTERVIEW_QUESTIONS.map((question) => question.evidenceId),
+    ];
 
-    seedStoryEvidence();
-
-    expect(journal.read()).toEqual([collected]);
-  });
-
-  it('does not add the story evidence twice', () => {
-    seedStoryEvidence();
-    const count = JournalController.getInstance().read().length;
-
-    seedStoryEvidence();
-
-    expect(JournalController.getInstance().read()).toHaveLength(count);
+    expect([...given].sort()).toEqual(ALL_STORY_EVIDENCE.map((item) => item.id).sort());
   });
 });

@@ -11,6 +11,7 @@ import {
 } from './socialMediaSelection.ts';
 import {useBackConfirmationModel} from "../Back-Confirmation/backConfirmationModel.tsx";
 import {ROUTES} from "../../routes.ts";
+import { addEvidence } from '../NewsArticle/journalAdapter';
 
 const MAX_WIDTH_TO_HEIGHT = 1.5;
 
@@ -72,12 +73,18 @@ export function useSocialMediaModel(
     }
 
     // Picking any thought is enough to finish for now; grading the pick will come from the backend.
+    // The post's evidence goes in the journal first; if it can't be saved, the player stays here.
     async function finish() {
         if (!selection || finishing) return;
         setError('');
         setFinishing(true);
 
         try {
+            const saved = await Promise.all(post.evidenceIds.map((id) => addEvidence(id)));
+            if (saved.includes(false)) {
+                setError(SAVE_ERROR);
+                return;
+            }
             await completeActivity('social');
             navigate(ROUTES.desk);
         } catch {
