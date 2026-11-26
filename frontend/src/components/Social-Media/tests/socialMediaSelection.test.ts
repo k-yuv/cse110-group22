@@ -1,25 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import { getSocialPost } from '../socialMediaContent.tsx';
-import { makeThoughtSelection, toggleThoughtSelection } from '../socialMediaSelection.ts';
+import { getSocialPost, SOCIAL_LEVELS } from '../socialMediaContent.tsx';
+import { makeThoughtSelection } from '../socialMediaSelection.ts';
 
 const post = getSocialPost('catnip');
 
 describe('social media selection rules', () => {
-    it('builds stable selection metadata without deciding correctness', () => {
-        expect(makeThoughtSelection('catnip', post, 'catnip-question-1')).toEqual({
+    it('builds stable selection metadata including correctness', () => {
+        expect(makeThoughtSelection('catnip', post, 'catnip-no-sponsored')).toEqual({
             levelId: 'catnip',
             postId: post.id,
-            thoughtId: 'catnip-question-1',
-            stance: 'questioning',
+            thoughtId: 'catnip-no-sponsored',
+            correct: true,
         });
+        expect(makeThoughtSelection('catnip', post, 'catnip-yes-studies').correct).toBe(false);
     });
 
-    it('selects one thought, replaces it with another, and toggles it off', () => {
-        const first = makeThoughtSelection('catnip', post, 'catnip-support-1');
-        const second = makeThoughtSelection('catnip', post, 'catnip-question-2');
+    it('rejects a thought from another post', () => {
+        expect(() => makeThoughtSelection('catnip', post, 'cnn-no-owner')).toThrow(RangeError);
+    });
+});
 
-        expect(toggleThoughtSelection(null, first)).toEqual(first);
-        expect(toggleThoughtSelection(first, second)).toEqual(second);
-        expect(toggleThoughtSelection(second, second)).toBeNull();
+describe('social media content', () => {
+    it('has three posts, each with four thoughts and exactly one correct answer', () => {
+        const posts = SOCIAL_LEVELS.catnip.posts;
+        expect(posts).toHaveLength(3);
+        for (const item of posts) {
+            expect(item.thoughts).toHaveLength(4);
+            expect(item.thoughts.filter((thought) => thought.correct)).toHaveLength(1);
+            for (const thought of item.thoughts) {
+                expect(thought.text).toMatch(/^(Yes|No)\. /);
+                expect(thought.feedback.length).toBeGreaterThan(0);
+            }
+        }
     });
 });

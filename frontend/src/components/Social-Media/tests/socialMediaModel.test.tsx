@@ -1,13 +1,9 @@
-
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { completeActivity, getProgress } from '../../../services/progress';
 import { ROUTES } from '../../../routes';
-import {
-    getSocialPost, LAYOUT, SCENE, SOCIAL_LEVELS,
-    type SocialPost,
-} from '../socialMediaContent.tsx';
+import { LAYOUT, SCENE, SOCIAL_LEVELS } from '../socialMediaContent.tsx';
 import { useSocialMediaModel } from '../socialMediaModel.tsx';
 import { JournalController } from '../../Journal/JournalController';
 import { ALL_STORY_EVIDENCE } from '../../Journal/storyEvidence';
@@ -20,122 +16,99 @@ vi.mock('../../../services/progress', async (importOriginal) => {
     return { ...actual, completeActivity: vi.fn(actual.completeActivity) };
 });
 
-describe('useSocialMediaModel', () => {
-    it('keeps only the latest answer and sends complete metadata to its consumer', () => {
+const POSTS = SOCIAL_LEVELS.catnip.posts;
+const correctId = (index: number) => POSTS[index].thoughts.find((t) => t.correct)!.id;
+const wrongId = (index: number) => POSTS[index].thoughts.find((t) => !t.correct)!.id;
+
+function renderModel(changed?: Parameters<typeof useSocialMediaModel>[1]) {
+    return renderHook(
+        () => ({ model: useSocialMediaModel('catnip', changed), path: useLocation().pathname }),
+        { wrapper: ({ children }) => <MemoryRouter initialEntries={[ROUTES.socialMedia]}>{children}</MemoryRouter> },
+    ).result;
+}
+
+// Answers every post correctly and stops on the last one, ready for Done.
+function solveAll(result: ReturnType<typeof renderModel>) {
+    POSTS.forEach((_, index) => {
+        act(() => result.current.model.selectThought(correctId(index)));
+        if (index < POSTS.length - 1) act(() => result.current.model.onAdvance());
+    });
+}
+
+describe('useSocialMediaModel answering', () => {
+    beforeEach(() => localStorage.clear());
+
+    it('gives feedback and shakes on a wrong pick without unlocking Next', () => {
         const changed = vi.fn();
-        const { result } = renderHook(
-            () => useSocialMediaModel('catnip', 0, changed),
-            { wrapper: MemoryRouter },
-        );
+        const result = renderModel(changed);
 
-        act(() => result.current.toggleThoughts());
-        act(() => result.current.selectThought('catnip-support-1'));
-        expect(result.current.selection?.thoughtId).toBe('catnip-support-1');
-        expect(changed).toHaveBeenLastCalledWith({
-            levelId: 'catnip', postId: 'catnip-influencer',
-            thoughtId: 'catnip-support-1', stance: 'supporting',
-        });
+        act(() => result.current.model.selectThought(wrongId(0)));
 
-        act(() => result.current.selectThought('catnip-question-1'));
-        expect(result.current.selection?.thoughtId).toBe('catnip-question-1');
-        expect(changed).toHaveBeenCalledTimes(2);
-        expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({ stance: 'questioning' }));
+        const thought = POSTS[0].thoughts.find((t) => t.id === wrongId(0))!;
+        expect(result.current.model.feedback).toMatchObject({ text: thought.feedback, correct: false });
+        expect(result.current.model.wrongCount).toBe(1);
+        expect(result.current.model.canAdvance).toBe(false);
+        expect(result.current.model.completedPosts).toBe(0);
+        expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({ thoughtId: wrongId(0), correct: false }));
     });
 
-    it('deselects the current answer only when that same answer is selected again', () => {
-        const changed = vi.fn();
-        const { result } = renderHook(
-            () => useSocialMediaModel('catnip', 0, changed),
-            { wrapper: MemoryRouter },
-        );
+    it('replays feedback each time, even for the same wrong thought', () => {
+        const result = renderModel();
 
-        act(() => result.current.selectThought('catnip-support-2'));
-        act(() => result.current.selectThought('catnip-support-2'));
-        expect(result.current.selection).toBeNull();
-        expect(changed).toHaveBeenCalledTimes(2);
-        expect(changed).toHaveBeenLastCalledWith(null);
+        act(() => result.current.model.selectThought(wrongId(0)));
+        const firstKey = result.current.model.feedback!.key;
+        act(() => result.current.model.selectThought(wrongId(0)));
+
+        expect(result.current.model.feedback!.key).not.toBe(firstKey);
+        expect(result.current.model.wrongCount).toBe(2);
     });
 
-    it('keeps an answer selected through Clear Mind and Gather Thoughts', () => {
-        const changed = vi.fn();
-        const { result } = renderHook(
-            () => useSocialMediaModel('catnip', 0, changed),
-            { wrapper: MemoryRouter },
-        );
+    it('unlocks Next and fills a progress slot on the right pick, then locks the post', () => {
+        const result = renderModel();
 
-        act(() => result.current.toggleThoughts());
-        act(() => result.current.selectThought('catnip-support-1'));
-        act(() => result.current.toggleThoughts());
+        act(() => result.current.model.selectThought(correctId(0)));
+        expect(result.current.model.canAdvance).toBe(true);
+        expect(result.current.model.completedPosts).toBe(1);
+        expect(result.current.model.feedback?.correct).toBe(true);
 
-        // Clear Mind hides the choices; it does NOT erase the user's answer.
-        expect(result.current.thoughtsOpen).toBe(false);
-        expect(result.current.selection?.thoughtId).toBe('catnip-support-1');
-
-        act(() => result.current.toggleThoughts());
-        expect(result.current.thoughtsOpen).toBe(true);
-        expect(result.current.selection?.thoughtId).toBe('catnip-support-1');
-
-        // Visibility changes should not emit new answers (or null) to the backend.
-        expect(changed).toHaveBeenCalledTimes(1);
+        act(() => result.current.model.selectThought(wrongId(0)));
+        expect(result.current.model.selection?.thoughtId).toBe(correctId(0));
+        expect(result.current.model.wrongCount).toBe(0);
     });
 
-    it('rejects a nonexistent thought without changing its selected answer', () => {
-        const changed = vi.fn();
-        const { result } = renderHook(
-            () => useSocialMediaModel('catnip', 0, changed),
-            { wrapper: MemoryRouter },
-        );
+    it('ignores Next until the post is solved', () => {
+        const result = renderModel();
 
-        act(() => result.current.selectThought('catnip-support-1'));
-
-        expect(() => act(() => result.current.selectThought('missing'))).toThrow(RangeError);
-        expect(result.current.selection?.thoughtId).toBe('catnip-support-1');
-        expect(changed).toHaveBeenCalledTimes(1);
+        act(() => result.current.model.onAdvance());
+        expect(result.current.model.postIndex).toBe(0);
     });
 
-    it('resets visible choices and selection when scrolling to a new post', () => {
-        // There is only one production post so far. Temporarily add a second fixture
-        // to exercise the actual prop-change path without adding test-only app files.
-        const posts = SOCIAL_LEVELS.catnip.posts as SocialPost[];
-        const original = getSocialPost('catnip');
-        const nextPost: SocialPost = {
-            ...original,
-            id: 'catnip-followup',
-            thoughts: original.thoughts.map(t => ({
-                ...t,
-                id: `followup-${t.id}`,
-            })) as unknown as SocialPost['thoughts'],
-        };
-        posts.push(nextPost);
+    it('moves to the next post with a fresh selection and no feedback', () => {
+        const result = renderModel();
 
-        try {
-            const { result, rerender, unmount } = renderHook(
-                ({ index }) => useSocialMediaModel('catnip', index),
-                {
-                    initialProps: { index: 0 },
-                    wrapper: MemoryRouter,
-                },
-            );
+        act(() => result.current.model.selectThought(correctId(0)));
+        act(() => result.current.model.onAdvance());
 
-            act(() => result.current.toggleThoughts());
-            act(() => result.current.selectThought('catnip-support-1'));
+        expect(result.current.model.post.id).toBe(POSTS[1].id);
+        expect(result.current.model.selection).toBeNull();
+        expect(result.current.model.feedback).toBeNull();
+        expect(result.current.model.completedPosts).toBe(1);
+        expect(result.current.model.isDone).toBe(false);
+    });
 
-            rerender({ index: 1 });
-            expect(result.current.post.id).toBe('catnip-followup');
-            expect(result.current.thoughtsOpen).toBe(false);
-            expect(result.current.selection).toBeNull();
+    it('starts the next post with no wrong picks so its clouds do not flash red', () => {
+        const result = renderModel();
 
-            act(() => result.current.toggleThoughts());
-            act(() => result.current.selectThought('followup-catnip-question-1'));
-            expect(result.current.selection?.postId).toBe('catnip-followup');
+        act(() => result.current.model.selectThought(wrongId(0)));
+        act(() => result.current.model.selectThought(correctId(0)));
+        act(() => result.current.model.onAdvance());
 
-            rerender({ index: 0 });
-            expect(result.current.thoughtsOpen).toBe(false);
-            expect(result.current.selection).toBeNull();
-            unmount();
-        } finally {
-            posts.pop();
-        }
+        expect(result.current.model.wrongCount).toBe(0);
+    });
+
+    it('rejects a nonexistent thought', () => {
+        const result = renderModel();
+        expect(() => act(() => result.current.model.selectThought('missing'))).toThrow(RangeError);
     });
 
     it('recalculates the canvas transform on resize', () => {
@@ -150,14 +123,8 @@ describe('useSocialMediaModel', () => {
 
         try {
             act(() => {
-                Object.defineProperty(window, 'innerWidth', {
-                    configurable: true,
-                    value: 1200,
-                });
-                Object.defineProperty(window, 'innerHeight', {
-                    configurable: true,
-                    value: 600,
-                });
+                Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1200 });
+                Object.defineProperty(window, 'innerHeight', { configurable: true, value: 600 });
                 window.dispatchEvent(new Event('resize'));
             });
 
@@ -183,64 +150,41 @@ describe('useSocialMediaModel', () => {
 describe('useSocialMediaModel finishing', () => {
     beforeEach(() => localStorage.clear());
 
-    function renderModel() {
-        return renderHook(
-            () => ({ model: useSocialMediaModel('catnip'), path: useLocation().pathname }),
-            { wrapper: ({ children }) => <MemoryRouter initialEntries={[ROUTES.socialMedia]}>{children}</MemoryRouter> },
-        ).result;
-    }
-
-    it('cannot finish until a thought is picked', async () => {
+    it('becomes Done once the last post is solved, then saves all evidence and returns to the desk', async () => {
         const result = renderModel();
 
-        expect(result.current.model.canFinish).toBe(false);
-        await act(() => result.current.model.onFinish());
+        solveAll(result);
+        expect(result.current.model.isDone).toBe(true);
+        expect(result.current.model.completedPosts).toBe(POSTS.length);
 
-        expect(await getProgress()).toEqual([]);
-        expect(result.current.path).toBe(ROUTES.socialMedia);
-    });
+        await act(async () => result.current.model.onAdvance());
 
-    it('marks Social Media done and returns to the desk after a pick', async () => {
-        const result = renderModel();
-
-        act(() => result.current.model.selectThought('catnip-support-1'));
-        expect(result.current.model.canFinish).toBe(true);
-        await act(() => result.current.model.onFinish());
-
+        await waitFor(() => expect(result.current.path).toBe(ROUTES.desk));
         expect(await getProgress()).toEqual(['social']);
-        expect(result.current.path).toBe(ROUTES.desk);
+        const journalIds = JournalController.getInstance().read().map((item) => item.id);
+        POSTS.flatMap((p) => p.evidenceIds).forEach((id) => expect(journalIds).toContain(id));
     });
 
-    it('shows an error and stays put if saving fails', async () => {
+    it('shows an error and stays put if saving progress fails', async () => {
         vi.mocked(completeActivity).mockRejectedValueOnce(new Error('down'));
         const result = renderModel();
 
-        act(() => result.current.model.selectThought('catnip-question-1'));
-        await act(() => result.current.model.onFinish());
+        solveAll(result);
+        await act(async () => result.current.model.onAdvance());
 
         await waitFor(() => expect(result.current.model.error).not.toBe(''));
         expect(result.current.model.finishing).toBe(false);
         expect(result.current.path).toBe(ROUTES.socialMedia);
     });
 
-    it("adds the post's evidence to the journal on Finish", async () => {
-        const result = renderModel();
-
-        act(() => result.current.model.selectThought('catnip-question-2'));
-        await act(() => result.current.model.onFinish());
-
-        const journalIds = JournalController.getInstance().read().map((item) => item.id);
-        expect(journalIds).toContain('ev-rentfreecat-post');
-    });
-
     it('stays put without marking progress if the evidence cannot be saved', async () => {
         const add = vi.spyOn(journalAdapter, 'addEvidence').mockResolvedValueOnce(false);
         const result = renderModel();
 
-        act(() => result.current.model.selectThought('catnip-question-1'));
-        await act(() => result.current.model.onFinish());
+        solveAll(result);
+        await act(async () => result.current.model.onAdvance());
 
-        expect(result.current.model.error).not.toBe('');
+        await waitFor(() => expect(result.current.model.error).not.toBe(''));
         expect(await getProgress()).toEqual([]);
         expect(result.current.path).toBe(ROUTES.socialMedia);
         add.mockRestore();
@@ -248,13 +192,12 @@ describe('useSocialMediaModel finishing', () => {
 });
 
 describe('social media evidence', () => {
-    it('gives every post evidence that exists in the story evidence', () => {
+    it('gives evidence for every level, all of which exists in the story evidence', () => {
         const ids = new Set(ALL_STORY_EVIDENCE.map((item) => item.id));
         for (const level of Object.values(SOCIAL_LEVELS)) {
-            for (const post of level.posts) {
-                expect(post.evidenceIds.length).toBeGreaterThan(0);
-                post.evidenceIds.forEach((id) => expect(ids.has(id)).toBe(true));
-            }
+            const given = level.posts.flatMap((post) => post.evidenceIds);
+            expect(given.length).toBeGreaterThan(0);
+            given.forEach((id) => expect(ids.has(id)).toBe(true));
         }
     });
 });
