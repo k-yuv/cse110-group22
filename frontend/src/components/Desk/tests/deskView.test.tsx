@@ -12,15 +12,11 @@ import { CLOSE_LABEL, DIALOG_LABEL, JOURNAL_PLACEMENTS } from '../../Journal/jou
 import { LETTER_LABEL } from '../../Letter/letterContent';
 import { markLetterSeen } from '../../../services/letter';
 
-// The real progress service, except getProgress and completeActivity can be
-// made to fail in a single test with mockRejectedValueOnce.
+// The real progress service, except getProgress can be made to fail in a
+// single test with mockRejectedValueOnce.
 vi.mock('../../../services/progress', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../services/progress')>();
-  return {
-    ...actual,
-    getProgress: vi.fn(actual.getProgress),
-    completeActivity: vi.fn(actual.completeActivity),
-  };
+  return { ...actual, getProgress: vi.fn(actual.getProgress) };
 });
 
 // Every call HoverSpotlight makes to animate a shape (Konva's node.to).
@@ -267,45 +263,6 @@ describe('Desk view', () => {
 
       expect(stage.style.cursor).toBe('not-allowed');
       expect(tween).not.toHaveBeenCalled();
-    });
-  });
-
-  // TEMPORARY: remove with the dev buttons in deskView and deskModel.
-  describe('dev buttons', () => {
-    it('complete the main activities in story order, then disable', async () => {
-      const user = userEvent.setup();
-      await renderDesk();
-      const completeNext = screen.getByRole('button', { name: 'Dev: complete next level' });
-
-      for (const id of ['articles', 'social', 'interviews'] as const) {
-        await user.click(completeNext);
-        expect(await within(item(ACTIVITY_LABELS[id])).findByText(DONE_TEXT)).toBeInTheDocument();
-      }
-
-      expect(completeNext).toBeDisabled();
-      expect(within(item(CREATE_ARTICLE_LABEL)).queryByText(LOCKED_TEXT)).not.toBeInTheDocument();
-    });
-
-    it('reset progress back to an empty desk', async () => {
-      const user = userEvent.setup();
-      await renderDesk(['articles', 'social', 'interviews']);
-
-      await user.click(screen.getByRole('button', { name: 'Dev: reset progress' }));
-
-      expect(await within(item(ACTIVITY_LABELS.social)).findByText(LOCKED_TEXT)).toBeInTheDocument();
-      expect(screen.queryByText(DONE_TEXT)).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Dev: complete next level' })).toBeEnabled();
-    });
-
-    it('show an error if progress fails to save', async () => {
-      const user = userEvent.setup();
-      await renderDesk();
-      vi.mocked(completeActivity).mockRejectedValueOnce(new Error('down'));
-
-      await user.click(screen.getByRole('button', { name: 'Dev: complete next level' }));
-
-      expect(await screen.findByRole('alert')).toBeInTheDocument();
-      expect(screen.queryByText(DONE_TEXT)).not.toBeInTheDocument();
     });
   });
 });
