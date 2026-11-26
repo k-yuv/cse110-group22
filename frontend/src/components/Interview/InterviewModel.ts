@@ -20,8 +20,8 @@ export interface InterviewState {
 export const INTERVIEW_QUESTIONS: readonly InterviewQuestion[] = [
   {
     id: 'q1',
-    label: 'Q1',
-    answer: 'Q1 answer',
+    label: 'There are claims that Big Drug Incs\'s catnip is extremely addictive. Is this the truth?',
+    answer: 'Our catnip is the best catnip on the market.',
     choices: [
       { id: 'q1-1', label: 'Q1.1', answer: 'Q1.1 Answer' },
       { id: 'q1-2', label: 'Q1.2', answer: 'Q1.2 Answer' },

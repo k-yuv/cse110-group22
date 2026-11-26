@@ -7,10 +7,14 @@ import cat from '../../assets/ceo_cat.png';
 import SettingsButton from '../SettingsButton/SettingsButton';
 import TitleButton from '../TitleScreen/titleButton';
 import { useInterviewModel } from './interviewScreenModel';
+import Journal from '../Journal/journalView';
+import BackButton from '../Back-Button/backButtonView';
+import BackConfirmation from '../Back-Confirmation/backConfirmationView';
 
 const WIDTH = 1280;
 const HEIGHT = 832;
 const DESK_Y = 622;
+const ACTIVITY_NAME = 'the interview';
 
 function PromptBox({ text, y }: { text: string; y: number }) {
   return (
@@ -140,6 +144,8 @@ export default function Interview() {
     onSelectChoice,
     onAddToJournal,
     onFinishInterview,
+    onBack,
+    backConfirmation,
   } = useInterviewModel();
   const catRef = useRef<Konva.Group>(null);
   const questionId = question?.id;
@@ -172,6 +178,9 @@ export default function Interview() {
         overflow: 'hidden',
       }}
     >
+      <Journal placement="corner" />
+      <BackButton onClick={onBack} style={{ left: 22, top: 90 }} />
+      <BackConfirmation activityName={ACTIVITY_NAME} {...backConfirmation} />
       <SettingsButton />
       {error && <p role="alert">{error}</p>}
       <section

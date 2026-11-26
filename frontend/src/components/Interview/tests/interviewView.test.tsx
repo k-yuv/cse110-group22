@@ -6,6 +6,8 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import Interview from '../InterviewView';
 import * as progress from '../../../services/progress';
+import { BACK_BUTTON_LABEL } from '../../Back-Button/backButtonView';
+import { GO_BACK_LABEL, STAY_LABEL } from '../../Back-Confirmation/backConfirmationContent';
 
 vi.mock('react-konva', () => {
   const Group = forwardRef<
@@ -70,6 +72,23 @@ describe('Interview view', () => {
     expect(screen.getByRole('button', { name: 'Q1' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Q2' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Q3' })).toBeInTheDocument();
+  });
+
+  it('confirms before returning to the desk', async () => {
+    const user = userEvent.setup();
+    renderInterview();
+
+    await user.click(screen.getByRole('button', { name: BACK_BUTTON_LABEL }));
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('You will lose all your progress on the interview');
+
+    await user.click(screen.getByRole('button', { name: STAY_LABEL }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.getByText('Select a question to ask')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: BACK_BUTTON_LABEL }));
+    await user.click(screen.getByRole('button', { name: GO_BACK_LABEL }));
+
+    expect(await screen.findByText('Desk view')).toBeInTheDocument();
   });
 
   it('shows Q1 guidance and its choices after Q1 is selected', async () => {
