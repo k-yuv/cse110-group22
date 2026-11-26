@@ -15,7 +15,7 @@ The desk is the page at `/desk`. It's drawn with Konva and shows six things the 
 | "TO DO: clean desk!" sticky note | Minigame | `/clean-desk` |
 | Create Article card | The final step | `/create-article` |
 
-Social Media and Interviews are placeholders for now, and the clean desk minigame still shows the 404 page. Typing the URL of a locked screen sends the player back to the desk (see [Route-Guard.md](Route-Guard.md)).
+Typing the URL of a locked screen sends the player back to the desk (see [Route-Guard.md](Route-Guard.md)).
 
 ### Locked and unlocked
 
@@ -46,15 +46,6 @@ Every position and size on the desk is a **fraction of the window**, not a pixel
 ### Progress
 
 Which activities are done is saved in the browser (`localStorage`), so it survives a page refresh. This is a **mock**: there's no backend route for progress yet. When there is, only `services/progress.ts` needs to change.
-
-### Temporary dev buttons
-
-When you run the app with `npm run dev`, two buttons appear in the bottom left:
-
-- **Dev: complete next level** marks the next main activity done, in story order.
-- **Dev: reset progress** clears all progress and collected evidence, then reloads the mock evidence.
-
-They exist only so you can try out the desk before the activity screens are built, and they never appear in production builds. Remove them (search for `TEMPORARY`) once the activities can actually be played.
 
 ### Not built yet
 
@@ -149,7 +140,7 @@ Run the tests from `frontend/` with `npm test`.
 | --- | --- |
 | `Desk/tests/deskRules.test.ts` | The unlock rules: an empty desk, each step unlocking the next, all three done, and minigames not unlocking anything |
 | `Desk/tests/deskModel.test.tsx` | The desk's behavior: Done! state for each Figma progress state, locked items not opening, each item going to the right URL, Create Article opening after Interviews, an error if progress fails to load, starting fresh if saved progress is unreadable, and resizing with the window |
-| `Desk/tests/deskView.test.tsx` | The drawn desk: the loading message, the load error, each item wired to its own URL, locked and Done! notes on the right items, the hover effect and cursor, and the dev buttons |
+| `Desk/tests/deskView.test.tsx` | The drawn desk: the loading message, the load error, each item wired to its own URL, locked and Done! notes on the right items, and the hover effect and cursor |
 | `Not-Found/tests/notFound.test.tsx` | The 404 page's heading, and its link going back to the desk |
 | `services/tests/progress.test.ts` | Completing an activity twice saves it once, bad saved progress is ignored, and resetting clears everything |
 
@@ -190,4 +181,4 @@ These depend on actually drawing the desk, so we can only check them by hand wit
 - [ ] Every item shows up in the right place, and nothing is cut off at different window sizes.
 - [ ] Clicking where two items overlap opens the one on top.
 - [ ] The hover effect looks right: the item grows from its center and the glow lines up with its edges.
-- [ ] Use the dev buttons to step through every progress state, and check the Done! and locked notes match the Figma frames.
+- [ ] Play through each activity, and check the Done! and locked notes match the Figma frames at every progress state.
